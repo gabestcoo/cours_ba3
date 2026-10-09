@@ -1,42 +1,69 @@
+/* Design « Révision BA3 » (variante 2a) : filets fins, aucun arrondi ni ombre, repères « + » aux coins.
+   Thème : clair par défaut, sombre si le système le demande, sauf si <html data-theme> force un choix. */
 :root {
-  --fond: #f6f5f2;
-  --surface: #ffffff;
-  --texte: #1d1f24;
-  --texte-doux: #5c6170;
-  --bordure: #e2e0da;
-  --accent: #2f4b7c;
-  --accent-doux: #e6ebf4;
-  --alerte-fond: #fff4dc;
-  --alerte-bordure: #e0a526;
-  --alerte-texte: #6b4a00;
-  --code-fond: #f3f2ee;
-  --succes: #1f7a4d;
-  --succes-fond: #e3f4ea;
-  --erreur: #b3261e;
-  --erreur-fond: #fbe7e5;
-  --rayon: 14px;
+  --fond: #f2f2f3;
+  --surface: #e7e7ea;
+  --code-fond: #e7e7ea;
+  --texte: #1d1f20;
+  --texte-doux: #5d5d60;
+  --bordure: rgba(29, 31, 32, 0.16);
+  --repere: rgba(29, 31, 32, 0.5);
+  --accent: #5980a6;
+  --accent-fort: #416180;
+  --accent-texte: #416180;
+  --accent-doux: #d6ebff;
+  --sur-accent: #ffffff;
+  --succes: oklch(0.52 0.1 150);
+  --succes-fond: oklch(0.94 0.035 150);
+  --erreur: oklch(0.53 0.14 28);
+  --erreur-fond: oklch(0.94 0.03 28);
   color-scheme: light;
+  --rayon: 0;
+  --police: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --police-titre: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  --police-code: ui-monospace, Menlo, 'Cascadia Code', Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --fond: #16181d;
-    --surface: #1f2229;
-    --texte: #e8e9ec;
-    --texte-doux: #9ea3b0;
-    --bordure: #30343d;
-    --accent: #9bb6e8;
-    --accent-doux: #263147;
-    --alerte-fond: #33290f;
-    --alerte-bordure: #b8862a;
-    --alerte-texte: #f3d58f;
-    --code-fond: #171a20;
-    --succes: #7fd3a4;
-    --succes-fond: #173326;
-    --erreur: #f2a39c;
-    --erreur-fond: #3a1d1b;
-    color-scheme: dark;
+  :root:not([data-theme='clair']) {
+  --fond: #15181b;
+  --surface: #22272c;
+  --code-fond: #22272c;
+  --texte: #e7e7ea;
+  --texte-doux: #a4a6ab;
+  --bordure: rgba(231, 231, 234, 0.16);
+  --repere: rgba(231, 231, 234, 0.5);
+  --accent: #94bce3;
+  --accent-fort: #b5d9fd;
+  --accent-texte: #b5d9fd;
+  --accent-doux: #2c455d;
+  --sur-accent: #15181b;
+  --succes: oklch(0.78 0.1 150);
+  --succes-fond: oklch(0.3 0.05 150);
+  --erreur: oklch(0.76 0.12 28);
+  --erreur-fond: oklch(0.3 0.05 28);
+  color-scheme: dark;
   }
+}
+
+:root[data-theme='sombre'] {
+  --fond: #15181b;
+  --surface: #22272c;
+  --code-fond: #22272c;
+  --texte: #e7e7ea;
+  --texte-doux: #a4a6ab;
+  --bordure: rgba(231, 231, 234, 0.16);
+  --repere: rgba(231, 231, 234, 0.5);
+  --accent: #94bce3;
+  --accent-fort: #b5d9fd;
+  --accent-texte: #b5d9fd;
+  --accent-doux: #2c455d;
+  --sur-accent: #15181b;
+  --succes: oklch(0.78 0.1 150);
+  --succes-fond: oklch(0.3 0.05 150);
+  --erreur: oklch(0.76 0.12 28);
+  --erreur-fond: oklch(0.3 0.05 28);
+  color-scheme: dark;
 }
 
 *,
@@ -53,7 +80,7 @@ body {
   margin: 0;
   background: var(--fond);
   color: var(--texte);
-  font: 17px/1.55 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font: 15px/1.5 var(--police);
 }
 
 a {
@@ -63,7 +90,7 @@ a {
 .page {
   max-width: 760px;
   margin: 0 auto;
-  padding: max(16px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+  padding: max(12px, env(safe-area-inset-top)) 20px max(36px, env(safe-area-inset-bottom));
 }
 
 .titre-page {
@@ -109,7 +136,7 @@ a {
   padding: 12px 16px;
   background: var(--surface);
   border: 1px solid var(--bordure);
-  border-radius: var(--rayon);
+  border-radius: 0;
   color: inherit;
   text-decoration: none;
 }
@@ -138,7 +165,7 @@ a {
 
 .ligne-detail {
   display: block;
-  color: var(--alerte-texte);
+  color: var(--texte);
 }
 
 /* Onglets */
@@ -160,7 +187,7 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  border-radius: 10px;
+  border-radius: 0;
   color: var(--texte-doux);
   text-decoration: none;
   font-weight: 500;
@@ -181,7 +208,7 @@ a {
 .fiche {
   background: var(--surface);
   border: 1px solid var(--bordure);
-  border-radius: var(--rayon);
+  border-radius: 0;
   padding: 14px 16px;
   min-width: 0;
 }
@@ -196,7 +223,7 @@ a {
 
 .chip {
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--accent-doux);
   color: var(--accent);
   font-weight: 600;
@@ -212,7 +239,7 @@ a {
   color: var(--texte-doux);
   font-size: 0.75rem;
   border: 1px dashed var(--bordure);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 1px 7px;
 }
 
@@ -251,10 +278,10 @@ a {
 .avertissement {
   margin: 10px 0;
   padding: 10px 12px;
-  background: var(--alerte-fond);
-  border-left: 4px solid var(--alerte-bordure);
-  border-radius: 8px;
-  color: var(--alerte-texte);
+  background: var(--erreur-fond);
+  border-left: 4px solid var(--erreur);
+  border-radius: 0;
+  color: var(--texte);
   font-size: 0.92rem;
 }
 
@@ -291,7 +318,7 @@ pre.code,
 pre.shiki {
   overflow-x: auto;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--code-fond) !important;
   font-size: 0.85rem;
   line-height: 1.5;
@@ -302,13 +329,17 @@ pre.shiki {
 }
 
 @media (prefers-color-scheme: dark) {
-  .shiki span {
+  :root:not([data-theme='clair']) .shiki span {
     color: var(--shiki-dark);
   }
 }
 
+:root[data-theme='sombre'] .shiki span {
+  color: var(--shiki-dark);
+}
+
 code {
-  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-family: var(--police-code);
 }
 
 .md table {
@@ -334,7 +365,7 @@ code {
 
 .md :not(pre) > code {
   padding: 1px 4px;
-  border-radius: 5px;
+  border-radius: 0;
   background: var(--code-fond);
   font-size: 0.9em;
 }
@@ -373,7 +404,7 @@ code {
   min-height: 48px;
   padding: 10px 14px;
   border: 1px solid var(--bordure);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--fond);
   color: var(--texte);
   font: inherit;
@@ -423,10 +454,10 @@ code {
   min-height: 48px;
   padding: 0 12px;
   border: 1px solid var(--bordure);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--fond);
   color: var(--texte);
-  font: 1rem ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font: 500 18px var(--police);
 }
 
 .saisie input:focus {
@@ -438,9 +469,9 @@ code {
   min-height: 48px;
   padding: 0 18px;
   border: none;
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--accent);
-  color: var(--surface);
+  color: var(--sur-accent);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -463,7 +494,7 @@ code {
 .verdict {
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .verdict-ok {
@@ -497,7 +528,7 @@ code {
   width: 100%;
   padding: 10px;
   border: 1px solid var(--bordure);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--fond);
   color: var(--texte);
   cursor: zoom-in;
@@ -508,7 +539,7 @@ code {
   width: 100%;
   height: auto;
   color: var(--texte);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--police);
 }
 
 .schema figcaption {
@@ -576,7 +607,7 @@ code {
   width: max(100%, 760px);
   height: auto;
   color: var(--texte);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--police);
 }
 
 .question-titre {
@@ -586,4 +617,238 @@ code {
 .question-niveau {
   color: var(--accent, currentColor);
   white-space: nowrap;
+}
+
+/* ---------- Éléments communs du design ---------- */
+h1,
+h2,
+h3 {
+  font-family: var(--police-titre);
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--accent-texte);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+}
+
+.kicker {
+  font: 600 12px var(--police);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-texte);
+}
+
+.kicker-doux {
+  color: var(--texte-doux);
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  font: 600 10.5px var(--police);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--bordure);
+  color: var(--texte-doux);
+}
+
+.tag-accent {
+  border-color: transparent;
+  background: var(--accent-doux);
+  color: var(--accent-texte);
+}
+
+/* Carte « plan » : filet fin, sans fond, repères « + » sur les coins */
+.plan {
+  position: relative;
+  border: 1px solid var(--bordure);
+}
+
+.plan > .coin {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--repere), var(--repere)) 5px 0 / 1px 11px no-repeat,
+    linear-gradient(var(--repere), var(--repere)) 0 5px / 11px 1px no-repeat;
+}
+
+.coin.hg {
+  top: -6px;
+  left: -6px;
+}
+
+.coin.hd {
+  top: -6px;
+  right: -6px;
+}
+
+.coin.bg {
+  bottom: -6px;
+  left: -6px;
+}
+
+.coin.bd {
+  bottom: -6px;
+  right: -6px;
+}
+
+/* Boutons */
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--sur-accent);
+  font: 600 15px var(--police);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.bouton:not(:disabled):hover,
+.bouton:not(:disabled):active {
+  background: var(--accent-fort);
+  border-color: var(--accent-fort);
+}
+
+.bouton-secondaire {
+  background: transparent;
+  border-color: var(--bordure);
+  color: var(--texte);
+}
+
+.bouton-secondaire:not(:disabled):hover,
+.bouton-secondaire:not(:disabled):active {
+  background: var(--accent-doux);
+  border-color: var(--bordure);
+}
+
+.bouton-large {
+  width: 100%;
+  min-height: 50px;
+}
+
+.bouton-theme {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--texte);
+  cursor: pointer;
+}
+
+.bouton-theme-filet {
+  border-color: var(--bordure);
+}
+
+.bouton-theme:hover,
+.bouton-theme:active {
+  background: var(--accent-doux);
+}
+
+.barre-haute {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 6px -10px;
+}
+
+.barre-haute .retour {
+  gap: 2px;
+  padding: 0 10px 0 6px;
+  color: var(--accent-texte);
+  font: 600 15px var(--police);
+}
+
+.cliquable:hover,
+.cliquable:active {
+  background: var(--accent-doux);
+}
+
+/* ---------- Accueil ---------- */
+.entete-accueil {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 0 22px;
+}
+
+.titre-accueil {
+  margin: 2px 0 0;
+  font: 600 44px/1 var(--police-titre);
+  letter-spacing: -0.01em;
+}
+
+.libelle-section {
+  margin-bottom: 12px;
+}
+
+.grille-branches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grille-branches > li {
+  display: flex;
+  min-width: 0;
+}
+
+.branche {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 150px;
+  padding: 14px;
+  color: var(--texte);
+  text-decoration: none;
+}
+
+.branche-code {
+  font-size: 11px;
+}
+
+.branche-nom {
+  font: 600 22px/1.05 var(--police-titre);
+  text-wrap: balance;
+}
+
+.branche-resume {
+  margin-top: auto;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--texte-doux);
+}
+
+.branche-tag {
+  align-self: flex-start;
+  letter-spacing: 0.08em;
+}
+
+.branche-vide {
+  opacity: 0.5;
 }
