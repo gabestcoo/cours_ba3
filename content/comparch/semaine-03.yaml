@@ -1,0 +1,482 @@
+cours: comparch
+semaine: 3
+titre: "Arithmétique : entiers signés, complément à 2, débordements, virgule flottante"
+fiches:
+  - id: comparch-s03-001
+    type: resume
+    titre: "Types de nombres et entiers non signés"
+    importance: 2
+    corps: |
+      On s'intéresse à trois types de nombres :
+      - les **entiers** (signés et non signés) ;
+      - la **virgule fixe** : en fait des entiers avec un facteur d'échelle implicite $10^k$ ou $2^k$
+        (extrêmement importante en pratique : la plupart du traitement du signal est en virgule fixe) ;
+      - la **virgule flottante**.
+
+      **Entiers non signés** : représentation pondérée (positionnelle), non redondante, à base fixe, canonique :
+      $$A = a_{n-1}a_{n-2}\dots a_1a_0 = \sum_{i=0}^{n-1} a_i R^i \qquad (R = 2 : \text{binaire}).$$
+    points_cles:
+      - "Sur 8 bits, un entier non signé va de 0 (`00000000`) à 255 (`11111111`)."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 2–4, 7"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-002
+    type: resume
+    titre: "Entiers signés : signe et magnitude, complément à 2"
+    importance: 3
+    corps: |
+      **Signe et magnitude** (*sign-and-magnitude*) : le premier symbole est le signe (0/1 pour l'ordinateur), le reste est un nombre non signé :
+      $$A = s\,a_{n-2}\dots a_1a_0 = (-1)^s \cdot \sum_{i=0}^{n-2} a_i R^i.$$
+      Lisible pour un humain, mais **le nombre de bits compte** (ex. sur 4 bits, $+111_2 = 0111_2$ et $-111_2 = 1111_2$).
+
+      **Complément à 2** (*2's complement*, cas $R = 2$ du complément à la base, avec $C = R^n$) : les positifs sont représentés
+      tels quels, les négatifs par $C - |\text{num}|$. Le bit de poids fort a un **poids négatif** :
+      $$A = -a_{n-1}2^{n-1} + \sum_{i=0}^{n-2} a_i 2^i.$$
+    points_cles:
+      - "Sur 8 bits : `00000000` = 0, `01111111` = 127, `10000000` = −128, `11111111` = −1."
+      - "Le complément à 2 n'est pas une représentation « lisible », mais c'est la **représentation universelle** des entiers signés aujourd'hui."
+      - "La représentation **biaisée** (*biased*) n'est utilisée en pratique que pour l'exposant des nombres flottants."
+      - "On retrouve naturellement le complément à 2 en faisant une soustraction à la main qui « emprunte » à l'infini : on accepte le −1 comme bit de signe."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 5–10"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-003
+    type: resume
+    titre: "Addition, soustraction et la propriété A + Ā = −1"
+    importance: 3
+    corps: |
+      En complément à 2, **l'addition est identique à celle des non signés** : seulement deux instructions,
+      `add rd, rs1, rs2` et `addi rd, rs1, imm`, plus `sub rd, rs1, rs2` (`subi` est une **pseudo-instruction**).
+
+      Propriété (avec $\bar A$ le complément bit à bit) :
+      $$A + \bar A = -1 \qquad \text{donc} \qquad -A = \bar A + 1 \qquad \text{et} \qquad A - B = A + \bar B + 1.$$
+      Exemple : `01001100` + `10110011` = `11111111` = −1. Un **soustracteur** se construit donc avec un additionneur,
+      des inverseurs sur $B$ et une retenue entrante à 1.
+    points_cles:
+      - "Les anciennes architectures (MIPS notamment) avaient `add` et `addu` distinctes, mais c'était un abus de langage : à ignorer."
+      - "L'addition en **signe et magnitude** est un problème différent (il faut regarder les signes) : c'est pourquoi le complément à 2 est universel."
+      - "Trois façons d'obtenir l'opposé en complément à 2 : `neg a0, a0` (= `sub a0, zero, a0`), `not` puis `addi 1` ($-A = \\bar A + 1$), ou `addi −1` puis `not` ($-A = \\overline{A - 1}$)."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 11, 21–23, 34"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-004
+    type: resume
+    titre: "Extension de signe et troncature"
+    importance: 3
+    corps: |
+      - Les nombres **non signés** peuvent être vus comme ayant une **infinité de 0** devant : $1{,}0101_2 = 0000{,}0000{,}0001{,}0101_2$.
+      - Les nombres en **complément à 2** ont une **infinité de copies du bit de signe** (MSB) devant :
+        `1101` (4 bits) = `11111101` (8 bits) = −3.
+    points_cles:
+      - "Étendre un nombre signé = recopier son bit de signe (**extension de signe**) ; étendre un non signé = ajouter des zéros."
+      - "**Tronquer** n'est légal que si l'on retire des **copies du bit de signe final**."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 12"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-005
+    type: resume
+    titre: "Instructions signées et non signées"
+    importance: 3
+    corps: |
+      Les mêmes bits n'ont pas la même valeur selon l'interprétation : $0000_2 < 1111_2$ mais $0000_{2c} > 1111_{2c}$.
+      RISC-V a donc des variantes signées et non signées :
+
+      | famille | signé | non signé |
+      |---|---|---|
+      | décalage à droite | `sra`, `srai` (*arithmetic* : insère des bits de signe) | `srl`, `srli` (*logic* : insère des zéros) |
+      | comparaison | `slt`, `slti` | `sltu`, `sltiu` |
+      | branchement | `blt`, `bge` | `bltu`, `bgeu` |
+      | chargement | `lb`, `lh` (extension de signe) | `lbu`, `lhu` (extension par zéros) |
+    points_cles:
+      - "Diviser par 2 par un décalage : $1110_2 / 2 = 0111_2$ (`srl`) mais $1110_{2c} / 2 = 1111_{2c}$ (`sra`)."
+      - "`l` = *logic* → non signé ; `a` = *arithmetic* → signé ; `u` = *unsigned*."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 13"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-006
+    type: resume
+    titre: "Débordements (overflow)"
+    importance: 3
+    corps: |
+      Les bits de la somme sont **identiques** en non signé et en complément à 2 ; seule la détection du débordement diffère.
+      En matériel, la **retenue sortante** (*carry out*) est le seul bit manquant du résultat complet : un débordement est un
+      **problème de troncature**.
+    points_cles:
+      - "**Non signés** : il y a débordement si la retenue sortante vaut 1 (elle doit être **zéro**)."
+      - "**Complément à 2** : la retenue sortante doit être **égale au bit suivant** (le bit de signe du résultat) ; sinon, débordement."
+      - "Certaines architectures (ex. x86) fournissent la retenue dans un **drapeau** (*flag*) ; les architectures modernes comme **RISC-V ne donnent que le résultat**, la détection se fait en logiciel."
+      - "Addition de nombres de **signes opposés** : la magnitude ne peut que diminuer, **pas de débordement possible**."
+      - "Addition de nombres de **même signe** : débordement possible, et dans ce cas **le signe du résultat paraît faux** (ex. sur 4 bits, 6 + 7 = `1101` = −3)."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 14–16"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-007
+    type: resume
+    titre: "Détecter un débordement en logiciel"
+    importance: 2
+    corps: |
+      Additionner deux entiers signés de 32 bits (`a0`, `a1`) ; au retour, `a0` contient la somme et `a1` est non nul en cas de débordement.
+      Version « meilleure » du cours :
+      ```riscv
+      add_with_overflow:
+          add  t0, a0, a1     # somme
+          slti t1, a1, 0      # t1 = 1 si un opérande est négatif
+          slt  t2, t0, a0     # t2 = 1 si le résultat est plus petit que l'autre opérande
+          xor  a1, t1, t2     # débordement si et seulement si :
+                              #  - opérande négatif et résultat plus grand que l'autre opérande
+                              #  - opérande positif ou nul et résultat plus petit que l'autre opérande
+          mv   a0, t0
+          ret
+      ```
+    points_cles:
+      - "Première version : comparer les signes avec `xor` (opérandes de même signe et résultat de signe différent), puis extraire le bit de signe avec `srli a1, t1, 31`."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 17–20"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-008
+    type: resume
+    titre: "Astuce : test de bornes avec un seul branchement"
+    importance: 2
+    corps: |
+      Vérifier qu'un nombre **signé** `t0` (ex. un index de tableau) est dans les bornes $0..N-1$, avec $N$ dans `t1` :
+      ```riscv
+      bgeu t0, t1, out_of_bound
+      ```
+    points_cles:
+      - "**Deux tests avec un seul branchement**, grâce à la comparaison **non signée**."
+      - "Si `t0` ≥ 0, `bgeu` se comporte comme `bge` : le comportement est évident."
+      - "Si `t0` < 0, vu comme non signé, `t0` paraît **plus grand que tout nombre signé positif** : le branchement est pris."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 24"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-009
+    type: resume
+    titre: "Virgule flottante"
+    importance: 2
+    corps: |
+      Correspond à nos habitudes : une **mantisse** (*significand*) et un **exposant** de la base
+      (ex. notation scientifique normalisée $1{,}8 \cdot 10^{-7}$ m). Dans le cours :
+      mantisse en **signe et magnitude**, exposant en **complément à 2**.
+    points_cles:
+      - "**Grande dynamique** mais **précision variable**."
+      - "Redondante sauf si **normalisée** ; mantisse souvent normalisée $1 \\le m < 2$ avec un **bit caché** (`1.xxxxx`)."
+      - "**Pas des nombres réels : l'addition n'est pas associative !**"
+      - "Exposant souvent en représentation **biaisée** : zéro peut s'écrire `0000…0000`, et les comparaisons et le matériel sont plus simples."
+      - "Le standard **IEEE 754** est presque universellement adopté. x86/x64 supporte le flottant via SSE/AVX ; RISC-V via des **extensions de l'ISA** (non utilisées en CS-200)."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 25–26"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-010
+    type: resume
+    titre: "Exemple : addition en signe et magnitude"
+    importance: 1
+    corps: |
+      Sommer deux nombres signés de 32 bits en **signe et magnitude** (`a0`, `a1`), résultat en signe et magnitude dans `a0`.
+    points_cles:
+      - "**Algorithme 1** (comme un humain) : même signe → additionner les valeurs absolues et garder le signe ; signes différents → soustraire la plus petite valeur absolue de la plus grande et prendre le signe de la plus grande."
+      - "**Algorithme 2** (exploiter l'existant) : convertir les opérandes en complément à 2, additionner, reconvertir le résultat en signe et magnitude."
+      - "Tester le signe (bit 31) : `srli t0, a0, 31` puis `beqz`, ou masque `lui t1, 0x80000` + `and`, ou `bgez` (attention au « moins zéro »)."
+      - "Changer le signe d'un nombre en signe et magnitude : inverser le bit 31 avec `xor` et le masque ; le forcer positif avec `not` + `and`, ou `slli` puis `srli` de 1 (**`srai` serait faux**)."
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 27–37"
+    verifie: false
+    incertain: null
+
+quiz:
+  - id: comparch-s03-q001
+    type: numerique
+    enonce: |
+      Quelle est la valeur décimale de `11111111` interprété en **complément à 2** sur 8 bits ?
+    reponse: -1
+    tolerance: null
+    explication: |
+      Le bit de poids fort a un poids négatif : $-2^7 + 2^6 + \dots + 2^0 = -128 + 127 = -1$.
+      En non signé, les mêmes bits valent 255.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 7–8"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q002
+    type: numerique
+    enonce: |
+      Quelle est la valeur décimale de `1011` interprété en **complément à 2** sur 4 bits ?
+    reponse: -5
+    tolerance: null
+    explication: |
+      $-2^3 + 0 \cdot 2^2 + 2^1 + 2^0 = -8 + 2 + 1 = -5$. En signe et magnitude, les mêmes bits vaudraient −3 ;
+      en non signé, 11.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 7"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q003
+    type: qcm
+    enonce: |
+      Quelle est la plage des entiers représentables en complément à 2 sur 8 bits ?
+    choix:
+      - "De −128 à 127"
+      - "De −127 à 127"
+      - "De 0 à 255"
+      - "De −255 à 255"
+    reponse: 0
+    tolerance: null
+    explication: |
+      `10000000` = −128 est le plus petit et `01111111` = 127 le plus grand. La plage −127..127 est celle du signe et magnitude
+      (qui a deux zéros), et 0..255 celle des non signés.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 7"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q004
+    type: qcm
+    enonce: |
+      En complément à 2, comment obtient-on $-A$ ?
+    choix:
+      - "En inversant tous les bits de $A$ puis en ajoutant 1"
+      - "En inversant tous les bits de $A$"
+      - "En inversant seulement le bit de poids fort"
+      - "En inversant tous les bits de $A$ puis en retirant 1"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Comme $A + \bar A = -1$, on a $-A = \bar A + 1$. Inverser seulement les bits donne $-A - 1$ ; inverser le bit de poids fort
+      est la façon de changer le signe en **signe et magnitude**, pas en complément à 2.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 21"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q005
+    type: vrai_faux
+    enonce: |
+      Pour additionner deux nombres en complément à 2, on utilise le même additionneur (et la même instruction `add`) que pour les non signés.
+    reponse: true
+    tolerance: null
+    explication: |
+      Les bits de la somme sont **identiques** : seule l'interprétation (et la détection du débordement) diffère.
+      C'est précisément pour cela que le complément à 2 est la représentation universelle des entiers signés.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 11, 14"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q006
+    type: qcm
+    enonce: |
+      Pourquoi le complément à 2 est-il devenu la représentation universelle des entiers signés ?
+    choix:
+      - "Parce que l'addition est la même que pour les non signés"
+      - "Parce qu'elle est la plus facile à lire pour un humain"
+      - "Parce qu'elle a deux représentations de zéro"
+      - "Parce qu'elle permet de représenter plus de nombres positifs"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Avec le complément à 2, l'addition (et la soustraction via $A + \bar B + 1$) se fait avec le même matériel que pour les
+      non signés. L'addition en signe et magnitude est un problème différent. Le complément à 2 n'est pas lisible pour un humain,
+      et c'est le signe et magnitude qui a deux zéros.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 8, 11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q007
+    type: qcm
+    enonce: |
+      Comment étend-on le nombre `1101` (complément à 2 sur 4 bits, soit −3) sur 8 bits ?
+    choix:
+      - "`11111101`"
+      - "`00001101`"
+      - "`10001101`"
+      - "`11110010`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      On recopie le **bit de signe** (1) devant : `11111101`, qui vaut toujours −3. Ajouter des zéros (`00001101` = 13) est
+      l'extension des non signés ; `10001101` est une extension en signe et magnitude ; `11110010` inverse des bits.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 12"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q008
+    type: qcm
+    enonce: |
+      Quelle est la différence entre `srai` et `srli` ?
+    choix:
+      - "`srai` insère des copies du bit de signe, `srli` insère des zéros"
+      - "`srai` décale à gauche, `srli` décale à droite"
+      - "`srai` prend un registre comme décalage, `srli` un immédiat"
+      - "Aucune, ce sont deux noms de la même instruction"
+    reponse: 0
+    tolerance: null
+    explication: |
+      `a` = *arithmetic* → signé : on insère des **bits de signe** (ex. $1110_{2c}/2 = 1111_{2c}$).
+      `l` = *logic* → non signé : on insère des **zéros** ($1110_2/2 = 0111_2$). Les deux décalent à droite et prennent un immédiat
+      (`sra`/`srl` prennent un registre).
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 13"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q009
+    type: vrai_faux
+    enonce: |
+      L'addition de deux nombres de **signes opposés** peut provoquer un débordement en complément à 2.
+    reponse: false
+    tolerance: null
+    explication: |
+      Avec des signes opposés, la magnitude ne peut que **diminuer** : aucun débordement possible. Seule l'addition de deux nombres
+      de **même signe** peut déborder, et le signe du résultat paraît alors faux.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 16"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q010
+    type: qcm
+    enonce: |
+      Comment détecte-t-on un débordement d'addition en RISC-V ?
+    choix:
+      - "En logiciel, à partir des signes des opérandes et du résultat"
+      - "En lisant le drapeau de retenue (*carry flag*)"
+      - "Le processeur lève automatiquement une exception"
+      - "En utilisant l'instruction `addu`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      RISC-V ne fournit **que le résultat** de l'addition, pas de drapeau : la détection se fait en logiciel (ex. `slti`, `slt`, `xor`).
+      Le drapeau de retenue existe sur d'autres architectures comme x86 ; `addu` est une instruction MIPS.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 16–20"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q011
+    type: qcm
+    enonce: |
+      En matériel, quand y a-t-il débordement lors de l'addition de deux nombres **non signés** ?
+    choix:
+      - "Quand la retenue sortante vaut 1"
+      - "Quand la retenue sortante est différente du bit de signe du résultat"
+      - "Quand le bit de poids fort du résultat vaut 1"
+      - "Jamais, l'addition non signée ne déborde pas"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Pour les non signés, la retenue sortante **doit être zéro**. La condition « retenue égale au bit suivant » est celle du
+      complément à 2. Un bit de poids fort à 1 est normal pour un grand nombre non signé.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 15"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q012
+    type: qcm
+    enonce: |
+      Pourquoi `bgeu t0, t1, out_of_bound` suffit-il à vérifier qu'un index **signé** `t0` est dans $0..N-1$ (avec $N$ dans `t1`) ?
+    choix:
+      - "Un index négatif, vu comme non signé, paraît plus grand que tout nombre positif"
+      - "`bgeu` convertit automatiquement `t0` en valeur absolue"
+      - "Les index négatifs n'existent pas en RISC-V"
+      - "`bgeu` fait deux comparaisons en matériel"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Si `t0 ≥ 0`, `bgeu` se comporte comme `bge`. Si `t0 < 0`, son bit de poids fort vaut 1 : vu comme non signé, c'est un
+      très grand nombre, plus grand que $N$, donc le branchement est pris. Deux tests avec **un seul** branchement.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 24"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q013
+    type: vrai_faux
+    enonce: |
+      L'addition en virgule flottante est associative.
+    reponse: false
+    tolerance: null
+    explication: |
+      Les nombres flottants **ne sont pas des réels** : à cause de la précision variable, $(a + b) + c$ peut différer de $a + (b + c)$.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 26"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q014
+    type: vrai_faux
+    enonce: |
+      `subi` est une vraie instruction RISC-V.
+    reponse: false
+    tolerance: null
+    explication: |
+      `subi` est une **pseudo-instruction**. Les vraies instructions d'addition/soustraction sont seulement `add`, `addi` et `sub`.
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s03-q015
+    type: qcm
+    enonce: |
+      Sur 4 bits, on compare `0000` et `1111`. Que vaut la comparaison selon l'interprétation ?
+    choix:
+      - "En non signé `0000 < 1111`, mais en complément à 2 `0000 > 1111`"
+      - "`0000 < 1111` dans les deux interprétations"
+      - "En non signé `0000 > 1111`, mais en complément à 2 `0000 < 1111`"
+      - "Les deux sont égaux en complément à 2"
+    reponse: 0
+    tolerance: null
+    explication: |
+      En non signé, `1111` = 15 > 0. En complément à 2, `1111` = −1 < 0. D'où les deux familles d'instructions :
+      `slt`/`blt` (signées) et `sltu`/`bltu` (non signées).
+    source:
+      fichier: "computer_architecture/semaine-03/1e. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 13"
+    verifie: false
+    incertain: null

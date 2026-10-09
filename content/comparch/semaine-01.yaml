@@ -280,61 +280,6 @@ fiches:
     incertain: null
 
 quiz:
-  - id: comparch-s01-q001
-    type: qcm
-    enonce: |
-      Quel est l'encodage hexadécimal de `and x5, x1, x3` (format R, `funct3 = 111`, `opcode = 0110011`, `funct7 = 0000000`) ?
-    choix:
-      - "`0x0030F2B3`"
-      - "`0x0011F2B3`"
-      - "`0x003082B3`"
-      - "`0x0050F1B3`"
-    reponse: 0
-    tolerance: null
-    explication: |
-      Champs de gauche à droite : `funct7 = 0000000`, `rs2 = 00011` (x3), `rs1 = 00001` (x1), `funct3 = 111`,
-      `rd = 00101` (x5), `opcode = 0110011`, soit `0000 0000 0011 0000 1111 0010 1011 0011` = `0x0030F2B3`.
-
-      - `0x0011F2B3` inverse `rs1` et `rs2` (c'est `and x5, x3, x1`).
-      - `0x003082B3` utilise `funct3 = 000` : c'est `add x5, x1, x3`.
-      - `0x0050F1B3` inverse `rd` et `rs2` (c'est `and x3, x1, x5`).
-    source:
-      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
-      emplacement: "slides 20–25"
-    verifie: false
-    incertain: null
-
-  - id: comparch-s01-q002
-    type: trace
-    enonce: |
-      Que vaut `x2` (en décimal) à la fin de ce programme ?
-      ```riscv
-          li   x1, 0x00123456
-          li   x2, 0
-          li   x3, 1
-          li   x4, 0
-          li   x5, 0
-          li   x6, 32
-      loop:
-          and  x5, x1, x3
-          add  x2, x2, x5
-          srli x1, x1, 1
-          addi x4, x4, 1
-          bne  x4, x6, loop
-      ```
-    reponse: 9
-    tolerance: null
-    explication: |
-      La boucle s'exécute 32 fois (`x4` de 0 à 32). À chaque tour, `x5 = x1 & 1` est le bit de poids faible de `x1`,
-      ajouté à `x2`, puis `x1` est décalé à droite. `x2` compte donc les bits à 1 de `0x00123456` :
-      `1` (1) + `2` (1) + `3` (2) + `4` (1) + `5` (2) + `6` (2) = **9**.
-      Répondre 32 confondrait `x2` avec le compteur `x4`.
-    source:
-      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
-      emplacement: "slides 2–4"
-    verifie: false
-    incertain: null
-
   - id: comparch-s01-q003
     type: vrai_faux
     enonce: |
@@ -349,31 +294,6 @@ quiz:
       emplacement: "slide 3"
     verifie: false
     incertain: null
-
-  - id: comparch-s01-q004
-    type: qcm
-    enonce: |
-      On veut charger `0x12345fff` dans `x5` avec `lui x5, H` puis `addi x5, x5, 0xfff`.
-      Quelle valeur de `H` donne le bon résultat ?
-    choix:
-      - "`0x12345`"
-      - "`0x12346`"
-      - "`0x12344`"
-      - "`0x00fff`"
-    reponse: 1
-    tolerance: null
-    explication: |
-      L'immédiat de `addi` est **étendu en signe** : `0xfff` vaut −1. Avec le `%hi` naïf `0x12345`,
-      on obtient `0x12345000 − 1 = 0x12344fff` (faux). Il faut compenser avec `H = 0x12346` :
-      `0x12346000 − 1 = 0x12345fff`. C'est ce que fait `%hi()`.
-      `0x12344` donnerait `0x12343fff` ; `0x00fff` n'a pas de sens ici (ce sont les bits de poids faible).
-    source:
-      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
-      emplacement: "slides 3–5"
-    verifie: false
-    incertain: |
-      Le slide 5 pose la question (« Can you tell why? ») sans donner la réponse : l'explication est déduite
-      de l'extension de signe des immédiats, énoncée au slide 3.
 
   - id: comparch-s01-q005
     type: qcm
@@ -471,26 +391,6 @@ quiz:
     verifie: false
     incertain: null
 
-  - id: comparch-s01-q010
-    type: trace
-    enonce: |
-      `sp` vaut 4000 au départ. Que vaut `sp` après cette séquence ?
-      ```riscv
-      addi sp, sp, -12
-      addi sp, sp, -4
-      addi sp, sp, 4
-      ```
-    reponse: 3988
-    tolerance: null
-    explication: |
-      4000 − 12 = 3988, puis − 4 = 3984, puis + 4 = **3988**. La pile grandit vers les adresses décroissantes :
-      on alloue en soustrayant, on libère en ajoutant, dans l'ordre inverse (LIFO).
-    source:
-      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
-      emplacement: "slides 37–40"
-    verifie: false
-    incertain: null
-
   - id: comparch-s01-q011
     type: qcm
     enonce: |
@@ -547,5 +447,125 @@ quiz:
     source:
       fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
       emplacement: "slides 14–15"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q014
+    type: numerique
+    enonce: |
+      Sur combien de bits est codé chaque numéro de registre (`rd`, `rs1`, `rs2`) dans une instruction RISC-V ?
+    reponse: 5
+    tolerance: null
+    explication: |
+      Il y a 32 registres (`x0` à `x31`), et $2^5 = 32$ : il faut **5 bits** pour désigner un registre.
+      Dans le format R, les champs `rs2` (bits 24–20), `rs1` (19–15) et `rd` (11–7) font chacun 5 bits.
+      Répondre 32 confondrait le nombre de registres (ou la taille d'un registre) avec la taille du champ.
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 6, 20–24"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q015
+    type: qcm
+    enonce: |
+      Que calcule cette boucle dans `x2` ?
+      ```riscv
+      loop:
+          and  x5, x1, x3     # x3 = 1
+          add  x2, x2, x5
+          srli x1, x1, 1
+          addi x4, x4, 1
+          bne  x4, x6, loop   # x6 = 32
+      ```
+    choix:
+      - "Le nombre de bits à 1 de la valeur initiale de `x1`"
+      - "La valeur de `x1` décalée de 32 positions"
+      - "Le nombre de bits à 0 de la valeur initiale de `x1`"
+      - "Le nombre de tours de boucle effectués"
+    reponse: 0
+    tolerance: null
+    explication: |
+      À chaque tour, `and x5, x1, x3` isole le bit de poids faible de `x1` (car `x3 = 1`), qui est **ajouté** à `x2` ;
+      puis `x1` est décalé d'une position à droite. Après 32 tours, `x2` contient le **nombre de bits à 1** de la valeur de départ.
+      Le compteur de tours est `x4`, pas `x2` ; et on additionne les bits à 1, pas les bits à 0.
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 2–4"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q016
+    type: qcm
+    enonce: |
+      On charge une constante de 32 bits avec `lui x5, %hi(c)` puis `addi x5, x5, %lo(c)`.
+      Pourquoi un `%hi` « naïf » (les 20 bits de poids fort tels quels) donnerait un résultat faux pour certaines valeurs ?
+    choix:
+      - "Parce que l'immédiat de `addi` (12 bits) est étendu en signe"
+      - "Parce que `lui` ne peut charger que des valeurs positives"
+      - "Parce que l'immédiat de `addi` est limité à 8 bits"
+      - "Parce que `addi` ne peut pas modifier un registre écrit par `lui`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      L'immédiat de 12 bits est **étendu en signe** (ex. `0xFFF` devient `0xFFFFFFFF`, soit −1). Si le bit 11 de la constante vaut 1,
+      `addi` **soustrait** au lieu d'ajouter, et il faut compenser en ajoutant 1 à la partie haute : c'est ce que fait `%hi()`.
+      Les immédiats sont de 12 bits (pas 8), et rien n'empêche `addi` de modifier le registre écrit par `lui`.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 3–5"
+    verifie: false
+    incertain: |
+      Le slide 5 pose la question (« Can you tell why? ») sans y répondre : l'explication est déduite de l'extension de signe
+      des immédiats, énoncée au slide 3.
+
+  - id: comparch-s01-q017
+    type: vrai_faux
+    enonce: |
+      Le PC (Program Counter) est un registre du register file, comme `x1` à `x31`.
+    reponse: false
+    tolerance: null
+    explication: |
+      Le PC n'est **pas** un registre normal : il n'est pas dans le register file. C'est pourquoi on ne peut pas simplement
+      le « lire » pour revenir d'une fonction, et qu'il faut `jal`, qui dépose PC + 4 dans un registre (`ra`).
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 18–20"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q018
+    type: qcm
+    enonce: |
+      Pourquoi sauvegarder l'adresse de retour dans une case mémoire fixe (`.data`, ex. `sqrt_save_ra: .word 0`) ne suffit-il pas en général ?
+    choix:
+      - "Une fonction récursive écraserait la valeur sauvée par l'invocation précédente"
+      - "Les instructions `sw`/`lw` ne peuvent pas accéder à la section `.data`"
+      - "L'adresse de retour ne tient pas sur un mot de 32 bits"
+      - "La section `.data` est effacée à chaque appel de fonction"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Une case statique est fixée à l'écriture du programme : **chaque invocation** (ex. d'une fonction récursive) y écrit son
+      adresse de retour et écrase celle de l'appelant. Il faut une allocation **dynamique**, à chaque appel : la **pile**.
+      Les autres propositions sont fausses : une adresse tient dans un mot, et `.data` n'est pas effacée entre les appels.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 32–35"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q019
+    type: vrai_faux
+    enonce: |
+      Selon les conventions RISC-V, une fonction qui modifie les registres temporaires `t0`–`t6` doit les restaurer avant `ret`.
+    reponse: false
+    tolerance: null
+    explication: |
+      Les **temporaires** sont *caller saved* : ils ne sont **pas** préservés à travers un appel, c'est à l'**appelant** de les
+      sauvegarder s'il en a encore besoin. Ce sont les **saved registers** `s0`–`s11` qui sont *callee saved*.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 46–47, 55"
     verifie: false
     incertain: null

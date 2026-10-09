@@ -1,0 +1,497 @@
+cours: comparch
+semaine: 2
+titre: "Mémoire, modes d'adressage, tableaux et structures de données"
+fiches:
+  - id: comparch-s02-001
+    type: resume
+    titre: "La mémoire : rôle et technologies"
+    importance: 2
+    corps: |
+      La mémoire est un composant **essentiel** : on y stocke les programmes et les données, et c'est souvent par elle
+      qu'on reçoit et envoie des données. Elle reviendra tout au long du cours.
+    points_cles:
+      - "Mémoire **lente** → *caches* ; mémoire **finie** (relativement petite) → *mémoire virtuelle* ; mémoire qui peut rendre l'ISA trop complexe → *pipelining*."
+      - "Technologies variées (SRAM, DRAM, EPROM, Flash…) : grandes différences de capacité/densité, de vitesse, et d'aptitude à être écrites, permanentes ou reprogrammables."
+      - "Taxonomie : mémoires **volatiles** (SRAM, DRAM) et **non volatiles** (ROM programmée par masque, PROM/OTP, EPROM effaçable aux UV, E²PROM et Flash effaçables électriquement)."
+      - "**SRAM** : petites mémoires très rapides (ex. register files) ; toute SRAM pratique utilise une cellule à **6 transistors** (6T)."
+      - "**DRAM** : la forme de mémoire à accès aléatoire la plus **dense** (donc la moins chère) ; l'information est une **charge dans un petit condensateur** (cellule 1T). La charge fuit : chaque cellule doit être **rafraîchie** périodiquement (ex. toutes les ~60 ms)."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 3–12"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-002
+    type: resume
+    titre: "Organisation d'une RAM et cycles de lecture/écriture"
+    importance: 2
+    corps: |
+      Une mémoire idéale est un tableau de $2^{N_{addr}} \times N_{data}$ cellules : un **décodeur $n$ vers $2^n$** active
+      une *word line* selon l'adresse, et les données passent par les *bit lines*.
+    points_cles:
+      - "Physiquement, l'organisation peut être différente : plusieurs mots par rangée, et une partie des bits d'adresse sert à **multiplexer** les bit lines."
+      - "Le tableau est fait **aussi carré que possible** pour minimiser les capacités parasites des bit lines et word lines (ex. ROM 4K × 16 = tableau 256 × 256 + mux 16:1)."
+      - "Interface typique d'une SRAM : *Address*, *Data In*, *Data Out*, *Circuit Select*, *Write Enable*."
+      - "**SRAM asynchrone** : on active la mémoire, on présente l'adresse, et la donnée sort après un délai combinatoire $T_{acc}$ (*access time*) ; la fréquence maximale est limitée par le $T_{cyc}$ minimal."
+      - "**SRAM synchrone** : tout est relatif à l'horloge ; la **latence** est le nombre de cycles entre l'adresse et la donnée (souvent 1, plus pour les grandes mémoires). L'écriture se fait sur le **front d'horloge**, comme une DFF."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 13–20"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-003
+    type: resume
+    titre: "Load/store et modes d'adressage en RISC-V"
+    importance: 3
+    corps: |
+      Les registres sont trop peu nombreux pour un vrai calcul : il faut **charger** (*load*) et **ranger** (*store*) des données
+      en mémoire. Une adresse absolue comme `lw x5, (123456)` n'existe pas en RISC-V (**l'adresse est trop grande pour un immédiat**).
+      RISC-V utilise un registre de base plus un déplacement :
+      ```riscv
+      lw  x5, 24(x7)     # x5 = mem[x7 + 24]
+      sw  x5, 24(x7)     # mem[x7 + 24] = x5
+      ```
+    points_cles:
+      - "**Architecture load/store** : les instructions qui lisent ou écrivent en mémoire ne font **que cela**. C'est une caractéristique typique des processeurs **RISC** (*Reduced Instruction Set Computer*)."
+      - "Autres modes d'adressage qui **n'existent pas** en RISC-V : direct/absolu `(1234)`, indirect par registre `(x2)` combiné à un calcul, indexé, auto-incrément/décrément `(x2+)`, relatif au PC `123(pc)`."
+      - "Exemple x86/x64 : `ADD DWORD PTR [EBX + ESI*4 + 16], EAX` lit la mémoire, additionne et réécrit. En RISC-V, il faut **plusieurs instructions** et des registres temporaires : `sll`, `add`, `lw`, `add`, `sw`."
+      - "Ne pas avoir une instruction ne veut pas dire qu'on ne peut pas faire l'opération."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 21–31"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-004
+    type: resume
+    titre: "Mémoire adressée par octet et alignement"
+    importance: 3
+    corps: |
+      Les octets (8 bits) sont très importants (disques, paquets réseau…). On **numérote donc les octets, pas les mots** :
+      un mot de 32 bits à l'adresse 3980 occupe les octets 3980, 3981, 3982 et 3983, et le mot suivant est à 3984.
+    points_cles:
+      - "Tous les mots de 32 bits sont placés à des adresses **multiples de quatre**."
+      - "Accès **aligné** : pour `lw`, les bits 1…0 de l'adresse **doivent être zéro** ; les bits 31…2 sélectionnent le mot."
+      - "On peut aussi accéder à la mémoire **comme si elle était faite d'octets** (ou de demi-mots) : voir `lb`, `lh`, `sb`, `sh`."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 32–35"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-005
+    type: resume
+    titre: "Charger et ranger des octets et des demi-mots"
+    importance: 3
+    corps: |
+      | instruction | effet |
+      |---|---|
+      | `lb rd, imm(rs1)` | `rd ← sext(mem[rs1 + sext(imm)][7:0])` |
+      | `lbu rd, imm(rs1)` | `rd ← zext(mem[rs1 + sext(imm)][7:0])` |
+      | `lh rd, imm(rs1)` | `rd ← sext(mem[rs1 + sext(imm)][15:0])` |
+      | `lhu rd, imm(rs1)` | `rd ← zext(mem[rs1 + sext(imm)][15:0])` |
+      | `sb rs2, imm(rs1)` | `mem[rs1 + sext(imm)] ← rs2[7:0]` |
+      | `sh rs2, imm(rs1)` | `mem[rs1 + sext(imm)] ← rs2[15:0]` |
+    points_cles:
+      - "Quand on met quelque chose de plus petit (ex. un octet) dans un registre de 32 bits, **l'extension compte** : **extension par zéros** pour les nombres **non signés** (`lbu`, `lhu`), **extension de signe** pour les nombres **signés** (`lb`, `lh`)."
+      - "Le suffixe `u` signifie *unsigned*."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 36"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-006
+    type: resume
+    titre: "Little-endian et big-endian"
+    importance: 3
+    corps: |
+      Quand on lit un mot octet par octet, il faut **décider** quel octet du mot se trouve à quelle adresse.
+      Exemple : le mot `0x12345678` rangé à l'adresse 3980.
+
+      | adresse | 3980 | 3981 | 3982 | 3983 |
+      |---|---|---|---|---|
+      | little-endian | `0x78` | `0x56` | `0x34` | `0x12` |
+      | big-endian | `0x12` | `0x34` | `0x56` | `0x78` |
+    points_cles:
+      - "**Little-endian** : on commence par le « petit » bout (l'octet de poids faible à l'adresse la plus basse). C'est le **défaut de RISC-V** et le choix d'**Intel x86/x64**."
+      - "**Big-endian** : on commence par le « gros » bout (l'octet de poids fort à l'adresse la plus basse)."
+      - "Le choix n'a d'importance que si **les mêmes données sont accédées à la fois comme mots et comme octets**, ou si **deux systèmes différents** échangent les données (ex. un paquet TCP/IP, un fichier WAV)."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 42–44"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-007
+    type: resume
+    titre: "Exemple : strlen()"
+    importance: 2
+    corps: |
+      `strlen()` compte la longueur d'une chaîne ASCII terminée par un zéro :
+      ```riscv
+      strlen:
+          mv   t0, a0        # copie du pointeur pour parcourir la chaîne
+          li   t1, 0         # longueur
+      loop:
+          lbu  t2, 0(t0)     # charge l'octet à l'adresse t0
+          beq  t2, zero, end # octet nul : fin
+          addi t1, t1, 1     # longueur + 1
+          addi t0, t0, 1     # caractère suivant
+          j    loop
+      end:
+          mv   a0, t1        # valeur de retour
+          ret
+      ```
+    points_cles:
+      - "Les caractères sont des octets consécutifs : on avance le pointeur de **1** à chaque caractère."
+      - "Le cours pose la question : *aurait-on pu utiliser `lb` ? Laquelle est correcte ?*"
+      - "Variante avec seulement `lw` (chaîne alignée sur un mot, processeur little-endian) : on charge 4 octets, on isole l'octet de poids faible avec `andi t3, t2, 0xff`, puis on décale de 8 bits (`srli`) pour l'octet suivant."
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 38–47"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-008
+    type: resume
+    titre: "Stocker des tableaux et les parcourir"
+    importance: 3
+    corps: |
+      Trois façons de stocker un tableau de nombres signés de 16 bits (`short`) à l'adresse `myData` :
+      - **A** : les éléments, suivis d'un **0** qui marque la fin ;
+      - **B** : la **longueur** (ex. 9) en premier, puis les éléments ;
+      - **C** : seulement les éléments, la longueur étant donnée **à part** (dans `a1`).
+
+      Exemple : sommer les éléments positifs (type C, version pointeur) :
+      ```riscv
+      add_positive:
+          li   t0, 0          # somme
+          mv   t1, a1         # nombre d'éléments à traiter
+      next_short:
+          beqz t1, end
+          lh   t2, 0(a0)      # charge le short (demi-mot)
+          bltz t2, negative   # négatif : ignoré
+          add  t0, t0, t2
+      negative:
+          addi a0, a0, 2      # avance de sizeof(short) = 2 octets
+          addi t1, t1, -1
+          j    next_short
+      end:
+          mv   a0, t0
+          ret
+      ```
+    points_cles:
+      - "Pour un tableau de `short`, l'élément suivant est à **+2 octets** (`addi a0, a0, 2`)."
+      - "Version **index** : l'adresse de l'élément $i$ est recalculée à chaque tour (`slli t2, t1, 1` puis `add t2, a0, t2`)."
+      - "Version **pointeur** : on avance le pointeur au lieu de recalculer l'adresse ; **moins d'instructions → plus rapide**."
+      - "« *Write better code but get the best performance* » : on écrit du code lisible (avec des index) et on compte sur de **bons compilateurs** pour produire la version efficace."
+    source:
+      fichier: "computer_architecture/semaine-02/1d. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 2–15"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-009
+    type: resume
+    titre: "Liste chaînée"
+    importance: 2
+    corps: |
+      Autre façon de stocker un tableau : une **liste chaînée**. Chaque nœud contient deux mots de 32 bits :
+      l'**adresse de la donnée** (un `short`) et l'**adresse du nœud suivant** ; le dernier nœud a une adresse suivante **0**.
+      ```riscv
+      add_positive:
+          li   t0, 0
+      next_element:
+          beqz a0, end        # adresse du nœud nulle : fin
+          lw   t1, 0(a0)      # adresse de la donnée
+          lh   t1, 0(t1)      # la donnée (short)
+          bltz t1, negative
+          add  t0, t0, t1
+      negative:
+          lw   a0, 4(a0)      # adresse du nœud suivant
+          j    next_element
+      end:
+          mv   a0, t0
+          ret
+      ```
+    points_cles:
+      - "Le code n'est pas beaucoup plus complexe que pour un tableau contigu."
+      - "Mais il faut **plusieurs chargements non contigus** en mémoire par élément."
+    source:
+      fichier: "computer_architecture/semaine-02/1d. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 16–19"
+    verifie: false
+    incertain: |
+      Dans le code du slide 18, le saut final est écrit `j next_index` alors que l'étiquette de la boucle est `next_element` ;
+      la fiche utilise `next_element`.
+
+quiz:
+  - id: comparch-s02-q001
+    type: qcm
+    enonce: |
+      À quelle adresse `lw x5, 24(x7)` lit-il ?
+    choix:
+      - "`x7 + 24`"
+      - "`mem[x7] + 24`"
+      - "`24 × x7`"
+      - "`mem[24] + x7`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      En RISC-V, `imm(reg)` signifie simplement `reg + imm` : l'adresse est `x7 + 24`, et `x5` reçoit le mot qui s'y trouve.
+      Il n'y a pas de double accès mémoire (`mem[x7] + 24`) ni de multiplication.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 25–26"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q002
+    type: vrai_faux
+    enonce: |
+      `lw x5, (123456)` (charger depuis une adresse absolue) est une instruction RISC-V valide.
+    reponse: false
+    tolerance: null
+    explication: |
+      L'adresse est **trop grande pour tenir dans un immédiat**. RISC-V n'a qu'un mode d'adressage pour les load/store :
+      registre de base + déplacement, ex. `lw x5, 24(x7)`.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 23–25"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q003
+    type: qcm
+    enonce: |
+      Que signifie que RISC-V est une **architecture load/store** ?
+    choix:
+      - "Seules les instructions de chargement/rangement accèdent à la mémoire, et elles ne font que cela"
+      - "Toutes les instructions peuvent lire un opérande en mémoire"
+      - "Les données sont chargées en mémoire au démarrage et ne bougent plus"
+      - "Le processeur n'a pas de registres, tout passe par la mémoire"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Dans une architecture load/store, les instructions qui lisent ou écrivent la mémoire **ne font que cela** ;
+      les calculs se font entre registres. C'est typique des processeurs **RISC**. À l'inverse, x86 permet par exemple
+      `ADD [EBX + ESI*4 + 16], EAX`, qui lit, additionne et réécrit en mémoire en une seule instruction.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 27–31"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q004
+    type: qcm
+    enonce: |
+      Quel mode d'adressage **existe** en RISC-V ?
+    choix:
+      - "Registre de base + déplacement, ex. `24(x7)`"
+      - "Auto-incrément, ex. `(x2+)`"
+      - "Relatif au PC, ex. `123(pc)`"
+      - "Absolu, ex. `(1234)`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      RISC-V n'offre que l'adressage **registre + déplacement** (*displacement*) pour les accès mémoire. Les modes absolu,
+      auto-incrément/décrément, relatif au PC ou indexé existent dans d'autres architectures, pas en RISC-V.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 28–29"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q005
+    type: numerique
+    enonce: |
+      Dans une mémoire adressée par octet, un mot de 32 bits est rangé à l'adresse 3980. À quelle adresse se trouve le mot suivant ?
+    reponse: 3984
+    tolerance: null
+    explication: |
+      Un mot de 32 bits occupe **4 octets** (3980, 3981, 3982, 3983) : le mot suivant est à 3980 + 4 = **3984**.
+      Répondre 3981 reviendrait à numéroter les mots au lieu des octets.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 33"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q006
+    type: vrai_faux
+    enonce: |
+      Un `lw` à l'adresse 3982 est un accès **aligné**.
+    reponse: false
+    tolerance: null
+    explication: |
+      Les mots de 32 bits sont placés à des adresses **multiples de 4** : pour `lw`, les bits 1…0 de l'adresse doivent valoir zéro.
+      3982 n'est pas un multiple de 4 (3980 et 3984 le sont).
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 33–34"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q007
+    type: numerique
+    enonce: |
+      L'octet `0xFF` est chargé avec `lb x5, 0(x6)`. Quelle valeur **signée** (en décimal) contient `x5` ?
+    reponse: -1
+    tolerance: null
+    explication: |
+      `lb` fait une **extension de signe** : le bit 7 vaut 1, donc les 24 bits de poids fort sont mis à 1,
+      ce qui donne `0xFFFFFFFF`, soit **−1**. Avec `lbu` (extension par zéros), on obtiendrait 255.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 36"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q008
+    type: qcm
+    enonce: |
+      Quelle instruction utiliser pour charger un octet représentant un nombre **non signé** dans un registre de 32 bits ?
+    choix:
+      - "`lbu`"
+      - "`lb`"
+      - "`lhu`"
+      - "`sb`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Pour un nombre non signé, il faut une **extension par zéros** : c'est `lbu`. `lb` ferait une extension de signe,
+      `lhu` charge un demi-mot (16 bits), et `sb` est un rangement (*store*), pas un chargement.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 36"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q009
+    type: qcm
+    enonce: |
+      Le mot `0x12345678` est rangé à l'adresse 3980 sur un processeur **little-endian**. Quel octet se trouve à l'adresse 3980 ?
+    choix:
+      - "`0x78`"
+      - "`0x12`"
+      - "`0x56`"
+      - "`0x34`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      En little-endian, on commence par le « petit bout » : l'octet de **poids faible** (`0x78`) est à l'adresse la plus basse.
+      `0x12` serait la réponse en big-endian ; `0x56` est à 3981 et `0x34` à 3982.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 44"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q010
+    type: vrai_faux
+    enonce: |
+      RISC-V est big-endian par défaut.
+    reponse: false
+    tolerance: null
+    explication: |
+      RISC-V est **little-endian** par défaut, comme Intel x86/x64.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slide 44"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q011
+    type: qcm
+    enonce: |
+      Quand le choix little-endian / big-endian a-t-il de l'importance ?
+    choix:
+      - "Quand les mêmes données sont lues comme mots et comme octets, ou échangées entre deux systèmes"
+      - "Toujours, dès qu'on fait un `lw`"
+      - "Seulement pour les nombres négatifs"
+      - "Seulement pour les instructions, pas pour les données"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Le choix n'a d'importance que si **les mêmes données** sont accédées à la fois comme **mots et comme octets**,
+      ou si **deux systèmes différents** les échangent (ex. un paquet TCP/IP, un fichier WAV). Un programme qui ne lit
+      ses données que par mots ne voit pas la différence.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 43–44"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q012
+    type: numerique
+    enonce: |
+      On parcourt un tableau de `short` (entiers signés de 16 bits) avec un pointeur. De combien d'octets faut-il avancer le pointeur à chaque élément ?
+    reponse: 2
+    tolerance: null
+    explication: |
+      Un `short` fait 16 bits = **2 octets**, et la mémoire est adressée par octet : `addi a0, a0, 2`.
+      Avancer de 1 tomberait au milieu d'un élément ; avancer de 4 sauterait un élément sur deux.
+    source:
+      fichier: "computer_architecture/semaine-02/1d. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 6–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q013
+    type: qcm
+    enonce: |
+      Dans le stockage de type **B** d'un tableau, comment connaît-on le nombre d'éléments ?
+    choix:
+      - "Il est stocké en premier, avant les éléments"
+      - "Le tableau se termine par un élément 0"
+      - "Il est passé à part, dans un registre (`a1`)"
+      - "On ne peut pas le connaître"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Type **B** : la longueur (ex. 9) est le premier élément. Le type **A** termine le tableau par un 0, et le type **C**
+      donne la longueur à part (dans `a1`).
+    source:
+      fichier: "computer_architecture/semaine-02/1d. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 3–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q014
+    type: vrai_faux
+    enonce: |
+      Pour parcourir un tableau, la version qui **avance un pointeur** exécute moins d'instructions par élément que celle qui **recalcule l'adresse à partir d'un index**.
+    reponse: true
+    tolerance: null
+    explication: |
+      La version index recalcule l'adresse à chaque tour (`slli` puis `add`) : 8 instructions par tour, contre 7 pour la version
+      pointeur, qui fait simplement `addi a0, a0, 2`. Moins d'instructions → plus rapide. D'où l'importance de bons compilateurs,
+      qui transforment le code avec index en version pointeur.
+    source:
+      fichier: "computer_architecture/semaine-02/1d. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 12–15"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s02-q015
+    type: qcm
+    enonce: |
+      Qu'est-ce qui distingue une **DRAM** d'une **SRAM** ?
+    choix:
+      - "La DRAM stocke l'information comme une charge dans un condensateur, qui doit être rafraîchie périodiquement"
+      - "La DRAM est plus rapide et sert pour les register files"
+      - "La DRAM est non volatile et garde ses données sans alimentation"
+      - "La DRAM utilise une cellule à 6 transistors"
+    reponse: 0
+    tolerance: null
+    explication: |
+      La DRAM (cellule **1T** + condensateur) est la mémoire la plus **dense** et la moins chère, mais la charge fuit :
+      il faut un **rafraîchissement** périodique (ex. ~60 ms). La SRAM, à cellule **6T**, est petite et très rapide (ex. register files).
+      Les deux sont **volatiles**.
+    source:
+      fichier: "computer_architecture/semaine-02/1c. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 7, 11–12"
+    verifie: false
+    incertain: null

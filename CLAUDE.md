@@ -181,8 +181,10 @@ La matière se retrouve ainsi :
 
 ### Computer Architecture (cours prioritaire, le plus difficile)
 - Des fiches `resume` structurées : une par notion importante, avec `points_cles`.
-- **Entre 8 et 15 questions de quiz par semaine**, de types variés : QCM, vrai/faux,
-  calculs numériques (conversions, encodage d'instructions, adresses, performance) et `trace`.
+- **Entre 8 et 15 questions de quiz par semaine**, **faisables de tête** et plutôt **théoriques** :
+  surtout des QCM et vrai/faux sur les concepts (rôle, raison d'être, conventions, fonctionnement).
+  Pas d'encodage d'instruction en hexadécimal/binaire ni de longues traces ; seulement des calculs
+  mentaux simples (ex. `pc + 4`, un décalage dans la pile).
 - Les distracteurs des QCM doivent être plausibles et correspondre à des erreurs réelles.
 - **Vérifier toute réponse numérique ou de trace en exécutant un petit script** (Python ou autre)
   avant de l'écrire dans le YAML. Ne jamais calculer seulement « de tête ».
