@@ -350,4 +350,40 @@ fiches:
       emplacement: "slides 2, 28, 61–62, 71–72"
     verifie: false
     incertain: null
+
+  - id: softcons-s03-018
+    type: resume
+    titre: "Exercices du cours"
+    importance: 2
+    corps: |
+      Les exercices des slides de la semaine, avec la solution **quand les slides la donnent**.
+    points_cles:
+      - |
+        **`union`** (slide 12) : implémenter `def union(other: IntSet): IntSet` dans la classe abstraite `IntSet`
+        (avec `incl` et `contains`). *Pas de solution dans les slides.*
+      - |
+        **À méditer** (slide 20) : la liaison dynamique ressemble aux appels de fonctions d'ordre supérieur. Peut-on
+        implémenter les objets avec des fonctions d'ordre supérieur, et inversement ? *Pas de réponse dans les slides.*
+      - |
+        **Implication `==>` pour `idealized.scala.Boolean`** (slides 38–39) : si `x` est vrai, `y` doit l'être ;
+        si `x` est faux, `y` est quelconque.
+        ```scala
+        extension (x: Boolean)
+          def ==> (y: Boolean) = x.ifThenElse(y, true)
+        ```
+      - |
+        **`Nat`** (slides 42–43) : implémenter les entiers naturels (`isZero`, `predecessor`, `successor`, `+`, `-`) sans
+        les classes numériques standard, avec `object Zero extends Nat` et `class Succ(n: Nat) extends Nat`.
+        *Pas de solution dans les slides.*
+      - |
+        **`IntSet()`, `IntSet(1)`, `IntSet(2, 3)`** (slide 52) : définir dans `object IntSet` trois fonctions qui créent
+        des ensembles de 0 à 2 éléments avec cette syntaxe. *Pas de solution dans les slides.*
+      - |
+        **Ajouter `Prod` et `Var`** à la hiérarchie à méthodes de test et d'accès (slides 58–60) : combien de nouvelles
+        méthodes ? → **25 ou 35**, selon que `leftOp` et `rightOp` sont partagés ou non entre `Sum` et `Prod`.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 12, 20, 36–39, 42–43, 52, 55–60"
+    verifie: false
+    incertain: null
 quiz: []

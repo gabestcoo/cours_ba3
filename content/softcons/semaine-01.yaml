@@ -241,4 +241,73 @@ fiches:
       emplacement: "slides 83, 87, 100–101, 126"
     verifie: false
     incertain: null
+
+  - id: softcons-s01-012
+    type: resume
+    titre: "Exercices du cours"
+    importance: 2
+    corps: |
+      Les exercices des slides de la semaine, avec la solution **quand les slides la donnent**.
+    points_cles:
+      - |
+        **CBV ou CBN, lequel est le plus rapide ?** (slides 56–57) avec `def test(x: Int, y: Int) = x * x` :
+
+        | appel | le plus rapide |
+        |---|---|
+        | `test(2, 3)` | pareil |
+        | `test(3+4, 8)` | CBV |
+        | `test(7, 2*4)` | CBN |
+        | `test(3+4, 2*4)` | pareil |
+      - |
+        **Une expression qui termine en CBN mais pas en CBV** (slides 65–66) → `first(1, loop)` avec
+        `def first(x: Int, y: Int) = x`.
+      - |
+        **Règles de réécriture du `if-then-else`** (slides 78–79) → `if true then a else b` → `a` ;
+        `if false then a else b` → `b`.
+      - |
+        **`and` et `or` sans `&&` ni `||`** (slides 80–81), avec `and(x, y) == x && y` et `or(x, y) == x || y` :
+        ```scala
+        def and(x: Boolean, y: => Boolean) = if x then y else false
+        def or (x: Boolean, y: => Boolean) = if x then true else y
+        ```
+      - |
+        **`isGoodEnough`** (slide 90) : le test `abs(guess * guess - x) < 0.001` de `sqrt` est imprécis pour les petits
+        nombres et peut ne pas terminer pour les très grands. Expliquer pourquoi, en proposer une meilleure version, la
+        tester avec `0.001`, `0.1e-20`, `1.0e20`, `1.0e50`. *Pas de solution dans les slides.*
+      - |
+        **Portée** (slides 96–97) : que vaut `result` ? → **16**.
+        ```scala
+        val x = 0
+        def f(y: Int) = y + 1
+        val y =
+          val x = f(3)
+          x * x
+        val result = y + x
+        ```
+      - |
+        **Récursion terminale** (slide 127) : écrire une version récursive terminale de `factorial`.
+        *Pas de solution dans les slides.*
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 56–57, 65–66, 78–81, 88, 90, 96–97, 127"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-013
+    type: resume
+    titre: "Exercices Software Engineering"
+    importance: 1
+    corps: |
+      La question de discussion des slides SE de la semaine.
+    points_cles:
+      - |
+        **Comment éviter de perdre des données ?** (slide 8) : penser aux outils déjà utilisés pour collaborer sur du code.
+        Ont-ils marché ? Quels problèmes ? → Les simples sauvegardes ne suffisent pas : pas de *changesets* qui ont un
+        sens, granularité trop grosse ou trop fine, historique difficile à parcourir, collaboration asynchrone mal
+        supportée (slide 9).
+    source:
+      fichier: "software_construction/semaine-01/[CS-214 W01 SE] SE Intro, Version control (2025-09-10) (2).pdf"
+      emplacement: "slides 8–9"
+    verifie: false
+    incertain: null
 quiz: []

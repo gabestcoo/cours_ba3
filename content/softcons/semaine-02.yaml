@@ -324,4 +324,40 @@ fiches:
       emplacement: "slides 12–14, 22, 50, 54, 88"
     verifie: false
     incertain: null
+
+  - id: softcons-s02-018
+    type: resume
+    titre: "Exercices du cours"
+    importance: 2
+    corps: |
+      Les exercices des slides de la semaine, avec la solution **quand les slides la donnent**.
+      Les slides SE de la semaine n'ont pas d'exercice.
+    points_cles:
+      - |
+        **Type de `sum`** (slides 21–22) : `def sum(f: Int => Int)(a: Int, b: Int): Int` a le type
+        `(Int => Int) => (Int, Int) => Int`.
+      - |
+        **`product`** (slide 23) : écrire `product` (produit des valeurs d'une fonction sur un intervalle), puis
+        `factorial` à partir de `product`, puis une fonction qui généralise `sum` et `product`.
+        *Pas de solution dans les slides.*
+      - |
+        **`sqrt` avec `fixedPoint` et `averageDamp`** (slides 32–33, *extra reading*) :
+        ```scala
+        def sqrt(x: Double) = fixedPoint(averageDamp(y => x / y))(1.0)
+        ```
+      - |
+        **`neg` et `sub` pour `Rational`** (slide 52) : ajouter `x.neg` (vaut `-x`) et `sub`, puis calculer `x - y - z`
+        avec `x = Rational(1, 3)`, `y = Rational(5, 7)`, `z = Rational(3, 2)`. *Pas de solution dans les slides.*
+      - |
+        **Simplifier seulement dans `toString`** (slides 67–68) : garder les rationnels non simplifiés et ne simplifier
+        qu'à l'affichage. Les clients voient-ils le même comportement ? → **oui, pour des numérateurs et dénominateurs
+        petits et peu d'opérations**.
+      - |
+        **Parenthéser complètement** (slide 90) : `a + b ^? c ?^ d less a ==> b | c`, sans changer la structure.
+        *Pas de solution dans les slides* (règles de priorité sur la fiche « À retenir »).
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 21–23, 32–33, 51–52, 67–68, 90"
+    verifie: false
+    incertain: null
 quiz: []
