@@ -1,6 +1,7 @@
 import { semainesDuCours, trouverCours, useSemaine } from '../content/load'
 import { FicheCard } from '../components/FicheCard'
 import { Html } from '../components/Html'
+import { Quiz } from '../components/Quiz'
 import { lien } from '../router'
 import { Introuvable } from './Introuvable'
 
@@ -47,7 +48,11 @@ export function SemainePage({ slug, numero, onglet }: Props) {
             ))}
           </div>
         ) : (
-          <p className="vide">Pas encore de quiz pour cette semaine.</p>
+          <Quiz
+            key={`${cours.slug}-${numero}`}
+            questions={contenu.semaine.quiz}
+            cleScore={`score:${cours.slug}:${numero}`}
+          />
         ))}
     </>
   )

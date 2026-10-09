@@ -1,0 +1,551 @@
+cours: comparch
+semaine: 1
+titre: "Instruction Set Architecture : assembleur, encodage, branches, fonctions et pile"
+fiches:
+  - id: comparch-s01-001
+    type: resume
+    titre: "L'ISA, contrat entre hardware et software"
+    importance: 3
+    corps: |
+      L'**Instruction Set Architecture (ISA)** est *tout ce qu'il faut savoir pour programmer le processeur*.
+      C'est l'abstraction clé des systèmes informatiques : au-dessus, le software (applications, bases de
+      données, compilateurs, assembleur) ; en dessous, le hardware (portes, transistors).
+    points_cles:
+      - "L'ISA spécifie : les **instructions** que le processeur peut exécuter, les **registres** disponibles (nombre, taille…), et l'**encodage binaire** des instructions."
+      - "Elle ne donne **pas (directement) de détails sur le hardware** du processeur, mais a un fort impact indirect sur celui-ci."
+      - "Exemple : **x86** est une ISA introduite par Intel, **x64** une extension introduite par AMD et supportée aussi par Intel. Des processeurs très différents (8086, Pentium, Athlon… puis Core i7, Ryzen…) se conforment à la même ISA."
+      - "Grâce à cette interface, on peut travailler d'un côté (CS-200 : le hardware) pendant que d'autres travaillent de l'autre."
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 31–32"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-002
+    type: resume
+    titre: "Du langage de haut niveau à l'assembleur"
+    importance: 2
+    corps: |
+      Le même programme (compter les bits à 1 de `data`) en C et en assembleur RISC-V :
+      ```riscv
+          li   x1, 0x00123456
+          li   x2, 0
+          li   x3, 1
+          li   x4, 0
+          li   x5, 0
+          li   x6, 32
+      loop:
+          and  x5, x1, x3
+          add  x2, x2, x5
+          srli x1, x1, 1
+          addi x4, x4, 1
+          bne  x4, x6, loop
+      ```
+    points_cles:
+      - "**Haut niveau** : calculs écrits comme des formules, structures de contrôle intuitives (boucles…), variables illimitées avec des noms expressifs et des types."
+      - "**Assembleur** : format beaucoup plus rigide — une suite d'instructions numérotées, dont l'effet est défini par un **opcode**."
+      - "Seulement **32 « variables »** prédéfinies (les registres `x0` à `x31`), qui ne contiennent **que des nombres** (32 ou 64 bits)."
+      - "Une **seule forme de contrôle de flux** : brancher/sauter vers une instruction particulière."
+      - "**Assembleur** (le programme) : traduire l'assembleur en binaire est un travail « assez trivial ». **Compilateur** : traduire le haut niveau en assembleur est un travail « plutôt difficile »."
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 2–7, 28–29"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-003
+    type: resume
+    titre: "Le processeur : fetch, execute et organisation de la mémoire"
+    importance: 2
+    corps: |
+      Le **Program Counter (PC)** contient l'adresse de l'instruction courante ; il est envoyé à la
+      **mémoire d'instructions**, qui renvoie l'instruction (ex. `and x5, x1, x3`), puis le PC est incrémenté.
+      L'instruction est exécutée en lisant les registres sources dans le **register file** (ports `AA`, `AB`),
+      en calculant avec l'**ALU** (opération `Op`), et en écrivant le résultat dans le registre destination (`AW`, `Wr`).
+    points_cles:
+      - "Les **cinq composants classiques** d'un ordinateur : *control* et *datapath* (le processeur), *memory*, et les interfaces *input* / *output*."
+      - "**Architecture Harvard** : mémoires d'instructions et de données séparées. **Architecture unifiée** : une seule mémoire pour les deux."
+      - "**Stored program concept** : les instructions sont représentées comme des nombres, et les programmes sont stockés en mémoire et lus/écrits comme des données."
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 9–10, 13–15"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-004
+    type: resume
+    titre: "Encodage des instructions : le format R"
+    importance: 3
+    corps: |
+      Chaque instruction est encodée sur 32 bits. Le **format R** (`opcode rd, rs1, rs2`) découpe le mot ainsi :
+
+      | bits | 31–25 | 24–20 | 19–15 | 14–12 | 11–7 | 6–0 |
+      |---|---|---|---|---|---|---|
+      | champ | `funct7` | `rs2` | `rs1` | `funct3` | `rd` | `opcode` |
+
+      Exemple du cours, `and x5, x1, x3` : `funct7 = 0000000`, `rs2 = 00011` (x3), `rs1 = 00001` (x1),
+      `funct3 = 111`, `rd = 00101` (x5), `opcode = 0110011`, soit
+      `0000 0000 0011 0000 1111 0010 1011 0011`.
+    points_cles:
+      - "Le **décodeur** est une fonction booléenne combinatoire dont la complexité dépend de l'encodage : on veut **minimiser le hardware** et **le temps de décodage**."
+      - "Un encodage naïf (numéroter toutes les combinaisons) est limité par : nb d'opcodes × nb de destinations × nb de source 1 × nb de source 2 ≤ $2^{32}$."
+      - "Un encodage **systématique** place chaque information dans un champ fixe : les numéros de registres (5 bits chacun) se lisent directement dans l'instruction."
+      - "L'encodage complet de l'ISA RISC-V est sur Moodle."
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 17–27"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-005
+    type: resume
+    titre: "Instructions arithmétiques et logiques, immédiats de 12 bits"
+    importance: 3
+    corps: |
+      Deux formes : **deux registres** opérandes (`add`, `sll`, `xor`, `slt`…) ou **un registre et une constante**
+      de 12 bits, l'*immediate* (`addi`, `slli`, `xori`, `slti`…).
+      ```riscv
+      sll  x5, x5, x9     # décale x5 à gauche de x9 positions
+      slt  x8, x6, x7     # x8 = 1 si x6 < x7, 0 sinon
+      addi x6, x5, 72     # x6 = x5 + 72
+      xori x6, x6, -1     # x6 = x6 XOR 0xFFFFFFFF (0xFFF étendu en signe)
+      ```
+      Pour une constante plus grande, il faut passer par un registre :
+      ```riscv
+      lui  x5, 0x12345        # 20 bits de poids fort
+      addi x5, x5, 0x678      # 12 bits de poids faible
+      xor  x6, x6, x5         # au lieu de « xori x6, x6, 0x12345678 » (impossible)
+      ```
+    points_cles:
+      - "L'immédiat fait **partie de l'instruction** : il doit tenir sur **≤ 12 bits**."
+      - "L'immédiat est **étendu en signe** : `0xFFF` devient `0xFFFFFFFF` (soit −1)."
+      - "Directive `.equ` + `%hi()` / `%lo()` : `lui x5, %hi(something)` puis `addi x5, x5, %lo(something)`. Un `%hi` naïf serait faux pour certaines valeurs (ex. `0x12345fff`), mais `%hi()` fait ce qu'il faut."
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 3–5"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-006
+    type: resume
+    titre: "Le registre x0 et les pseudo-instructions li, la"
+    importance: 2
+    corps: |
+      **`x0` est toujours nul** : on peut y écrire, mais sans effet.
+      ```riscv
+      sub x5, x0, x5      # x5 = -x5
+      add x0, x0, x0      # aucune opération (le résultat est ignoré)
+      ```
+      Une **pseudo-instruction** est fournie par l'assembleur et traduite en une ou plusieurs instructions réelles :
+      ```riscv
+      li x5, 0x123          # devient : addi x5, x0, 0x123
+      li x5, 0x12345678     # devient : lui x5, 0x12345 ; addi x5, x5, 0x678
+      ```
+    points_cles:
+      - "`li` (*load immediate*) : quand l'immédiat est une **constante** ou un symbole défini avec `.equ`."
+      - "`la` (*load address*) : quand l'immédiat est un **label** (ex. `my_variable: .word 0x12345678`)."
+      - "Les pseudo-instructions gardent l'ISA (et donc le décodeur) **simple**."
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 6–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-007
+    type: resume
+    titre: "Branches : if-then-else et boucles"
+    importance: 3
+    corps: |
+      Traduction d'un `if (x5 == 72) { x6 = x6 + 1; } else { x6 = x6 - 1; }` :
+      ```riscv
+          li   x7, 72
+          beq  x5, x7, then_clause    # beqi n'existe pas
+      else_clause:
+          addi x6, x6, -1
+          j    end_if
+      then_clause:
+          addi x6, x6, 1
+      end_if:
+      ```
+      Une boucle `do { x5 = x5 >> 1; x6 = x6 + 1; } while (x5 != 0);` :
+      ```riscv
+      loop:
+          srli x5, x5, 1
+          addi x6, x6, 1
+          bnez x5, loop
+      ```
+    points_cles:
+      - "Convention RISC-V (héritée de MIPS) : **jumps** = transferts **inconditionnels**, **branches** = transferts **conditionnels**. En x86, au contraire, tout est un *jump* (`JMP`, `JZ`…)."
+      - "`beqi` n'existe pas : **pas de place dans l'encodage** pour un immédiat de comparaison."
+      - "Le processeur implémente seulement **<** et **≥** (`blt`, `bge`, `bltu`, `bgeu`) ; l'assembleur « crée » **≤** et **>** en **inversant les opérandes** : `bgt rs, rt, offset` → `blt rt, rs, offset` ; `ble rs, rt, offset` → `bge rt, rs, offset`."
+      - "Comparaisons à zéro avec `x0` : `beqz rs` → `beq rs, x0` ; `bnez rs` → `bne rs, x0` ; `blez rs` → `bge x0, rs` ; `bgtz rs` → `blt x0, rs`."
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 10–14"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-008
+    type: resume
+    titre: "Appeler une fonction : jal, jalr et l'adresse de retour"
+    importance: 3
+    corps: |
+      Sauter vers une fonction avec `j` ne suffit pas : il faut connaître la valeur du PC au moment de l'appel
+      pour pouvoir revenir. RISC-V n'a que **deux vraies instructions de saut** :
+
+      | instruction | effet |
+      |---|---|
+      | `jal rd, imm` | `rd ← pc + 4` ; `pc ← pc + sext(imm << 1)` |
+      | `jalr rd, rs1, imm` | `rd ← pc + 4` ; `pc ← (rs1 + sext(imm)) & ~1` |
+
+      | pseudo-instruction | instruction de base |
+      |---|---|
+      | `j offset` | `jal x0, offset` |
+      | `jal offset` | `jal x1, offset` |
+      | `jr rs` | `jalr x0, 0(rs)` |
+      | `jalr rs` | `jalr x1, 0(rs)` |
+      | `ret` | `jalr x0, 0(x1)` |
+    points_cles:
+      - "*Jump and link* : `jal` laisse **PC + 4** dans `x1`, comme « lien » vers l'appelant (ex. `jal` à l'adresse 1204 → `x1 = 1208`)."
+      - "Par **convention**, RISC-V utilise toujours **`x1` (`ra`, return address)** pour l'adresse de retour."
+      - "En RISC-V, `imm(reg)` signifie simplement `reg + imm`."
+      - "Le PC n'est **pas** un registre normal (il n'est pas dans le register file)."
+      - "En CS-200 : **éviter `call` et ignorer `auipc`** (et tout ce qui est gris foncé sur la reference card)."
+      - "Les 7 étapes d'un appel : placer les arguments ; sauter ; acquérir le stockage nécessaire ; exécuter ; communiquer le résultat ; libérer le stockage local ; rendre le contrôle à l'appelant."
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 15–25"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-009
+    type: resume
+    titre: "La pile (stack) et le stack pointer"
+    importance: 3
+    corps: |
+      Problème : si une fonction en appelle une autre, le second `jal` **écrase** l'adresse de retour dans `ra`.
+      Sauvegarder dans une case mémoire statique (`.data`) ne marche pas pour une fonction **récursive** :
+      chaque invocation a besoin de son propre espace. Solution : une **pile**, allouée dynamiquement.
+      ```riscv
+      sqrt:
+          addi sp, sp, -4     # réserver 1 mot (4 octets)
+          sw   ra, 0(sp)      # sauver l'adresse de retour
+          # ... appeler librement d'autres fonctions ...
+          lw   ra, 0(sp)      # restaurer
+          addi sp, sp, 4      # libérer
+          ret
+      ```
+    points_cles:
+      - "**Statique** = fixé à l'écriture / l'assemblage / la compilation ; **dynamique** = fixé pendant l'exécution."
+      - "On réserve une région mémoire vide ; un registre (`x2`, **`sp`**) pointe sur le **premier mot utilisé** après la fin de la région, et la pile grandit vers les **adresses décroissantes**."
+      - "**Allouer** $n$ mots : `addi sp, sp, -4n` (mots de 4 octets). **Libérer** : `addi sp, sp, +4n`. Accès avec `sw`/`lw` et un décalage depuis `sp`, ex. `sw x6, 8(sp)`."
+      - "**LIFO** : l'ordre de libération doit être l'inverse de l'ordre d'allocation — parfaitement adapté aux appels de fonctions."
+      - "D'autres architectures ont des instructions dédiées (`PUSH`/`POP`) ; RISC-V utilise `addi` + `sw`."
+      - "Les load/store avec une adresse immédiate (ex. `sw ra, (label)`) **n'existent pas**."
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 28–45"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-010
+    type: resume
+    titre: "Conventions de registres RISC-V"
+    importance: 3
+    corps: |
+      | registre | nom ABI | rôle | préservé à travers un appel ? |
+      |---|---|---|---|
+      | `x0` | `zero` | toujours zéro | — |
+      | `x1` | `ra` | adresse de retour | non |
+      | `x2` | `sp` | stack pointer | oui |
+      | `x5` | `t0` | temporaire | non |
+      | `x6–7` | `t1–2` | temporaires | non |
+      | `x8` | `s0/fp` | saved register / frame pointer | oui |
+      | `x9` | `s1` | saved register | oui |
+      | `x10–11` | `a0–1` | arguments / valeurs de retour | non |
+      | `x12–17` | `a2–7` | arguments | non |
+      | `x18–27` | `s2–11` | saved registers | oui |
+      | `x28–31` | `t3–6` | temporaires | non |
+
+      `x3` (`gp`) et `x4` (`tp`) ne sont pas couverts en CS-200.
+    points_cles:
+      - "**Saved registers (`s`) : callee saved** — une fonction qui les utilise doit les sauver puis les restaurer."
+      - "**Temporaries (`t`) : caller saved** — l'appelant doit les sauver s'il en a besoin après l'appel."
+      - "**Arguments** : passés dans `x10` à `x17` (`a0–a7`), résultat dans `x10` (`a0`, et `a1`) ; le reste passe **sur la pile**. La façon RISC-V est « un peu des deux »."
+      - "Passer les arguments sur la pile : le décalage depuis `sp` change quand `sp` change. Un **frame pointer** (`fp` = `x8`) qui pointe au même endroit que `sp` à l'entrée donne des décalages fixes ; son usage est **optionnel**."
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 46–55"
+    verifie: false
+    incertain: null
+
+quiz:
+  - id: comparch-s01-q001
+    type: qcm
+    enonce: |
+      Quel est l'encodage hexadécimal de `and x5, x1, x3` (format R, `funct3 = 111`, `opcode = 0110011`, `funct7 = 0000000`) ?
+    choix:
+      - "`0x0030F2B3`"
+      - "`0x0011F2B3`"
+      - "`0x003082B3`"
+      - "`0x0050F1B3`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Champs de gauche à droite : `funct7 = 0000000`, `rs2 = 00011` (x3), `rs1 = 00001` (x1), `funct3 = 111`,
+      `rd = 00101` (x5), `opcode = 0110011`, soit `0000 0000 0011 0000 1111 0010 1011 0011` = `0x0030F2B3`.
+
+      - `0x0011F2B3` inverse `rs1` et `rs2` (c'est `and x5, x3, x1`).
+      - `0x003082B3` utilise `funct3 = 000` : c'est `add x5, x1, x3`.
+      - `0x0050F1B3` inverse `rd` et `rs2` (c'est `and x3, x1, x5`).
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 20–25"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q002
+    type: trace
+    enonce: |
+      Que vaut `x2` (en décimal) à la fin de ce programme ?
+      ```riscv
+          li   x1, 0x00123456
+          li   x2, 0
+          li   x3, 1
+          li   x4, 0
+          li   x5, 0
+          li   x6, 32
+      loop:
+          and  x5, x1, x3
+          add  x2, x2, x5
+          srli x1, x1, 1
+          addi x4, x4, 1
+          bne  x4, x6, loop
+      ```
+    reponse: 9
+    tolerance: null
+    explication: |
+      La boucle s'exécute 32 fois (`x4` de 0 à 32). À chaque tour, `x5 = x1 & 1` est le bit de poids faible de `x1`,
+      ajouté à `x2`, puis `x1` est décalé à droite. `x2` compte donc les bits à 1 de `0x00123456` :
+      `1` (1) + `2` (1) + `3` (2) + `4` (1) + `5` (2) + `6` (2) = **9**.
+      Répondre 32 confondrait `x2` avec le compteur `x4`.
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 2–4"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q003
+    type: vrai_faux
+    enonce: |
+      `xori x6, x6, -1` inverse tous les bits de `x6`.
+    reponse: true
+    tolerance: null
+    explication: |
+      L'immédiat de 12 bits `0xFFF` (−1) est **étendu en signe** en `0xFFFFFFFF`. Un XOR avec que des 1
+      inverse chaque bit. Sans extension de signe (`0x00000FFF`), seuls les 12 bits de poids faible seraient inversés.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slide 3"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q004
+    type: qcm
+    enonce: |
+      On veut charger `0x12345fff` dans `x5` avec `lui x5, H` puis `addi x5, x5, 0xfff`.
+      Quelle valeur de `H` donne le bon résultat ?
+    choix:
+      - "`0x12345`"
+      - "`0x12346`"
+      - "`0x12344`"
+      - "`0x00fff`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      L'immédiat de `addi` est **étendu en signe** : `0xfff` vaut −1. Avec le `%hi` naïf `0x12345`,
+      on obtient `0x12345000 − 1 = 0x12344fff` (faux). Il faut compenser avec `H = 0x12346` :
+      `0x12346000 − 1 = 0x12345fff`. C'est ce que fait `%hi()`.
+      `0x12344` donnerait `0x12343fff` ; `0x00fff` n'a pas de sens ici (ce sont les bits de poids faible).
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 3–5"
+    verifie: false
+    incertain: |
+      Le slide 5 pose la question (« Can you tell why? ») sans donner la réponse : l'explication est déduite
+      de l'extension de signe des immédiats, énoncée au slide 3.
+
+  - id: comparch-s01-q005
+    type: qcm
+    enonce: |
+      En quelle(s) instruction(s) de base l'assembleur traduit-il `ble x5, x6, label` ?
+    choix:
+      - "`bge x6, x5, label`"
+      - "`bge x5, x6, label`"
+      - "`blt x6, x5, label`"
+      - "`blt x5, x6, label`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Le processeur n'implémente que **<** et **≥** ; l'assembleur obtient **≤** en inversant les opérandes :
+      $x5 \le x6 \iff x6 \ge x5$, donc `bge x6, x5, label`.
+
+      - `bge x5, x6` teste $x5 \ge x6$ (mauvais sens).
+      - `blt x6, x5` teste $x6 < x5$, c'est-à-dire `bgt x5, x6`.
+      - `blt x5, x6` teste $x5 < x6$ et oublie le cas d'égalité.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slide 13"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q006
+    type: vrai_faux
+    enonce: |
+      L'instruction `beqi x5, 72, label` (brancher si `x5` vaut une constante) existe en RISC-V.
+    reponse: false
+    tolerance: null
+    explication: |
+      `beqi` n'existe pas : il n'y a **pas de place dans l'encodage** pour un immédiat de comparaison
+      en plus de l'offset du branchement. Il faut d'abord charger la constante dans un registre
+      (`li x7, 72`) puis utiliser `beq x5, x7, label`.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slide 11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q007
+    type: numerique
+    enonce: |
+      L'instruction `jal x1, sqrt` se trouve à l'adresse 3000. Que vaut `x1` juste après son exécution ?
+    reponse: 3004
+    tolerance: null
+    explication: |
+      `jal rd, imm` fait `rd ← pc + 4` : le « lien » vers l'appelant est l'adresse de l'instruction **suivante**,
+      3000 + 4 = 3004. Répondre 3000 renverrait sur le `jal` lui-même (boucle infinie au retour) ;
+      l'adresse de `sqrt` va dans le PC, pas dans `x1`.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 20–22"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q008
+    type: qcm
+    enonce: |
+      En quelle instruction de base la pseudo-instruction `ret` est-elle traduite ?
+    choix:
+      - "`jalr x0, 0(x1)`"
+      - "`jalr x1, 0(x0)`"
+      - "`jal x0, 0(x1)`"
+      - "`jalr x1, 0(x1)`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      `ret` saute à l'adresse contenue dans `x1` (`ra`) sans sauver de lien : `rd = x0` (écriture ignorée).
+
+      - `jalr x1, 0(x0)` sauterait à l'adresse 0.
+      - `jal` prend un offset relatif au PC, pas un registre.
+      - `jalr x1, 0(x1)` écraserait `ra` avec PC + 4.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slide 22"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q009
+    type: numerique
+    enonce: |
+      `sp` vaut 4000. On exécute `addi sp, sp, -12` puis `sw x6, 8(sp)`.
+      À quelle adresse la valeur de `x6` est-elle écrite ?
+    reponse: 3996
+    tolerance: null
+    explication: |
+      Après `addi sp, sp, -12`, `sp = 3988` (3 mots de 4 octets réservés : 3988, 3992, 3996).
+      `8(sp)` signifie `sp + 8` = **3996**, le troisième mot réservé.
+      Répondre 4008 oublierait que `sp` a été décrémenté ; 3980 soustrairait l'offset au lieu de l'ajouter.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 36–38"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q010
+    type: trace
+    enonce: |
+      `sp` vaut 4000 au départ. Que vaut `sp` après cette séquence ?
+      ```riscv
+      addi sp, sp, -12
+      addi sp, sp, -4
+      addi sp, sp, 4
+      ```
+    reponse: 3988
+    tolerance: null
+    explication: |
+      4000 − 12 = 3988, puis − 4 = 3984, puis + 4 = **3988**. La pile grandit vers les adresses décroissantes :
+      on alloue en soustrayant, on libère en ajoutant, dans l'ordre inverse (LIFO).
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 37–40"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q011
+    type: qcm
+    enonce: |
+      Selon les conventions RISC-V, quels registres une fonction appelée (*callee*) doit-elle sauvegarder
+      et restaurer si elle les modifie ?
+    choix:
+      - "Les saved registers `s0`–`s11`"
+      - "Les temporaires `t0`–`t6`"
+      - "Les registres d'arguments `a0`–`a7`"
+      - "Le registre `ra` uniquement"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Les **saved registers** sont *callee saved* (préservés à travers un appel : « Yes »).
+      Les **temporaires** sont *caller saved* : c'est à l'appelant de les sauver.
+      Les registres `a` et `ra` ne sont pas préservés à travers un appel (« No ») ; `ra` est d'ailleurs écrasé par `jal`.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slides 47, 55"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q012
+    type: vrai_faux
+    enonce: |
+      `add x0, x0, x0` n'a aucun effet.
+    reponse: true
+    tolerance: null
+    explication: |
+      `x0` vaut toujours zéro : on peut y écrire, mais l'écriture est sans effet. Cette instruction est donc
+      une *no operation*, utile quand on ne se soucie pas du résultat.
+    source:
+      fichier: "computer_architecture/semaine-01/1b. Instruction Set Architecture (1).pdf"
+      emplacement: "slide 6"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s01-q013
+    type: qcm
+    enonce: |
+      Qu'est-ce qui caractérise une **architecture Harvard** ?
+    choix:
+      - "Des mémoires d'instructions et de données séparées"
+      - "Une mémoire unique pour les instructions et les données"
+      - "Des instructions stockées en mémoire et lues comme des données"
+      - "Un processeur sans registres, qui travaille directement en mémoire"
+    reponse: 0
+    tolerance: null
+    explication: |
+      L'architecture Harvard a une mémoire d'instructions et une mémoire de données séparées, avec chacune
+      leur bus d'adresse et de données. Une mémoire unique correspond à l'**architecture unifiée**.
+      Le *stored program concept* (instructions stockées comme des données) est un principe général, pas la définition de Harvard.
+      La dernière proposition ne correspond à rien dans le cours.
+    source:
+      fichier: "computer_architecture/semaine-01/1a. Instruction Set Architecture (2).pdf"
+      emplacement: "slides 14–15"
+    verifie: false
+    incertain: null
