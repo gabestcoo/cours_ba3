@@ -1,0 +1,235 @@
+cours: analyse3
+semaine: 1
+titre: "Opérateurs différentiels : gradient, divergence, curl"
+fiches:
+  - id: analyse3-s01-001
+    type: definition
+    titre: "Champ scalaire et classe $C^k(\\Omega)$"
+    importance: 2
+    corps: |
+      Une fonction à valeurs réelles définie sur $\Omega \subset \mathbb{R}^n$ ($n > 0$)
+      $$f : \Omega \subset \mathbb{R}^n \to \mathbb{R}, \qquad x \mapsto f(x) = f(x_1, x_2, \dots, x_n)$$
+      est un **champ scalaire** (*scalar field*) défini sur $\Omega$. Ici $x$ est un tuple.
+
+      Pour $k \in \mathbb{N}$, on écrit $f \in C^k(\Omega)$ si toutes les dérivées
+      (par rapport à $x_1, x_2, \dots, x_n$) d'ordre $\le k$ **existent et sont continues**.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 2–3 (section 1.1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-002
+    type: definition
+    titre: "Champ vectoriel et classe $C^k(\\Omega, \\mathbb{R}^m)$"
+    importance: 2
+    corps: |
+      Une fonction à valeurs vectorielles définie sur $\Omega \subset \mathbb{R}^n$
+      $$F : \Omega \subset \mathbb{R}^n \to \mathbb{R}^m, \qquad x \mapsto F(x) = \big(F_1(x), F_2(x), \dots, F_m(x)\big)$$
+      où chaque $F_i : \Omega \subset \mathbb{R}^n \to \mathbb{R}$, $x \mapsto F_i(x) = F_i(x_1, \dots, x_n)$,
+      est un **champ vectoriel** (*vector field*).
+
+      Pour $k \in \mathbb{N}$, on écrit $F \in C^k(\Omega, \mathbb{R}^m)$ si $F_i \in C^k(\Omega)$ pour $i = 1, \dots, m$.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 3–4 (section 1.1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-003
+    type: definition
+    titre: "L'opérateur nabla"
+    importance: 2
+    corps: |
+      L'opérateur différentiel **nabla**, noté $\nabla$, est défini par
+      $$\nabla = \left(\frac{\partial}{\partial x_1}, \frac{\partial}{\partial x_2}, \dots, \frac{\partial}{\partial x_n}\right)$$
+      Il permet d'écrire les opérateurs du chapitre comme des « produits » :
+      $\nabla f$ (gradient), $\nabla \cdot F$ (divergence), $\nabla \times F$ (curl).
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 4 (section 1.1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-004
+    type: definition
+    titre: "Le gradient"
+    importance: 3
+    corps: |
+      Soit $\Omega \subset \mathbb{R}^n$ un **ouvert** (*open domain*) et
+      $f : \Omega \to \mathbb{R}$, $x \mapsto f(x) = f(x_1, \dots, x_n)$, tel que $f \in C^1(\Omega)$.
+
+      Le **gradient** de $f$, noté $\operatorname{grad} f$ (ou $\nabla f$, ou $Df$), est défini par
+      $$\operatorname{grad} f(x) = \left(\frac{\partial f}{\partial x_1}(x), \frac{\partial f}{\partial x_2}(x), \dots, \frac{\partial f}{\partial x_n}(x)\right) \in \mathbb{R}^n$$
+      c'est-à-dire $\nabla f = \left(\frac{\partial}{\partial x_1}, \dots, \frac{\partial}{\partial x_n}\right) f$.
+
+      Le gradient d'un champ scalaire est un **vecteur** de $\mathbb{R}^n$.
+
+      *Exemple (cours, p. 7)* : pour $f(x, y, z) = x^2 y^3 \sin(z^2)$,
+      $$\operatorname{grad} f(x, y, z) = \big(2xy^3 \sin(z^2),\; 3x^2y^2 \sin(z^2),\; 2x^2y^3 z \cos(z^2)\big) \in \mathbb{R}^3$$
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 5 (déf. 1.2.1) et p. 7 (exemple 1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-005
+    type: formule
+    titre: "Gradient d'une fonction radiale : le potentiel gravitationnel"
+    importance: 2
+    corps: |
+      Soit $P_0 = (x_0, y_0, z_0)$ et $r = \sqrt{(x - x_0)^2 + (y - y_0)^2 + (z - z_0)^2}$.
+      Pour $f : \mathbb{R}^3 \setminus \{P_0\} \to \mathbb{R}$,
+      $$f(x, y, z) = \frac{g\,m\,M}{r(x, y, z)} = \psi(r) = \frac{c}{r}, \qquad c = g\,m\,M,$$
+      la règle de dérivation en chaîne donne
+      $$\frac{\partial f}{\partial x} = \frac{d\psi}{dr}\,\frac{\partial r}{\partial x}, \qquad \frac{d\psi}{dr} = -\frac{c}{r^2}, \qquad \frac{\partial r}{\partial x} = \frac{x - x_0}{r}$$
+      d'où
+      $$\operatorname{grad} f(x, y, z) = -\frac{c}{r^3}\,(x - x_0,\; y - y_0,\; z - z_0) = -\frac{c}{r^3}\,\big(P(x, y, z) - P_0\big)$$
+    conditions: |
+      Valable sur $\mathbb{R}^3 \setminus \{P_0\}$ (là où $r \neq 0$).
+      Le gradient pointe dans la direction de $P_0 - P$ : c'est la force gravitationnelle, dirigée vers $P_0$.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 8–9 (exemple 2)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-006
+    type: definition
+    titre: "Intuition géométrique du gradient"
+    importance: 1
+    corps: |
+      En dimension 1, $\frac{df}{dx}$ est la pente que l'on « monte » en suivant le graphe de $f$.
+
+      Sur une carte de courbes de niveau (exemple d'une montagne : courbes 2000, 2250, …, 3500 m),
+      le gradient est dessiné en un point d'une courbe de niveau, **perpendiculaire** à cette courbe
+      (à sa tangente) et orienté vers les altitudes croissantes.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 6–7 (illustrations)"
+    verifie: false
+    incertain: |
+      Cette intuition est tirée des dessins du cours (p. 6–7), elle n'y est pas énoncée par écrit.
+      Le polycop (`main.pdf`, p. 8) la formule ainsi : « en tout point il indique la direction
+      dans laquelle $f$ grandit le plus ».
+
+  - id: analyse3-s01-007
+    type: definition
+    titre: "La divergence"
+    importance: 3
+    corps: |
+      Soit $\Omega \subset \mathbb{R}^n$ un **ouvert** et $F : \Omega \subset \mathbb{R}^n \to \mathbb{R}^n$
+      (même dimension $n$ au départ et à l'arrivée) tel que $F \in C^1(\Omega, \mathbb{R}^n)$.
+
+      La **divergence** de $F$, notée $\operatorname{div} F$ (ou $\nabla \cdot F$), est définie par
+      $$\operatorname{div} F(x) = \frac{\partial F_1}{\partial x_1}(x) + \frac{\partial F_2}{\partial x_2}(x) + \dots + \frac{\partial F_n}{\partial x_n}(x) \in \mathbb{R}$$
+      Avec nabla : $\nabla \cdot F = \left(\frac{\partial}{\partial x_1}, \dots, \frac{\partial}{\partial x_n}\right) \cdot (F_1, \dots, F_n)$.
+
+      La divergence d'un champ vectoriel est un **scalaire**.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_01 (1).pdf"
+      emplacement: "p. 10 (section 1.3)"
+    verifie: false
+    incertain: |
+      Le cours donne une troisième notation, manuscrite et peu lisible, à côté de $\nabla \cdot F$ ;
+      elle n'est pas reprise ici. Le polycop (`main.pdf`, p. 8) donne $\langle \nabla, F \rangle$.
+
+  - id: analyse3-s01-012
+    type: methode
+    titre: "Calculer une divergence"
+    importance: 2
+    etapes:
+      - "Vérifier que $F : \\Omega \\subset \\mathbb{R}^n \\to \\mathbb{R}^n$ (autant de composantes que de variables)."
+      - "Dériver chaque composante $F_i$ par rapport à **sa** variable $x_i$ uniquement."
+      - "Sommer : $\\operatorname{div} F = \\sum_i \\frac{\\partial F_i}{\\partial x_i}$, puis factoriser."
+    exemple: |
+      Pour $F(x, y, z) = \big(x^2 - e^y,\; \sin(xz),\; y^2 e^{2xz}\big)$ :
+      $$\operatorname{div} F(x, y, z) = 2x + 0 + 2xy^2 e^{2xz} = 2x\,(1 + y^2 e^{2xz}) \in \mathbb{R}$$
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_Thu (1).pdf"
+      emplacement: "p. 1 (section 1.3.2, ex. 1)"
+    verifie: false
+    incertain: |
+      L'exposant de $e^y$ dans la première composante est un peu ambigu dans le manuscrit
+      (lu comme $y$, ce qui est cohérent avec la dérivée $2x$ par rapport à $x$).
+      Les étapes reformulent la définition ; seul l'exemple est recopié du cours.
+
+  - id: analyse3-s01-008
+    type: formule
+    titre: "Interprétation de la divergence : bilan de flux"
+    importance: 2
+    corps: |
+      Pour un champ de vitesse $v = (v_x, v_y)$ et un petit rectangle de côtés $dx$, $dy$ :
+      le flux entre par les côtés gauche et bas ($v_x\,dy$ et $v_y\,dx$), et sort par les côtés
+      droit et haut ($\left(v_x + \frac{\partial v_x}{\partial x}dx\right)dy$ et $\left(v_y + \frac{\partial v_y}{\partial y}dy\right)dx$).
+      Le volume net sortant vaut
+      $$\left(v_x + \frac{\partial v_x}{\partial x}dx\right)dy - v_x\,dy + \left(v_y + \frac{\partial v_y}{\partial y}dy\right)dx - v_y\,dx = \underbrace{\left(\frac{\partial v_x}{\partial x} + \frac{\partial v_y}{\partial y}\right)}_{\operatorname{div} v} dx\,dy$$
+      La divergence mesure donc ce qui sort (ou entre) par unité de surface.
+    conditions: |
+      Raisonnement infinitésimal du cours (illustré par un déversoir de lac, où l'eau converge vers le trou).
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_Thu (1).pdf"
+      emplacement: "p. 3"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-009
+    type: formule
+    titre: "Le champ gravitationnel est à divergence nulle"
+    importance: 2
+    corps: |
+      Avec $P_0 = (0, 0, 0)$ et $r = \sqrt{x^2 + y^2 + z^2}$, on considère la force gravitationnelle
+      $$F : \mathbb{R}^3 \setminus \{(0,0,0)\} \to \mathbb{R}^3, \qquad F(x, y, z) = -\frac{c}{r^3}\,(x, y, z)$$
+      On a
+      $$\frac{\partial F_1}{\partial x} = \frac{\partial}{\partial x}\left(-\frac{c}{r^3}\,x\right) = c\,\frac{3x^2 - r^2}{r^5}$$
+      et de même pour $F_2$, $F_3$, d'où
+      $$\operatorname{div} F(x, y, z) = \frac{c}{r^5}\big(3(x^2 + y^2 + z^2) - 3r^2\big) = 0$$
+    conditions: |
+      Sur $\mathbb{R}^3 \setminus \{(0,0,0)\}$ uniquement : $F$ n'est pas défini en l'origine.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_Thu (1).pdf"
+      emplacement: "p. 1–2 (section 1.3.2, ex. 2)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-010
+    type: definition
+    titre: "Le curl (rotor, rotationnel)"
+    importance: 3
+    corps: |
+      Soit $\Omega \subset \mathbb{R}^n$ un **ouvert** et $F : \Omega \to \mathbb{R}^n$,
+      $x \mapsto F(x) = (F_1(x), \dots, F_n(x))$, un champ vectoriel $F \in C^1(\Omega, \mathbb{R}^n)$.
+      Le **curl** de $F$ est noté $\operatorname{curl} F$ (ou $\nabla \times F$, ou $\operatorname{rot} F$).
+
+      **En 2D** ($n = 2$) : c'est un **scalaire**
+      $$\operatorname{curl} F(x, y) = \frac{\partial F_2}{\partial x}(x, y) - \frac{\partial F_1}{\partial y}(x, y) \in \mathbb{R}$$
+
+      **En 3D** ($n = 3$) : c'est un **vecteur**
+      $$\operatorname{curl} F(x, y, z) = \begin{pmatrix} \dfrac{\partial F_3}{\partial y} - \dfrac{\partial F_2}{\partial z} \\[2mm] \dfrac{\partial F_1}{\partial z} - \dfrac{\partial F_3}{\partial x} \\[2mm] \dfrac{\partial F_2}{\partial x} - \dfrac{\partial F_1}{\partial y} \end{pmatrix} \in \mathbb{R}^3$$
+
+      Moyen mnémotechnique (déterminant formel, ligne $\nabla$ puis ligne $F$) :
+      $$\nabla \times F = \begin{vmatrix} e_x & e_y & e_z \\ \frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z} \\ F_1 & F_2 & F_3 \end{vmatrix} = \left(\frac{\partial F_3}{\partial y} - \frac{\partial F_2}{\partial z}\right) e_x + (\dots)\,e_y + (\dots)\,e_z$$
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_Thu (1).pdf"
+      emplacement: "p. 4–5 (déf. 1.4.1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s01-011
+    type: formule
+    titre: "Le champ gravitationnel est à curl nul"
+    importance: 2
+    corps: |
+      Pour la force gravitationnelle $F : \mathbb{R}^3 \setminus \{(0,0,0)\} \to \mathbb{R}^3$,
+      $F(x, y, z) = -\frac{c}{r^3}(x, y, z)$ avec $P_0 = (0,0,0)$ :
+      $$\frac{\partial F_2}{\partial x} = \frac{\partial}{\partial x}\left(-\frac{c}{r^3}\,y\right) = \frac{3cy}{r^4}\,\frac{x}{r}$$
+      et de même pour les autres dérivées, d'où
+      $$\operatorname{curl} F = \frac{3c}{r^5}\begin{pmatrix} zy - yz \\ xz - zx \\ yx - xy \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix}$$
+    conditions: |
+      Sur $\mathbb{R}^3 \setminus \{(0,0,0)\}$ uniquement.
+    source:
+      fichier: "analyse_III/semaine-01/lecture_01_Thu (1).pdf"
+      emplacement: "p. 6 (section 1.4.2)"
+    verifie: false
+    incertain: null
+quiz: []
