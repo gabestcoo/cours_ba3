@@ -1,0 +1,148 @@
+cours: analyse3
+semaine: 4
+titre: "Potentiel selon le domaine, théorème de Green"
+fiches:
+  - id: analyse3-s04-001
+    type: formule
+    titre: "F = (−y, x)/(x² + y²) : potentiels sur Ω₁, Ω₂, Ω₃, et pas sur Ω₄"
+    importance: 3
+    corps: |
+      **Sur $\Omega_1 = \{y > 0\}$** : $\frac{\partial f_1}{\partial x} = \frac{-y}{x^2 + y^2}$ donne $f_1 = -\arctan\big(\frac{x}{y}\big) + \alpha(y)$,
+      puis $\frac{\partial f_1}{\partial y} = \frac{x}{x^2 + y^2} + \alpha'(y)$, donc $\alpha'(y) = 0$ :
+      $$f_1 = -\arctan\Big(\frac{x}{y}\Big) + C_1.$$
+      **Sur $\Omega_2 = \{y < 0\}$** : de même, $f_2 = -\arctan\big(\frac{x}{y}\big) + C_2$.
+
+      **Sur $\Omega_3$** (plan privé de $\{x \le 0, y = 0\}$) : on impose la **continuité** de $f_3$ sur $\{y = 0, x > 0\}$ :
+      $\lim_{y \to 0^+} f_3 = -\frac{\pi}{2} + C_1$ et $\lim_{y \to 0^-} f_3 = \frac{\pi}{2} + C_2$, donc $C_1 = \pi + C_2$ et
+      $$f_3 = \begin{cases} -\arctan\big(\frac{x}{y}\big) + \pi + C_2 & \text{si } y > 0, \\ -\arctan\big(\frac{x}{y}\big) + C_2 & \text{si } y < 0, \\ \frac{\pi}{2} + C_2 & \text{si } y = 0 \text{ et } x > 0. \end{cases}$$
+
+      **Sur $\Omega_4 = \mathbb{R}^2 \setminus \{(0, 0)\}$** : avec le cercle unité $\gamma(t) = (\cos t, \sin t)$, $t \in [0, 2\pi]$,
+      $$\int_\Gamma F \cdot d\ell = \int_0^{2\pi} (\sin^2 t + \cos^2 t)\,dt = 2\pi \neq 0,$$
+      donc $F$ **ne dérive pas d'un potentiel** dans $\Omega_4$ (théorème 2).
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Wed (1).pdf"
+      emplacement: "p. 1–5"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s04-002
+    type: definition
+    titre: "Disque ouvert, bord, adhérence"
+    importance: 2
+    corps: |
+      Tous les résultats de la section 2.4 sont pour $n = 2$.
+
+      - $D_r(x) = \{y \in \mathbb{R}^2 : \|x - y\|^2 < r^2\}$ : le **disque ouvert** centré en $x$, de rayon $r$.
+      - $\partial\Omega$ est le **bord** de $\Omega$ :
+        $$\partial\Omega = \{x \in \mathbb{R}^2 : \Omega \cap D_r(x) \neq \emptyset \text{ et } (\mathbb{R}^2 \setminus \Omega) \cap D_r(x) \neq \emptyset,\ \forall r > 0\}.$$
+        Pour un ouvert $\Omega$, $\partial\Omega \subset (\mathbb{R}^2 \setminus \Omega)$.
+      - $\bar\Omega = \Omega \cup \partial\Omega$ est l'**adhérence** (*closure*) de $\Omega$ : l'ensemble des points de $\mathbb{R}^2$
+        qui n'appartiennent pas à l'intérieur de $\mathbb{R}^2 \setminus \Omega$.
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Wed (1).pdf"
+      emplacement: "p. 5–6 (section 2.4.1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s04-003
+    type: definition
+    titre: "Orientation positive du bord et vecteur normal"
+    importance: 3
+    corps: |
+      Soit $\Omega \subset \mathbb{R}^2$ un **ouvert borné** tel que $\partial\Omega$ est une **collection** de courbes simples
+      régulières (par morceaux) **fermées**. Les paramétrisations de $\partial\Omega$ sont **positivement** (resp. **négativement**)
+      orientées si, en parcourant chaque courbe, le domaine est **à gauche** (resp. **à droite**).
+
+      Pour un anneau, le bord extérieur est parcouru dans le sens anti-horaire et le bord intérieur dans le sens horaire.
+
+      **Convention (normale)** : pour obtenir le vecteur normal $\nu(t)$ en $\gamma(t)$, on tourne le vecteur tangent $\gamma'(t)$
+      de **90° dans le sens horaire**. Orientation positive ⟹ les normales **pointent vers l'extérieur** ;
+      orientation négative ⟹ elles pointent vers l'intérieur.
+
+      *Exemple* : $\Omega = \{x^2 + y^2 < 1\}$, $\partial\Omega = \{x^2 + y^2 = 1\}$ ;
+      $\gamma_1(t) = (\cos t, \sin t)$ est positive, $\gamma_2(t) = (\cos(-t), \sin(-t)) = (\cos t, -\sin t)$ est négative ($t \in [0, 2\pi]$).
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Wed (1).pdf"
+      emplacement: "p. 7–11 (section 2.4.1, déf. 1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s04-004
+    type: definition
+    titre: "Domaine régulier"
+    importance: 2
+    corps: |
+      Un ouvert borné $A \subset \mathbb{R}^2$ est un **domaine régulier** s'il existe des ouverts bornés
+      $A_0, A_1, A_2, \dots, A_m \subset \mathbb{R}^2$ tels que
+      - $A = A_0 \setminus \bigcup_{i=1}^m \bar A_i$ ;
+      - $\bar A_j \subset A_0$ pour tout $j = 1, 2, \dots, m$ ;
+      - $\bar A_i \cap \bar A_j = \emptyset$ pour tous $i, j = 1, \dots, m$, $i \neq j$ ;
+      - $\partial A = \bigcup_j \partial A_j$, $j = 0, 1, \dots, m$.
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Wed (1).pdf"
+      emplacement: "p. 12 (section 2.4.1, déf. 2)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s04-005
+    type: theoreme
+    titre: "Théorème de Green"
+    importance: 3
+    hypotheses: |
+      $A \subset \mathbb{R}^2$ un **domaine régulier** dont le bord $\partial A$ est **positivement orienté** ;
+      $F : \bar A \to \mathbb{R}^2$, $(x, y) \mapsto (F_1(x, y), F_2(x, y))$, un champ vectoriel avec $F \in C^1(\bar A, \mathbb{R}^2)$.
+    corps: |
+      $$\iint_A \operatorname{curl} F(x, y)\,dx\,dy = \iint_A \left(\frac{\partial F_2}{\partial x} - \frac{\partial F_1}{\partial y}\right) dx\,dy = \int_{\partial A} F \cdot d\ell.$$
+    remarques: |
+      Si $F$ dérive d'un potentiel, alors $\operatorname{curl} F = 0$ (théorème 1), donc
+      $\iint_A \operatorname{curl} F\,dx\,dy = 0 = \int_\Gamma F \cdot d\ell$ : lien avec le théorème 2.
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Wed (1).pdf"
+      emplacement: "p. 13 (section 2.4.2)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s04-006
+    type: formule
+    titre: "Exemples : vérifier le théorème de Green"
+    importance: 2
+    corps: |
+      **Ex. 1** $A = \{x^2 + y^2 < 1\}$, $F(x, y) = (y^2, x)$ : $\operatorname{curl} F = 1 - 2y$.
+      En polaires ($dx\,dy = r\,dr\,d\theta$) :
+      $$\iint_A (1 - 2y)\,dx\,dy = \int_0^1 \int_0^{2\pi} (1 - 2r\sin\theta)\,r\,d\theta\,dr = \pi.$$
+      Avec $\gamma(t) = (\cos t, \sin t)$ (positive) :
+      $\int_{\partial A} F \cdot d\ell = \int_0^{2\pi} (\sin^2 t, \cos t) \cdot (-\sin t, \cos t)\,dt = -\int_0^{2\pi} \sin^3 t\,dt + \int_0^{2\pi} \cos^2 t\,dt = \pi$ ✓.
+
+      **Ex. 2** $B = \{1 < x^2 + y^2 < 4\}$, $F(x, y) = (x^2y, 2xy)$ : $\operatorname{curl} F = 2y - x^2$,
+      $$\iint_B (2y - x^2)\,dx\,dy = \int_1^2 \Big(2r^2 \underbrace{\int_0^{2\pi} \sin\theta\,d\theta}_{=0} - r^3 \underbrace{\int_0^{2\pi} \cos^2\theta\,d\theta}_{=\pi}\Big) dr = -\pi \int_1^2 r^3\,dr = -\frac{15}{4}\pi.$$
+      $\partial B = \Gamma_0 \cup \Gamma_1$ avec $\gamma_0(t) = 2(\cos t, \sin t)$ (extérieur) et $\gamma_1(t) = (\cos t, -\sin t)$ (intérieur, sens horaire) :
+      $\int_{\Gamma_0} F \cdot d\ell = -4\pi$, $\int_{\Gamma_1} F \cdot d\ell = \frac{\pi}{4}$, total $-4\pi + \frac{\pi}{4} = -\frac{15}{4}\pi$ ✓.
+    conditions: |
+      Sur $[0, 2\pi]$ : $\int \sin t = \int \cos t = \int \sin^3 t = \int \cos^3 t = 0$, alors que $\int \sin^2 t > 0$ et $\int \cos^2 t > 0$.
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Thu (1).pdf"
+      emplacement: "p. 1–6 (section 2.4.3)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s04-007
+    type: theoreme
+    titre: "Corollaire 1 : théorème de la divergence dans ℝ²"
+    importance: 3
+    hypotheses: |
+      $A \subset \mathbb{R}^2$ un **domaine régulier** dont le bord $\partial A$ est **positivement orienté** ;
+      $\nu : \partial A \to \mathbb{R}^2$ le champ des **vecteurs normaux unitaires extérieurs** sur $\partial A$ ;
+      $F : \bar A \to \mathbb{R}^2$ un champ vectoriel avec $F \in C^1(\bar A, \mathbb{R}^2)$.
+    corps: |
+      $$\iint_A \operatorname{div} F(x, y)\,dx\,dy = \int_{\partial A} F \cdot \nu\,d\ell,$$
+      c'est-à-dire
+      $$\iint_A \left(\frac{\partial F_1}{\partial x} + \frac{\partial F_2}{\partial y}\right) dx\,dy = \int_{\partial A} (F_1\nu_1 + F_2\nu_2)\,d\ell.$$
+    remarques: |
+      Exercice (maison) : le déduire du théorème de Green, en écrivant $\nu$ en fonction de $\gamma'$ et en choisissant
+      $\phi$ tel que $\operatorname{curl}\phi = \frac{\partial \phi_2}{\partial x} - \frac{\partial \phi_1}{\partial y} = \frac{\partial F_1}{\partial x} + \frac{\partial F_2}{\partial y} = \operatorname{div} F$.
+    source:
+      fichier: "analyse_III/semaine-04/lecture_04_Thu (1).pdf"
+      emplacement: "p. 7–8 (section 2.4.5)"
+    verifie: false
+    incertain: null
+quiz: []
