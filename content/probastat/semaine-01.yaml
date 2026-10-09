@@ -1,0 +1,247 @@
+cours: probastat
+semaine: 1
+titre: "Introduction, dénombrement et espaces de probabilité"
+fiches:
+  - id: probastat-s01-001
+    type: definition
+    titre: "Phénomènes aléatoires et grands résultats annoncés"
+    importance: 1
+    corps: |
+      Un phénomène est dit **aléatoire** quand son résultat est en pratique imprévisible (ex. un lancer de dé) :
+      on lui attribue alors des probabilités, interprétées comme des **fréquences** sur de nombreuses répétitions.
+
+      Résultats annoncés pour la suite du cours :
+      - **Loi des grands nombres** (*Law of Large Numbers*) : si l'on répète souvent la même expérience,
+        la fréquence de réalisation d'un événement $A$ converge vers la probabilité de $A$.
+      - **Théorème central limite** (*Central Limit Theorem*) : il raffine la LLN en décrivant les fluctuations
+        autour de la moyenne (la LLN dit qu'on est proche de la moyenne, le CLT dit *à quel point* pour une grande taille d'échantillon).
+      - Problèmes célèbres : **Monty Hall** (il faut toujours changer de porte, formalisé plus tard par les probabilités
+        conditionnelles) et la **martingale** (doubler sa mise jusqu'à gagner a quand même un gain moyen nul dans un jeu équitable).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 1.1, p. 9–14"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-002
+    type: definition
+    titre: "Histogramme de fréquences et table de contingence"
+    importance: 2
+    corps: |
+      **Histogramme de fréquences** (*frequency histogram*) : on place les mesures de réalisations successives dans
+      un histogramme, puis on **normalise par le nombre d'observations** pour obtenir des fréquences.
+      Le concept mathématique associé est la **fonction de masse** (*probability mass function*) ; pour des mesures
+      réelles, en affinant la discrétisation, l'histogramme tend souvent vers une courbe : la **densité de probabilité**.
+
+      **Table de probabilités / de contingence** : pour deux expériences simultanées (ex. une pièce et un dé), on
+      range les fréquences de chaque couple de résultats dans un tableau. Sommer une ligne ou une colonne donne la
+      fréquence d'un seul des résultats : c'est **prendre une marginale**.
+
+      | Dé \ Pièce | Pile (*Head*) | Face (*Tail*) | Marginale dé |
+      |---|---|---|---|
+      | 1 | 1/12 | 1/12 | 1/6 |
+      | … | … | … | … |
+      | 6 | 1/12 | 1/12 | 1/6 |
+      | Marginale pièce | 6 · 1/12 = 1/2 | 1/2 | |
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "sections 1.2.1–1.2.2, p. 14–15"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-003
+    type: methode
+    titre: "Arbre de probabilités"
+    importance: 2
+    etapes:
+      - "Utile quand on effectue des actions aléatoires **l'une après l'autre**, et que le résultat d'une action dépend de ce qui s'est passé avant."
+      - "Dessiner un nœud par étape, et une flèche par issue possible, étiquetée par sa probabilité (les flèches issues d'un même nœud somment à 1)."
+      - "La probabilité d'un chemin s'obtient en **multipliant les probabilités le long des flèches**."
+    exemple: |
+      Trois traitements essayés du moins au plus risqué. Traitement 1 : guérit 90 %, sans effet 9 %, tue 1 %.
+      Traitement 2 : guérit 60 %, sans effet 30 %, tue 10 %. Traitement 3 : guérit 50 %, tue 50 %.
+
+      Probabilité d'être guéri par le **deuxième** traitement : le premier doit être sans effet, puis le second fonctionner,
+      $$\frac{9}{100} \cdot \frac{60}{100} = \frac{27}{500} = 5{,}4\,\%.$$
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 1.2.3, p. 15–16"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-004
+    type: definition
+    titre: "Rappels sur les ensembles"
+    importance: 2
+    corps: |
+      $A \subset B$ si tout élément de $A$ est dans $B$ (en particulier $A \subset A$).
+      Opérations pour deux ensembles $A, B$ :
+      - **union** $A \cup B = \{x : x \in A \text{ ou } x \in B\}$ ;
+      - **intersection** $A \cap B = \{x : x \in A \text{ et } x \in B\}$ ;
+      - **différence** $A \setminus B = \{x : x \in A \text{ et } x \notin B\}$ ;
+      - **produit** $A \times B = \{(x, y) : x \in A \text{ et } y \in B\}$.
+
+      $\emptyset = \{\}$ est l'ensemble vide ; $\mathcal{P}(A) = \{B : B \subset A\}$ est l'**ensemble des parties** de $A$.
+      Convention : $0 \in \mathbb{N}$, et $\mathbb{N}^* = \mathbb{N} \setminus \{0\}$.
+
+      **Taille d'un ensemble** : $A$ est **fini** s'il a un nombre fini d'éléments, noté $|A|$ (sinon $|A| = +\infty$) ;
+      **dénombrable** (*countable*) s'il existe une bijection $f : A \to \mathbb{N}$ ; **indénombrable** s'il n'est ni fini ni dénombrable.
+      Dénombrables : $\mathbb{N}, \mathbb{Z}, \mathbb{Z}^2, \mathbb{Q}$. Indénombrables : $\mathbb{R}, \mathbb{R}^2, \mathbb{C}, \mathcal{P}(\mathbb{N})$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 1.3 (déf. 1.3.1–1.3.4), p. 18–20"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-005
+    type: definition
+    titre: "Rappels sur les fonctions et fonction indicatrice"
+    importance: 1
+    corps: |
+      Une **fonction** $f : A \to B$ associe à chaque $x \in A$ (le **domaine**) un élément $f(x) \in B$ (le **co-domaine**).
+
+      **Fonction indicatrice** : pour $A \subset B$, $\mathbf{1}_A : B \to \mathbb{R}$ vaut $1$ sur $A$ et $0$ ailleurs :
+      $$\mathbf{1}_A(x) = \begin{cases} 1 & \text{si } x \in A, \\ 0 & \text{sinon.} \end{cases}$$
+
+      **Image** : $\mathrm{Image}(f) = \{y \in B : \exists x \in A,\ f(x) = y\}$.
+      **Préimage** de $C \subset B$ : $f^{-1}(C) = \{x \in A : f(x) \in C\}$.
+
+      $f$ est **injective** si $x \neq y \Rightarrow f(x) \neq f(y)$, **surjective** si $\mathrm{Image}(f) = B$,
+      **bijective** si elle est les deux. Pour $f, g : \mathbb{R} \to \mathbb{R}$, $f \le g$ signifie $f(x) \le g(x)$ pour tout $x$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 1.4 (déf. 1.4.1–1.4.5), p. 20"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-006
+    type: formule
+    titre: "Tirage uniforme : cas favorables sur cas possibles"
+    importance: 3
+    corps: |
+      On tire au hasard une boule parmi $n$ boules indiscernables au toucher, numérotées $1, \dots, n$ :
+      chaque boule a probabilité $\frac{1}{n}$ (**tirage uniforme**). Pour un **événement** $A \subset \{1, \dots, n\}$,
+      $$P(A) = \sum_{i \in A} P(\text{Ball}_i) = \frac{|A|}{n} = \frac{\text{nombre de cas favorables}}{\text{nombre total de cas}}.$$
+
+      Propriétés : $P(\{1, \dots, n\}) = 1$, $P(\emptyset) = 0$, et si $A \cap B = \emptyset$,
+      $P(A \cup B) = P(A) + P(B)$ (**additivité**). Ces trois propriétés sont en fait celles qui *définissent* une mesure de probabilité.
+    conditions: |
+      Uniquement quand toutes les issues sont **équiprobables**. Sans autre information, on suppose souvent l'issue uniforme :
+      c'est la loi la moins prédictive (le « pire cas »).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 1.5.1 (rem. 1.5.1–1.5.2), p. 20–22"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-007
+    type: formule
+    titre: "Dénombrement : listes, factorielle, arrangements, coefficient binomial"
+    importance: 3
+    corps: |
+      **Listes avec répétition** : pour $A$ fini et $n \in \mathbb{N}$, le nombre de listes de $n$ entrées dans $A$ est
+      $$|A^n| = |A|^n.$$
+      **Factorielle** : $0! = 1$ et $n! = n \cdot (n-1) \cdots 2 \cdot 1$ = nombre de façons d'**ordonner** $n$ objets distincts.
+
+      **Listes de $k$ entrées sans répétition** parmi $n$ objets (si $k \le n$, sinon $0$) :
+      $$\frac{n!}{(n-k)!} = n \cdot (n-1) \cdots (n-k+1).$$
+      **Coefficient binomial** : pour $n, k \in \mathbb{N}$, $k \le n$,
+      $$\binom{n}{k} = \frac{n!}{k!\,(n-k)!}$$
+      = nombre de façons de **choisir** $k$ objets parmi $n$ objets distincts (sans ordre).
+    conditions: |
+      $\binom{n}{k}$ : on compte les $\frac{n!}{(n-k)!}$ listes ordonnées, puis on divise par les $k!$ ordres possibles
+      de chaque choix. Bien distinguer « avec ordre » (listes) et « sans ordre » (choix).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 1.5.2 (déf. 1.5.1–1.5.3), p. 22"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-008
+    type: definition
+    titre: "Espace de probabilité et mesure de probabilité"
+    importance: 3
+    corps: |
+      On modélise une expérience par :
+      - $\Omega$, l'**ensemble des réalisations** (*set of realisations*), les issues possibles ;
+      - $\mathcal{F} \subset \mathcal{P}(\Omega)$, l'**ensemble des événements** (ce qu'on peut observer).
+
+      **Définition 2.1.1.** Un **espace de probabilité** est un ensemble de réalisations $\Omega$ muni d'une
+      **mesure de probabilité** sur $\Omega$, c'est-à-dire une fonction $P : \mathcal{P}(\Omega) \to [0, 1]$ telle que
+      1. $P(\emptyset) = 0$ et $P(\Omega) = 1$ ;
+      2. si $A_i \in \mathcal{P}(\Omega)$, $i \in \mathbb{N}$, est une suite d'événements **deux à deux disjoints**
+         ($A_i \cap A_j = \emptyset$ pour $i \neq j$), alors
+         $$P\Big(\bigcup_{i \in \mathbb{N}} A_i\Big) = \sum_{i \in \mathbb{N}} P(A_i).$$
+
+      Une mesure de probabilité est une fonction **sur les événements** (des sous-ensembles de $\Omega$), pas sur $\Omega$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.1.1 (déf. 2.1.1), p. 25"
+    verifie: false
+    incertain: |
+      En toute généralité on ne peut pas prendre $\mathcal{P}(\Omega)$ comme ensemble d'événements (il faut la théorie
+      de la mesure, section étoilée 2.1.4, hors programme) ; le polycop choisit d'ignorer ce problème.
+
+  - id: probastat-s01-009
+    type: theoreme
+    titre: "Propriétés d'une mesure de probabilité"
+    importance: 3
+    hypotheses: |
+      $P$ une mesure de probabilité sur un ensemble de réalisations $\Omega$ ; $A, B, A_1, A_2, \dots$ des événements.
+    corps: |
+      1. $P(\emptyset) = 0$, $P(\Omega) = 1$ ;
+      2. **complémentaire** : $P(\Omega \setminus A) = 1 - P(A)$ ;
+      3. si $A \subset B$ : $P(B) = P(A) + P(B \setminus A)$, et en particulier $P(A) \le P(B)$ ;
+      4. $P(A \cup B) = P(A) + P(B) - P(A \cap B)$ ;
+      5. **σ-additivité finie** : si $n \ge 2$ et $A_1, \dots, A_n$ sont deux à deux disjoints, $P\big(\bigcup_{i=1}^n A_i\big) = \sum_{i=1}^n P(A_i)$ ;
+      6. **σ-additivité dénombrable** : idem pour une suite $A_1, A_2, \dots$ deux à deux disjoints ;
+      7. **σ-sous-additivité finie** : si $n \ge 2$, $P\big(\bigcup_{i=1}^n A_i\big) \le \sum_{i=1}^n P(A_i)$ (événements quelconques) ;
+      8. **σ-sous-additivité dénombrable** : idem pour une suite $A_1, A_2, \dots$ ;
+      9. **convergence monotone (croissante)** : si $A_i \subset A_{i+1}$ pour tout $i$, $\lim_{n \to \infty} P(A_n) = P\big(\bigcup_{n=1}^\infty A_n\big)$ ;
+      10. **convergence monotone (décroissante)** : si $A_i \supset A_{i+1}$ pour tout $i$, $\lim_{n \to \infty} P(A_n) = P\big(\bigcap_{n=1}^\infty A_n\big)$.
+    remarques: |
+      Pas besoin d'apprendre la liste par cœur, mais il faut comprendre pourquoi ces propriétés sont naturelles.
+      Le point 4 est un cas particulier du principe d'inclusion-exclusion (section étoilée 2.1.5).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.1.1 (thm 2.1.1), p. 26–27"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-010
+    type: definition
+    titre: "Espaces discrets et espaces continus"
+    importance: 2
+    corps: |
+      Deux grands types d'espaces de probabilité dans le cours :
+      - **discret** : $\Omega$ est **fini ou dénombrable**, et l'ensemble des événements est vraiment $\mathcal{F} = \mathcal{P}(\Omega)$
+        (on peut observer n'importe quel sous-ensemble de réalisations) ;
+      - **continu** : $\Omega = \mathbb{R}^d$ avec $d \ge 1$ entier ; l'ensemble des événements est celui des **boréliens**
+        $\mathcal{F} = \mathcal{B}(\mathbb{R}^d)$, mais on fait comme si l'on pouvait prendre $\mathcal{F} = \mathcal{P}(\mathbb{R}^d)$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.1.1, p. 27"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s01-011
+    type: definition
+    titre: "Fonction de masse et mesure discrète"
+    importance: 3
+    corps: |
+      **Définition 2.1.2.** Soit $\Omega$ un ensemble **fini ou dénombrable**. Une **fonction de masse**
+      (*probability mass function*, ou densité discrète) sur $\Omega$ est une fonction $p : \Omega \to [0, 1]$ telle que
+      $$\sum_{\omega \in \Omega} p(\omega) = 1.$$
+      La mesure de probabilité associée est $P_p : \mathcal{P}(\Omega) \to [0, 1]$,
+      $$P_p(A) = \sum_{\omega \in A} p(\omega).$$
+      En mots : $p(\omega)$ est la probabilité que la réalisation $\omega$ se produise, et la probabilité d'un événement
+      est celle qu'une des réalisations qui le composent se produise.
+
+      Exemples : dé équilibré, $\Omega = \{1, \dots, 6\}$, $p(i) = \frac16$ ; pièce équilibrée, $\Omega = \{\text{Head}, \text{Tail}\}$,
+      $p(\text{Head}) = p(\text{Tail}) = \frac12$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.1.2 (déf. 2.1.2, ex. 2.1.1), p. 27–28"
+    verifie: false
+    incertain: null
+quiz: []

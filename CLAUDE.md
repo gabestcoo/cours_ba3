@@ -151,6 +151,11 @@ La matière se retrouve ainsi :
    (les exercices numérotés y sont intégrés, ex. « Exercise 1.3 »), puis identifier la théorie
    sur laquelle il porte : en principe, la section qui **précède** l'exercice dans le polycop.
    **Ignorer les exercices et les sections marqués d'une `*`.**
+   Une section formalisée plus loin dans le polycop peut être incluse si l'exercice l'utilise.
+   **Si le screenshot indique aussi des chapitres/sections de cours** (ex. « Cours : Chapitre 1 et
+   Sections 2.1.1, 2.1.2 »), les ajouter à la semaine via une entrée `numero: "cours"`, même si aucun
+   exercice n'y renvoie : rattacher la théorie par les exercices ne sert que lorsque le screenshot
+   ne donne que la liste des exercices.
    Écrire le résultat dans `content/probastat/mapping.yaml` :
    ```yaml
    semaines:

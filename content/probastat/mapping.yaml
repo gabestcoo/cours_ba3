@@ -1,0 +1,36 @@
+# Correspondance exercices de la semaine → sections du polycop (voir CLAUDE.md, workflow Proba/stat).
+# Les fiches d'une semaine ne sont générées que lorsque son statut vaut « valide ».
+# L'entrée « cours » reprend les sections de théorie indiquées sur le screenshot, même sans exercice associé.
+semaines:
+  - semaine: 1
+    screenshot: "proba_stat/semaine-01/img.png"
+    exercices:
+      - numero: "1.1"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 17 (section 1.2.4)"
+        sections_polycop: ["1.2.1", "1.2.2"]
+        incertain: null
+      - numero: "1.2"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 17 (section 1.2.4)"
+        sections_polycop: ["1.2.3"]
+        incertain: null
+      - numero: "1.3"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 18 (section 1.2.4)"
+        sections_polycop: ["1.2.2", "2.1.1"]
+        incertain: null
+      - numero: "1.4"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 23 (section 1.5.2)"
+        sections_polycop: ["1.5.1", "1.5.2"]
+        incertain: null
+      - numero: "1.5"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 23 (section 1.5.2)"
+        sections_polycop: ["1.5.1", "1.5.2"]
+        incertain: null
+      - numero: "1.6"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 24 (section 1.5.2)"
+        sections_polycop: ["1.5.1", "1.5.2"]
+        incertain: null
+      - numero: "cours"
+        localisation: "screenshot : « Cours : Chapitre 1 et Sections 2.1.1, 2.1.2 »"
+        sections_polycop: ["1.1", "1.2", "1.3", "1.4", "1.5", "2.1.1", "2.1.2"]
+        incertain: null
+    statut: valide
