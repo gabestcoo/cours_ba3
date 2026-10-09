@@ -19,6 +19,30 @@ export const source = z.strictObject({
 
 const incertain = z.string().trim().min(1).nullable()
 
+// Un schéma est un SVG redessiné d'après le cours (jamais une image extraite des sources).
+// Il est inséré tel quel dans la page : on n'accepte qu'un SVG « inerte ».
+const SVG_INTERDIT: [RegExp, string][] = [
+  [/<script/i, 'balise <script> interdite'],
+  [/<foreignObject/i, 'balise <foreignObject> interdite'],
+  [/<image/i, 'balise <image> interdite (redessiner le schéma en SVG)'],
+  [/\son[a-z]+\s*=/i, 'attribut on… interdit'],
+  [/(href|src)\s*=\s*["']\s*(?!#)/i, 'lien externe interdit (seuls les liens internes "#…" sont permis)'],
+  [/url\(\s*["']?\s*(?!#)/i, 'url(…) externe interdite'],
+]
+
+export const schemaSvg = z.strictObject({
+  svg: z
+    .string()
+    .trim()
+    .superRefine((svg, ctx) => {
+      if (!/^<svg[\s>]/.test(svg) || !/<\/svg>$/.test(svg))
+        ctx.addIssue({ code: 'custom', message: 'doit commencer par <svg et finir par </svg>' })
+      if (!/viewBox\s*=/.test(svg)) ctx.addIssue({ code: 'custom', message: 'attribut viewBox requis' })
+      for (const [motif, message] of SVG_INTERDIT) if (motif.test(svg)) ctx.addIssue({ code: 'custom', message })
+    }),
+  legende: markdown,
+})
+
 const communFiche = {
   id: z.string().regex(/^[a-z0-9]+-s\d{2}-\d{3}$/, 'format attendu : <cours>-sXX-NNN'),
   titre: texte,
@@ -26,6 +50,7 @@ const communFiche = {
   source,
   verifie: z.boolean(),
   incertain,
+  schema: schemaSvg.optional(),
 }
 
 export const fiche = z.discriminatedUnion('type', [

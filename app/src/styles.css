@@ -486,3 +486,95 @@ code {
   gap: 8px;
   margin-top: 12px;
 }
+
+/* Schémas SVG (redessinés d'après le cours) */
+.schema {
+  margin: 14px 0 4px;
+}
+
+.schema-image {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  background: var(--fond);
+  color: var(--texte);
+  cursor: zoom-in;
+}
+
+.schema svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--texte);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.schema figcaption {
+  margin-top: 8px;
+  font-size: 0.92rem;
+}
+
+.schema-note {
+  margin: 6px 0 0;
+  color: var(--texte-doux);
+  font-size: 0.75rem;
+}
+
+/* Conventions des SVG : traits et textes en currentColor ; classes de couleur liées au thème */
+.schema svg .acc {
+  stroke: var(--accent);
+}
+
+.schema svg text.acc,
+.schema svg .acc-fill {
+  fill: var(--accent);
+  stroke: none;
+}
+
+.schema svg .doux {
+  stroke: var(--texte-doux);
+}
+
+.schema svg text.doux {
+  fill: var(--texte-doux);
+  stroke: none;
+}
+
+.schema svg .bloc {
+  fill: var(--surface);
+}
+
+.schema svg .bloc-acc {
+  fill: var(--accent-doux);
+}
+
+.schema-plein-ecran {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: var(--fond);
+  padding: max(12px, env(safe-area-inset-top)) 12px 12px;
+}
+
+.schema-fermer {
+  align-self: flex-end;
+  margin-bottom: 8px;
+}
+
+.schema-zoom {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.schema-zoom svg {
+  display: block;
+  width: max(100%, 760px);
+  height: auto;
+  color: var(--texte);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

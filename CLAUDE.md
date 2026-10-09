@@ -115,6 +115,23 @@ quiz: []                          # questions de quiz de la semaine (voir plus b
 
 Champs communs à toutes les fiches : `id`, `type`, `titre`, `importance`, `source`, `verifie`, `incertain`.
 
+Champ optionnel commun : `schema`, un schéma **redessiné en SVG** d'après le cours (jamais une image
+extraite des sources, qui ne doivent pas être publiées), avec une légende en Markdown :
+
+```yaml
+    schema:
+      svg: |
+        <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg"> … </svg>
+      legende: |
+        Explication du circuit, en citant le slide.
+```
+
+Conventions : `viewBox` obligatoire ; traits et textes en `currentColor` (mode sombre automatique) ;
+classes `acc` (accent), `doux` (gris), `bloc` / `bloc-acc` (remplissage des boîtes) ; marqueurs de flèche
+référencés par `url(#…)` interne. Interdits (refusés par `npm run validate`) : `<script>`, `<image>`,
+`<foreignObject>`, attributs `on…`, liens externes. Avant d'écrire un schéma, le convertir en image
+pour vérifier qu'il est lisible et fidèle au slide. Un schéma n'apparaît que là où il aide à comprendre.
+
 ### Questions de quiz
 
 ```yaml

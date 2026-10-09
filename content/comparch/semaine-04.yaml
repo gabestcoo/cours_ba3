@@ -1,0 +1,552 @@
+cours: comparch
+semaine: 4
+titre: "Processeur multi-cycle et entrées/sorties"
+fiches:
+  - id: comparch-s04-001
+    type: resume
+    titre: "Le processeur, une grande machine à états"
+    importance: 2
+    corps: |
+      Sous l'ISA (le contrat entre hardware et software), le processeur est fait d'un **banc de registres**, d'une **ALU**,
+      d'une **mémoire** (instructions et données), du **PC** et d'une **logique de contrôle** (lire, décoder, mettre à jour le PC).
+      Vu de loin, tout le processeur est **une grande machine à états finis** (FSM).
+    points_cles:
+      - "**Mémoire unifiée** : instructions et données dans la même mémoire. Il n'y a plus qu'**un seul port d'adresse** : il faut un multiplexeur qui choisit entre le PC (lecture d'instruction) et le résultat de l'ALU (`lw`/`sw`)."
+      - "On ne peut donc pas lire l'instruction et accéder aux données **dans le même cycle**."
+      - "Les slides dessinent `PC + 1` par simplification ; RISC-V étant adressé à l'octet avec des instructions de 4 octets, c'est en réalité `PC + 4`."
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 2–5 (et notes « Processeur multicycle », section 1)"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-002
+    type: resume
+    titre: "Pourquoi plusieurs cycles par instruction"
+    importance: 3
+    corps: |
+      Un processeur **mono-cycle** n'a qu'un état : « exécuter l'instruction, PC ← PC + 4 », en boucle jusqu'à `ebreak`.
+      La fréquence est limitée par le **chemin critique**, le plus long chemin combinatoire entre deux registres
+      (qui peuvent être le même, ex. le PC).
+    points_cles:
+      - "**Couper le chemin critique en deux** avec un registre double la fréquence, mais chaque instruction prend alors **2 cycles** : on ne gagne rien (on perd même un peu, à cause du registre ajouté)."
+      - "**Tous les chemins ne se valent pas** : exécuter `andi` est rapide, `lw` passe par des chemins plus nombreux et plus lents. En mono-cycle, l'instruction la plus lente impose la période à toutes."
+      - "**Les mémoires sont séquentielles** (synchrones) : on présente l'adresse au cycle 0, la donnée n'est valide qu'au cycle 1. Une lecture prend donc **deux états** : *Start a Load*, puis *Complete a Load*."
+    schema:
+      svg: |
+        <svg viewBox="0 0 360 175" xmlns="http://www.w3.org/2000/svg" font-size="11"><path d="M140 20 L140 150" fill="none" class="doux" stroke-width="1" stroke-dasharray="3 3"/><path d="M230 20 L230 150" fill="none" class="doux" stroke-width="1" stroke-dasharray="3 3"/><path d="M320 20 L320 150" fill="none" class="doux" stroke-width="1" stroke-dasharray="3 3"/><text x="46" y="15" text-anchor="start" font-size="9" class="doux" stroke="none">cycle</text><text x="95" y="15" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">0</text><text x="185" y="15" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">1</text><text x="275" y="15" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">2</text><text x="48" y="42" text-anchor="end" font-size="10" fill="currentColor" stroke="none">clk</text><text x="48" y="72" text-anchor="end" font-size="10" fill="currentColor" stroke="none">address</text><text x="48" y="102" text-anchor="end" font-size="10" fill="currentColor" stroke="none">cs, read</text><text x="48" y="132" text-anchor="end" font-size="10" fill="currentColor" stroke="none">rddata</text><path d="M52 32 L95 32 L95 46 L140 46 L140 32 L185 32 L185 46 L230 46 L230 32 L275 32 L275 46 L320 46 L320 32 L345 32" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M52 70 L60 70 L66 62 L140 62 L146 70 L345 70" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M60 70 L66 78 L140 78 L146 70" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="103" y="74" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">adresse valide</text><path d="M52 106 L62 106 L62 94 L146 94 L146 106 L345 106" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M52 132 L160 132 L166 124 L226 124 L232 132 L345 132" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M160 132 L166 140 L226 140 L232 132" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="196" y="136" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">donnée</text><path d="M140 152 Q180 172 222 154" fill="none" class="acc" stroke-width="1.3"/><polygon points="222.0,154.0 216.8,159.7 214.3,153.9" class="acc-fill" stroke="none"/><text x="250" y="170" text-anchor="middle" font-size="9" class="acc" stroke="none">1 cycle de délai</text></svg>
+      legende: |
+        Lecture dans une mémoire synchrone : l'adresse, `cs` et `read` sont présentés au cycle 0, la mémoire
+        échantillonne l'adresse au front d'horloge, et `rddata` n'est valide qu'au cycle suivant (**un cycle de délai**).
+        Avec ce type de mémoire, un processeur mono-cycle est impossible.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 6–11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-003
+    type: resume
+    titre: "La FSM du processeur multi-cycle"
+    importance: 3
+    corps: |
+      Six états suffisent pour les instructions vues :
+      - **Fetch1 → Fetch2** : lire l'instruction en mémoire (deux cycles, mémoire synchrone) ;
+      - **Decode** : « comprendre » l'instruction et choisir le chemin suivant ;
+      - **Execute** (ALU/Branch) : une instruction simple comme `andi` s'exécute en un cycle ;
+      - **Load1 → Load2** : une instruction complexe comme `lw` prend plus longtemps.
+    points_cles:
+      - "Deux objectifs : ① **ne pas avoir trop d'états** (chaque état coûte un cycle) ; ② avoir des **chemins aussi équilibrés que possible** (la période est imposée par l'état le plus lent)."
+      - "**PC ← PC + 4** une fois par tour de la FSM, c'est-à-dire une fois par instruction."
+      - "Le même signal prend des valeurs différentes selon l'état : `sel_addr = 0` en Fetch1 (adresse = PC), mais `sel_addr = 1` en Load1 (adresse = résultat de l'ALU)."
+    schema:
+      svg: |
+        <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" font-size="11"><circle cx="70" cy="50" r="29" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><circle cx="200" cy="50" r="29" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><circle cx="305" cy="120" r="29" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><circle cx="175" cy="130" r="29" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><circle cx="250" cy="205" r="29" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><circle cx="90" cy="200" r="29" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="70" y="54" text-anchor="middle" fill="currentColor" stroke="none">Fetch1</text><text x="200" y="54" text-anchor="middle" fill="currentColor" stroke="none">Fetch2</text><text x="305" y="124" text-anchor="middle" fill="currentColor" stroke="none">Decode</text><text x="175" y="127" text-anchor="middle" fill="currentColor" stroke="none">Execute</text><text x="175" y="140" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">ALU/Branch</text><text x="250" y="209" text-anchor="middle" fill="currentColor" stroke="none">Load1</text><text x="90" y="204" text-anchor="middle" fill="currentColor" stroke="none">Load2</text><path d="M99 50 L171 50" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="171.0,50.0 164.0,53.1 164.0,46.9" fill="currentColor" stroke="none"/><path d="M226 63 Q290 70 300 92" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="300.0,92.0 294.2,86.9 300.0,84.3" fill="currentColor" stroke="none"/><path d="M277 128 Q240 140 204 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="204.0,134.0 211.4,132.0 210.4,138.3" fill="currentColor" stroke="none"/><text x="244" y="150" text-anchor="middle" font-size="9" class="acc" stroke="none">ALU/Branch</text><path d="M153 112 Q120 85 93 68" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="93.0,68.0 100.6,69.1 97.2,74.4" fill="currentColor" stroke="none"/><path d="M302 149 Q300 190 278 202" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="278.0,202.0 282.6,195.9 285.7,201.4" fill="currentColor" stroke="none"/><text x="320" y="196" text-anchor="middle" font-size="9" class="acc" stroke="none">Memory</text><path d="M222 211 Q170 228 118 205" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="118.0,205.0 125.7,205.0 123.1,210.7" fill="currentColor" stroke="none"/><path d="M78 172 Q55 125 64 79" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="64.0,79.0 65.7,86.5 59.6,85.3" fill="currentColor" stroke="none"/><text x="135" y="20" text-anchor="middle" font-size="9" class="doux" stroke="none">lire l'instruction : 2 cycles</text><text x="30" y="128" text-anchor="middle" font-size="9" class="doux" stroke="none">retour</text><text x="30" y="139" text-anchor="middle" font-size="9" class="doux" stroke="none">à Fetch1</text></svg>
+      legende: |
+        La FSM multi-cycle : Fetch1 → Fetch2 → Decode, puis soit **Execute** (instructions ALU et branches),
+        soit **Load1 → Load2** (accès mémoire), avant de revenir à Fetch1 pour l'instruction suivante.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 12–16, 31"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-004
+    type: resume
+    titre: "Mealy ou Moore ?"
+    importance: 2
+    corps: |
+      - **FSM de Moore** : les sorties ne dépendent **que de l'état**.
+      - **FSM de Mealy** : les sorties dépendent **de l'état et des entrées** (ici, l'instruction dans IR).
+    points_cles:
+      - "Moore demande parfois **plus de cycles** (un état de plus pour une sortie qui dépend de l'instruction)… et parfois ce n'est **pas acceptable**."
+      - "Exemple : un seul état Execute avec `update_PC ← 1 si Branch` et `rf_we ← 1 si ALU` (Mealy), ou deux états **Execute ALU Op** (`rf_we ← 1`) et **Execute Branch Op** (`update_PC ← 1`) choisis dès Decode (Moore)."
+      - "Pourquoi retester dans Execute ce qu'on a déjà testé dans Decode ? Deux états séparés **peuvent** être plus simples et plus propres… mais **les deux solutions sont correctes**."
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 17, 32"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-005
+    type: resume
+    titre: "Construire le chemin de données instruction par instruction"
+    importance: 3
+    corps: |
+      On part d'une FSM « vide » et des registres de base, puis on **ajoute progressivement** ce dont chaque type
+      d'instruction a besoin. Chaque ajout crée un **signal de contrôle** produit par la FSM.
+    points_cles:
+      - "**IR** (registre d'instruction) mémorise l'instruction venue de la mémoire ; IR et PC ne se mettent à jour que quand la FSM les **active** (`ir_en`, `pc_en`). IR est relié au contrôleur : l'état suivant dépend de l'instruction."
+      - "**Type I** (`addi t0, t1, 1234`) : banc de registres + ALU, l'immédiat sur l'entrée B."
+      - "**Type R** (`add t0, t1, t2`) : un second opérande ; le mux `sel_b` choisit l'immédiat ou la sortie `b` du banc de registres."
+      - "**Type U** (`lui t0, 1234`) : l'immédiat est écrit directement dans le banc de registres (mux `sel_imm`)."
+      - "**Load/store** (`lw t0, 16(t1)`) : l'ALU calcule l'adresse, envoyée à la mémoire via `sel_addr`. Les loads écrivent la donnée lue dans le banc de registres (mux `sel_mem`) ; les stores envoient un opérande (`b`) à la mémoire."
+      - "**Branches** (`beq t0, t1, 1234`) : il faut écrire un déplacement dans le PC, et le **bit 0 du résultat de l'ALU** compte pour la mise à jour du PC. Le PC n'est plus un simple registre : il contient de la logique."
+      - "**`jal`** doit écrire PC + 4 dans le banc de registres ; **`jalr x0, 0(ra)`** doit écrire une adresse (calculée par l'ALU) dans le PC."
+      - "Ce qu'on met dans le contrôleur est en partie ambigu : les parties les plus triviales (ex. extraire les champs de l'instruction) sont plus claires dehors."
+    schema:
+      svg: |
+        <svg viewBox="0 0 410 222" xmlns="http://www.w3.org/2000/svg" font-size="10"><rect x="60" y="8" width="150" height="26" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="135" y="25" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Contrôleur (FSM)</text><rect x="10" y="95" width="40" height="30" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="30" y="114" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">PC</text><path d="M66 88 L82 94 L82 126 L66 132 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="74.0" y="100" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">0</text><text x="74.0" y="127" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">1</text><rect x="100" y="70" width="64" height="90" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="132" y="106" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Mémoire</text><text x="132" y="119" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">unifiée</text><text x="104" y="113" text-anchor="start" font-size="7.5" fill="currentColor" stroke="none">addr</text><text x="160" y="98" text-anchor="end" font-size="7.5" fill="currentColor" stroke="none">rdata</text><text x="132" y="156" text-anchor="middle" font-size="7.5" fill="currentColor" stroke="none">wdata</text><rect x="185" y="80" width="34" height="30" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="202" y="99" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">IR</text><rect x="245" y="70" width="60" height="90" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="275" y="112" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Banc de</text><text x="275" y="124" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">registres</text><text x="301" y="93" text-anchor="end" font-size="8" fill="currentColor" stroke="none">a</text><text x="301" y="153" text-anchor="end" font-size="8" fill="currentColor" stroke="none">b</text><text x="249" y="151" text-anchor="start" font-size="7.5" fill="currentColor" stroke="none">wrdata</text><path d="M318 118 L334 124 L334 152 L318 158 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="326.0" y="130" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">0</text><text x="326.0" y="153" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">1</text><path d="M222 128 L238 134 L238 162 L222 168 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="230.0" y="140" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">0</text><text x="230.0" y="163" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">1</text><path d="M345 72 L380 92 L380 132 L345 152 L345 120 L352 112 L345 104 Z" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="366" y="116" text-anchor="middle" font-size="9" fill="currentColor" font-weight="600" stroke="none">ALU</text><path d="M50 110 L66 100" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="66.0,100.0 61.7,106.4 58.4,101.0" fill="currentColor" stroke="none"/><path d="M82 110 L100 110" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="100.0,110.0 93.0,113.2 93.0,106.8" fill="currentColor" stroke="none"/><path d="M164 95 L185 95" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="185.0,95.0 178.0,98.2 178.0,91.8" fill="currentColor" stroke="none"/><path d="M172 95 L172 160 L222 160" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="222.0,160.0 215.0,163.2 215.0,156.8" fill="currentColor" stroke="none"/><path d="M219 95 L245 95" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="245.0,95.0 238.0,98.2 238.0,91.8" fill="currentColor" stroke="none"/><text x="232" y="90" text-anchor="middle" font-size="7" class="doux" stroke="none">instr</text><path d="M195 80 L195 34" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="195.0,34.0 198.2,41.0 191.8,41.0" fill="currentColor" stroke="none"/><path d="M209 80 L209 52 L312 52 L312 128 L318 128" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="318.0,128.0 311.0,131.2 311.0,124.8" fill="currentColor" stroke="none"/><text x="262" y="47" text-anchor="middle" font-size="8" class="doux" stroke="none">imm</text><path d="M305 88 L345 88" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="345.0,88.0 338.0,91.2 338.0,84.8" fill="currentColor" stroke="none"/><path d="M305 150 L318 150" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="318.0,150.0 311.0,153.2 311.0,146.8" fill="currentColor" stroke="none"/><path d="M310 150 L310 192 L140 192 L140 160" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="140.0,160.0 143.2,167.0 136.8,167.0" fill="currentColor" stroke="none"/><path d="M334 138 L345 138" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="345.0,138.0 338.0,141.2 338.0,134.8" fill="currentColor" stroke="none"/><path d="M380 112 L395 112 L395 207 L58 207 L58 122 L66 122" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="66.0,122.0 59.0,125.2 59.0,118.8" fill="currentColor" stroke="none"/><path d="M215 207 L215 138 L222 138" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="222.0,138.0 215.0,141.2 215.0,134.8" fill="currentColor" stroke="none"/><path d="M238 148 L245 148" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="245.0,148.0 238.0,151.2 238.0,144.8" fill="currentColor" stroke="none"/><text x="74" y="145" text-anchor="middle" font-size="7.5" class="acc" stroke="none">sel_addr</text><text x="326" y="170" text-anchor="middle" font-size="7.5" class="acc" stroke="none">sel_b</text><text x="230" y="180" text-anchor="middle" font-size="7.5" class="acc" stroke="none">sel_mem</text><text x="202" y="120" text-anchor="middle" font-size="7.5" class="acc" stroke="none">ir_en</text><text x="275" y="66" text-anchor="middle" font-size="7.5" class="acc" stroke="none">rf_we</text><text x="36" y="89" text-anchor="middle" font-size="7.5" class="doux" stroke="none">0 : PC</text><text x="36" y="140" text-anchor="middle" font-size="7.5" class="doux" stroke="none">1 : ALU</text><text x="398" y="202" text-anchor="end" font-size="7.5" class="doux" stroke="none">alu_res</text></svg>
+      legende: |
+        Chemin de données **simplifié** : le mux `sel_addr` choisit l'adresse mémoire (0 : PC pour lire l'instruction,
+        1 : résultat de l'ALU pour `lw`/`sw`) ; la mémoire unifiée renvoie `rdata` vers IR (instruction) ou vers le banc de
+        registres via `sel_mem` (loads) ; `sel_b` choisit l'entrée B de l'ALU (0 : immédiat, 1 : registre `b`) ; la sortie
+        `b` part aussi vers `wdata` pour les stores. Les chemins de `lui` (`sel_imm`), des branches et de `jal`/`jalr`
+        (logique du PC) sont omis.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 18–30 (et notes « Processeur multicycle », section 4)"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-006
+    type: resume
+    titre: "Décrire le matériel en Verilog : méthode"
+    importance: 2
+    corps: |
+      Verilog et VHDL sont des **langages de description de matériel**. On ne décrit quelque chose que lorsque c'est
+      **parfaitement clair** : un diagramme est dessiné, et les blocs combinatoires et séquentiels sont identifiés.
+    points_cles:
+      - "Prêts à écrire : composants **séquentiels simples** (registres comme IR), composants **combinatoires** simples, **FSM formelle**."
+      - "« Ouvrir la boîte » des choses complexes : un séquentiel complexe (ex. le PC) **n'est pas prêt**, il faut un diagramme ; un combinatoire complexe (ex. l'ALU) **probablement pas**. Ex. ALU = additionneur/soustracteur, comparateur, unité logique, unité de décalage, puis un mux de sortie."
+      - "Deux motifs seulement : séquentiel `always @(posedge clk)` (registres et compteurs, avec `<=`), combinatoire `always @(*)`."
+      - "**Trois blocs `always` par FSM, toujours !** (état suivant, registre d'état, sorties ; en Mealy les sorties lisent aussi les entrées)."
+      - "**Attention à la simulation à délai nul** : la causalité visible avec de vrais délais disparaît ; dans les cas de débogage difficiles, redessiner le chronogramme à la main."
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 33–39"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-007
+    type: resume
+    titre: "Interface CPU–mémoire, carte mémoire et décodage d'adresse"
+    importance: 3
+    corps: |
+      Vu de l'extérieur, le CPU est un composant « très » séquentiel avec une **interface mémoire** : `addr` (≥ 32 bits),
+      `rdata` et `wdata` (32 bits) et des signaux de contrôle comme **CE** (*Circuit Enable* : l'adresse est valide) et
+      **WE** (*Write Enable* : l'accès est un store). Une variante n'a qu'**un seul bus de données** pour lire et écrire
+      (il faut alors des buffers trois états).
+    points_cles:
+      - "La **carte mémoire physique** dit quelle plage de l'espace d'adresses revient à quel composant : ex. la RAM entre `0x80000000` et `0x9FFFFFFF`, contenant le code, les données et la pile."
+      - "**Décodage d'adresse** : les bits de poids fort de l'adresse sont comparés à une constante ; la RAM n'est activée que si `ce` est actif **et** que la comparaison est vraie."
+      - "Exemple : pour `0x800A78FA`, les bits 31..20 (`0x800`) sélectionnent la RAM et les bits 19..0 (`0xA78FA`) sont l'adresse dans la RAM."
+    schema:
+      svg: |
+        <svg viewBox="0 0 360 205" xmlns="http://www.w3.org/2000/svg" font-size="11"><rect x="10" y="44" width="66" height="150" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><rect x="284" y="44" width="66" height="150" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="43" y="66" text-anchor="middle" font-size="14" fill="currentColor" font-weight="600" stroke="none">CPU</text><text x="317" y="66" text-anchor="middle" font-size="14" fill="currentColor" font-weight="600" stroke="none">RAM</text><rect x="138" y="20" width="76" height="26" rx="3" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="176" y="37" text-anchor="middle" fill="currentColor" stroke="none">= 0x800</text><path d="M236 22 h12 a15 15 0 0 1 0 30 h-12 z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="249" y="41" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">&amp;</text><text x="72" y="82" text-anchor="end" font-size="10" fill="currentColor" stroke="none">ce</text><text x="288" y="82" text-anchor="start" font-size="10" fill="currentColor" stroke="none">en</text><text x="72" y="104" text-anchor="end" font-size="10" fill="currentColor" stroke="none">we</text><text x="288" y="104" text-anchor="start" font-size="10" fill="currentColor" stroke="none">we</text><text x="72" y="136" text-anchor="end" font-size="10" fill="currentColor" stroke="none">addr</text><text x="288" y="136" text-anchor="start" font-size="10" fill="currentColor" stroke="none">addr</text><text x="72" y="162" text-anchor="end" font-size="10" fill="currentColor" stroke="none">rdata</text><text x="288" y="162" text-anchor="start" font-size="10" fill="currentColor" stroke="none">rdata</text><text x="72" y="184" text-anchor="end" font-size="10" fill="currentColor" stroke="none">wdata</text><text x="288" y="184" text-anchor="start" font-size="10" fill="currentColor" stroke="none">wdata</text><path d="M76 78 L226 78 L226 46 L236 46" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="236.0,46.0 229.0,49.1 229.0,42.9" fill="currentColor" stroke="none"/><path d="M214 33 L236 28" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="236.0,28.0 229.9,32.6 228.5,26.5" fill="currentColor" stroke="none"/><path d="M263 37 L272 37 L272 78 L284 78" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="284.0,78.0 277.0,81.2 277.0,74.8" fill="currentColor" stroke="none"/><path d="M76 100 L284 100" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="284.0,100.0 277.0,103.2 277.0,96.8" fill="currentColor" stroke="none"/><path d="M76 132 L112 132 L112 33 L138 33" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="138.0,33.0 131.0,36.1 131.0,29.9" fill="currentColor" stroke="none"/><path d="M112 132 L284 132" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="284.0,132.0 277.0,135.2 277.0,128.8" fill="currentColor" stroke="none"/><path d="M284 158 L76 158" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="76.0,158.0 83.0,154.8 83.0,161.2" fill="currentColor" stroke="none"/><path d="M76 180 L284 180" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="284.0,180.0 277.0,183.2 277.0,176.8" fill="currentColor" stroke="none"/><text x="116" y="64" text-anchor="start" font-size="9" class="doux" stroke="none">bits 31..20</text><text x="200" y="127" text-anchor="middle" font-size="9" class="doux" stroke="none">bits 19..0 (20 bits)</text><text x="176" y="12" text-anchor="middle" font-size="9" class="acc" stroke="none">ex. 0x800A78FA : 0x800 | A78FA</text></svg>
+      legende: |
+        Connexion CPU–RAM : un comparateur teste si `addr[31:20] = 0x800` ; une porte ET combine ce test avec `ce`
+        pour produire `en` de la RAM. Les 20 bits de poids faible vont directement à la RAM ; `we`, `rdata` et `wdata`
+        sont reliés directement.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 2–5"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-008
+    type: resume
+    titre: "Accéder aux entrées/sorties : PMIO et MMIO"
+    importance: 3
+    corps: |
+      Les périphériques ont des débits très différents (clavier ~kbps, USB 4.0 ou HDMI 2.1 à des dizaines de Gbps).
+      Deux façons d'y accéder :
+
+      | | PMIO (*Port Mapped I/O*) | MMIO (*Memory Mapped I/O*) |
+      |---|---|---|
+      | espace d'adresses | séparé (numéros de port, 8–16 bits) | partagé avec la mémoire |
+      | signaux | interface I/O dédiée (CE, OE) | les mêmes que la mémoire |
+      | instructions | spéciales, ex. x86 `IN AL, keyboard`, `OUT` | `lw` / `sw` ordinaires |
+    points_cles:
+      - "MMIO : **aucun matériel spécial** dans le CPU et **aucune instruction spéciale**."
+      - "Exemple : LEDs à `0x10000000`, afficheur à `0x10000010`–`0x1000002F`, boutons à `0x10000030` : `lui t0, 0x10000` puis `sw t1, 0(t0)` (écrire les LEDs) et `lw t2, 0x30(t0)` (lire les boutons)."
+      - "Les LEDs sont un **registre** qui capture la donnée lors d'une **écriture** à son adresse ; les boutons sont placés sur le bus de données par un **buffer trois états** lors d'une **lecture** à leur adresse."
+    schema:
+      svg: |
+        <svg viewBox="0 0 420 232" xmlns="http://www.w3.org/2000/svg" font-size="10"><path d="M10 184 L412 184" fill="none" stroke="currentColor" stroke-width="2.4"/><text x="412" y="180" text-anchor="end" font-size="8" class="doux" stroke="none">Addr</text><path d="M10 202 L412 202" fill="none" stroke="currentColor" stroke-width="2.4"/><text x="412" y="198" text-anchor="end" font-size="8" class="doux" stroke="none">Data</text><path d="M10 220 L412 220" fill="none" stroke="currentColor" stroke-width="2.4"/><text x="412" y="216" text-anchor="end" font-size="8" class="doux" stroke="none">Ctrl</text><rect x="10" y="20" width="70" height="50" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="45" y="50" text-anchor="middle" font-size="12" fill="currentColor" font-weight="600" stroke="none">CPU</text><rect x="100" y="20" width="76" height="50" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="138" y="50" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Mémoire</text><rect x="206" y="20" width="80" height="46" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="246" y="40" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Registre</text><text x="228" y="60" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">En</text><text x="268" y="60" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">D</text><path d="M246 20 L246 6" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="246.0,6.0 249.2,13.0 242.8,13.0" fill="currentColor" stroke="none"/><text x="262" y="10" text-anchor="start" font-size="9" fill="currentColor" stroke="none">LEDs</text><path d="M365 40 L405 40 L385 72 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M385 20 L385 40" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="385" y="14" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">Boutons</text><rect x="128" y="104" width="66" height="30" rx="3" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="161" y="116" text-anchor="middle" font-size="7.5" fill="currentColor" stroke="none">≥ 0x80000000</text><text x="161" y="128" text-anchor="middle" font-size="7.5" fill="currentColor" stroke="none">&lt; 0xA0000000</text><rect x="202" y="104" width="64" height="30" rx="3" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="234" y="123" text-anchor="middle" font-size="7.5" fill="currentColor" stroke="none">= 0x10000000</text><rect x="300" y="104" width="64" height="30" rx="3" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="332" y="123" text-anchor="middle" font-size="7.5" fill="currentColor" stroke="none">= 0x10000030</text><path d="M25 70 L25 184" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="25.0,184.0 21.9,177.0 28.1,177.0" fill="currentColor" stroke="none"/><path d="M45 70 L45 202" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="45.0,202.0 41.9,195.0 48.1,195.0" fill="currentColor" stroke="none"/><polygon points="45.0,70.0 48.1,77.0 41.9,77.0" fill="currentColor" stroke="none"/><path d="M65 70 L65 220" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="65.0,220.0 61.9,213.0 68.2,213.0" fill="currentColor" stroke="none"/><path d="M108 184 L108 70" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="108.0,70.0 111.2,77.0 104.8,77.0" fill="currentColor" stroke="none"/><path d="M118 202 L118 70" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="118.0,70.0 121.2,77.0 114.8,77.0" fill="currentColor" stroke="none"/><polygon points="118.0,202.0 114.8,195.0 121.2,195.0" fill="currentColor" stroke="none"/><path d="M161 104 L161 70" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="161.0,70.0 164.2,77.0 157.8,77.0" fill="currentColor" stroke="none"/><path d="M144 184 L144 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="144.0,134.0 147.2,141.0 140.8,141.0" fill="currentColor" stroke="none"/><path d="M180 220 L180 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="180.0,134.0 183.2,141.0 176.8,141.0" fill="currentColor" stroke="none"/><path d="M218 184 L218 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="218.0,134.0 221.2,141.0 214.8,141.0" fill="currentColor" stroke="none"/><path d="M248 220 L248 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="248.0,134.0 251.2,141.0 244.8,141.0" fill="currentColor" stroke="none"/><path d="M228 104 L228 66" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="228.0,66.0 231.2,73.0 224.8,73.0" fill="currentColor" stroke="none"/><path d="M276 202 L276 66" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="276.0,66.0 279.1,73.0 272.9,73.0" fill="currentColor" stroke="none"/><path d="M316 184 L316 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="316.0,134.0 319.1,141.0 312.9,141.0" fill="currentColor" stroke="none"/><path d="M348 220 L348 134" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="348.0,134.0 351.1,141.0 344.9,141.0" fill="currentColor" stroke="none"/><path d="M332 104 L332 56 L374 56" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="374.0,56.0 367.0,59.1 367.0,52.9" fill="currentColor" stroke="none"/><path d="M385 72 L385 202" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="385.0,202.0 381.9,195.0 388.1,195.0" fill="currentColor" stroke="none"/><text x="252" y="160" text-anchor="start" font-size="8" class="acc" stroke="none">Write</text><text x="352" y="160" text-anchor="start" font-size="8" class="acc" stroke="none">Not write</text></svg>
+      legende: |
+        MMIO : la mémoire est activée pour les adresses entre `0x80000000` et `0xA0000000` ; le registre des LEDs
+        est activé (`En`) pour une **écriture** à `0x10000000` et capture la donnée (`D`) ; le buffer trois états des
+        boutons est activé pour une **lecture** à `0x10000030` et place leur valeur sur le bus de données.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 6–10"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-009
+    type: resume
+    titre: "Exemple : convertisseur A/D sur un bus asynchrone"
+    importance: 2
+    corps: |
+      Le convertisseur a une entrée **START** (lance une conversion), une sortie **/DV** (*Data Valid*, active à 0) et
+      les données **D7–D0**. Le bus (proche du MC68000) a 24 bits d'adresse, 8 bits de données, et les signaux
+      **/AS** (*Address Strobe* : adresse valide), **R//W** (sens du transfert) et **/DTACK** (*Data Acknowledge*).
+
+      Interface demandée : tout accès à `0xFFFFF0` lance une conversion ; `0xFFFFF4` permet de lire DV (bit 0) ;
+      `0xFFFFF8` permet de lire le résultat.
+      ```riscv
+      read_adc:
+          li   t1, 0xfffff0
+          sw   zero, 0(t1)    # lance la conversion
+      poll:
+          lw   t0, 4(t1)      # t0 = DV
+          beqz t0, poll       # attendre la fin
+      end:
+          lw   a0, 8(t1)      # a0 = résultat
+          ret
+      ```
+    points_cles:
+      - "**/DTACK** doit être activé **à la fin** d'un accès, quand la donnée écrite a été capturée ou que la donnée lue est prête : c'est le **périphérique** qui signale la fin de l'accès."
+      - "Le CPU reste dans l'état *Start Memory Access* (`ADDR ← ALU_res`, `/AS ← 0`) tant que `/DTACK == 1`, et termine quand `/DTACK == 0`."
+      - "Le logiciel lance la conversion par une écriture, attend en lisant DV en boucle (**polling**), puis lit le résultat."
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 11–19"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-010
+    type: resume
+    titre: "Buffers trois états"
+    importance: 2
+    corps: |
+      Un buffer trois états recopie son entrée quand il est activé, et « se débranche » du fil (haute impédance) sinon.
+      Deux buffers dont les sorties sont reliées, activés par $\bar S$ et $S$, forment une sorte de
+      **multiplexeur « décentralisé »** : $C = A$ si $S = 0$, $C = B$ si $S = 1$.
+    points_cles:
+      - "**S'ils ne sont pas bien contrôlés, on obtient des courts-circuits !** (deux buffers actifs qui pilotent le même fil)."
+      - "Dans le système du Lab B (sur FPGA), cette fonction est réalisée par un **multiplexeur**, qui a exactement la même fonction."
+    schema:
+      svg: |
+        <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" font-size="11"><path d="M40 50 L80 50 L60 82 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M100 50 L140 50 L120 82 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M60 20 L60 50" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M120 20 L120 50" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="60" y="15" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">A</text><text x="120" y="15" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">B</text><path d="M30 62 L48 62" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="24" y="66" text-anchor="end" fill="currentColor" font-weight="600" stroke="none">S</text><path d="M15 53 L24 53" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M150 62 L132 62" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="155" y="66" text-anchor="start" fill="currentColor" font-weight="600" stroke="none">S</text><path d="M60 82 L60 108" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="60.0,108.0 56.9,101.0 63.1,101.0" fill="currentColor" stroke="none"/><path d="M120 82 L120 108" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="120.0,108.0 116.8,101.0 123.2,101.0" fill="currentColor" stroke="none"/><path d="M45 110 L135 110" fill="none" stroke="currentColor" stroke-width="3"/><path d="M90 110 L90 138" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="90.0,138.0 86.8,131.0 93.2,131.0" fill="currentColor" stroke="none"/><text x="102" y="140" text-anchor="start" fill="currentColor" font-weight="600" stroke="none">C</text><text x="178" y="82" text-anchor="middle" font-size="22" fill="currentColor" stroke="none">⇔</text><path d="M220 50 L300 50 L290 85 L230 85 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="240" y="64" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">0</text><text x="280" y="64" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">1</text><path d="M240 20 L240 50" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M280 20 L280 50" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="240" y="15" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">A</text><text x="280" y="15" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">B</text><path d="M296 68 L316 68" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="320" y="72" text-anchor="start" fill="currentColor" font-weight="600" stroke="none">S</text><path d="M260 85 L260 120" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="260.0,120.0 256.9,113.0 263.1,113.0" fill="currentColor" stroke="none"/><text x="260" y="136" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">C</text></svg>
+      legende: |
+        À gauche, deux buffers trois états reliés au même fil `C`, l'un activé par $\bar S$, l'autre par $S$ ;
+        à droite, le multiplexeur 2→1 équivalent.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 20–21"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-011
+    type: resume
+    titre: "Périphériques programmables, UART et limites du polling"
+    importance: 2
+    corps: |
+      Beaucoup de périphériques sont des systèmes programmables avec un **ensemble de registres** que le processeur
+      lit et écrit pour (a) envoyer et recevoir des données et (b) donner des commandes et lire leur état.
+
+      **UART** (*Universal Asynchronous Receiver-Transmitter*), avec quatre registres :
+
+      | adresse | registre | contenu |
+      |---|---|---|
+      | `0x10000000` | contrôle | bit 7 = 1 pour activer ; bits 2..0 = vitesse (ex. `0b001` = 9600 baud) |
+      | `0x10000004` | état | bit 1 = donnée disponible ; bit 0 = prêt à émettre |
+      | `0x10000008` | données en entrée | octet reçu |
+      | `0x1000000C` | données en sortie | octet à émettre |
+    points_cles:
+      - "Le code du slide 24 commente à tort l'adresse `0x10000000` comme « status register » et la vitesse comme « 4 bits, [3:0] » : c'est bien le registre de **contrôle**, et la vitesse est sur les **bits 2..0** (slide 23)."
+      - "Envoyer une chaîne : configurer l'UART, puis pour chaque caractère attendre que le bit « prêt à émettre » vaille 1 et écrire l'octet dans le registre de sortie."
+      - "**Polling** : visiter régulièrement tous les périphériques pour savoir s'ils ont des données. **Très coûteux** : si le périphérique est rapide et demande une action immédiate, le processeur passe trop de temps à vérifier."
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 22–25"
+    verifie: false
+    incertain: null
+
+quiz:
+  - id: comparch-s04-q001
+    type: qcm
+    enonce: |
+      Pourquoi un processeur mono-cycle est-il impossible avec des mémoires **synchrones** ?
+    choix:
+      - "Parce qu'une lecture prend deux cycles : présenter l'adresse, puis récupérer la donnée"
+      - "Parce qu'une mémoire synchrone ne peut pas stocker d'instructions"
+      - "Parce que l'ALU ne peut pas fonctionner avec une horloge"
+      - "Parce que le PC doit être incrémenté de 8"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Avec une mémoire synchrone, l'adresse est échantillonnée au front d'horloge et la donnée n'est valide qu'au cycle
+      suivant : **un cycle de délai**. Lire l'instruction (et, pour `lw`, la donnée) demande donc au moins deux cycles.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slide 11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q002
+    type: vrai_faux
+    enonce: |
+      Couper le chemin critique en deux avec un registre, pour doubler la fréquence, améliore les performances d'un processeur mono-cycle.
+    reponse: false
+    tolerance: null
+    explication: |
+      La fréquence double, mais chaque instruction prend alors **deux cycles** : 1 instruction par cycle à $F$ contre
+      1 instruction tous les deux cycles à $2F$. On ne gagne rien.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 8–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q003
+    type: qcm
+    enonce: |
+      Dans la FSM multi-cycle, vers quel état va une instruction `lw` après **Decode** ?
+    choix:
+      - "Load1"
+      - "Execute"
+      - "Fetch1"
+      - "Load2"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Les accès mémoire suivent le chemin **Memory** : Decode → Load1 → Load2 → Fetch1. Execute est pour les instructions
+      ALU et les branches ; Load2 vient après Load1.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 15–16"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q004
+    type: numerique
+    enonce: |
+      Avec la FSM multi-cycle du cours (Fetch1, Fetch2, Decode, Execute, Load1, Load2), combien de cycles prend une instruction `andi` ?
+    reponse: 4
+    tolerance: null
+    explication: |
+      Fetch1 → Fetch2 → Decode → Execute : **4 cycles** (un par état), puis retour à Fetch1.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 14–16"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q005
+    type: numerique
+    enonce: |
+      Avec la même FSM, combien de cycles prend une instruction `lw` ?
+    reponse: 5
+    tolerance: null
+    explication: |
+      Fetch1 → Fetch2 → Decode → Load1 → Load2 : **5 cycles**. Le chargement prend deux états car la mémoire est synchrone
+      (présenter l'adresse, puis récupérer la donnée).
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 15–16"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q006
+    type: qcm
+    enonce: |
+      À quoi sert le multiplexeur `sel_addr` devant l'adresse de la mémoire ?
+    choix:
+      - "À choisir entre le PC (lire une instruction) et le résultat de l'ALU (load/store)"
+      - "À choisir entre deux bancs de registres"
+      - "À choisir entre l'immédiat et le registre `b` pour l'ALU"
+      - "À choisir entre la mémoire d'instructions et la mémoire de données"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Avec une **mémoire unifiée**, il n'y a qu'un port d'adresse : en Fetch1, `sel_addr = 0` (adresse = PC) ; en Load1,
+      `sel_addr = 1` (adresse = ALU). Le choix immédiat/registre pour l'ALU est le rôle de `sel_b`.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 4, 25, 31"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q007
+    type: qcm
+    enonce: |
+      Pourquoi le processeur multi-cycle a-t-il besoin d'un **registre d'instruction** (IR) ?
+    choix:
+      - "Pour garder l'instruction pendant toute son exécution, alors que la sortie de la mémoire change"
+      - "Pour stocker l'adresse de retour des fonctions"
+      - "Pour accélérer les calculs de l'ALU"
+      - "Pour remplacer le banc de registres"
+    reponse: 0
+    tolerance: null
+    explication: |
+      L'instruction arrive de la mémoire en Fetch2, mais la sortie de la mémoire change ensuite (ex. lors d'un `lw`).
+      IR **mémorise** l'instruction ; il n'est mis à jour que lorsque la FSM l'active (`ir_en`).
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slide 19"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q008
+    type: qcm
+    enonce: |
+      Qu'est-ce qui distingue une FSM de **Moore** d'une FSM de **Mealy** ?
+    choix:
+      - "En Moore, les sorties ne dépendent que de l'état ; en Mealy, de l'état et des entrées"
+      - "En Moore, les sorties dépendent de l'état et des entrées ; en Mealy, de l'état seulement"
+      - "Une FSM de Moore n'a pas de registre d'état"
+      - "Une FSM de Mealy n'a qu'un seul état"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Moore : sorties = fonction de l'état seulement (demande parfois plus d'états, donc plus de cycles).
+      Mealy : sorties = fonction de l'état **et** des entrées (ici, l'instruction).
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slide 17"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q009
+    type: vrai_faux
+    enonce: |
+      Pour `sw t0, 16(t1)`, l'ALU calcule l'adresse `t1 + 16`, et la donnée envoyée à la mémoire est la seconde sortie du banc de registres.
+    reponse: true
+    tolerance: null
+    explication: |
+      Le store doit envoyer un **opérande** à la mémoire : la valeur de `t0`, lue sur la sortie `b` du banc de registres,
+      part vers `wdata`, tandis que l'ALU calcule l'adresse avec l'immédiat.
+    source:
+      fichier: "computer_architecture/semaine-04/2a. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 25, 27"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q010
+    type: qcm
+    enonce: |
+      La RAM commence à l'adresse `0x80000000`. Pour l'adresse `0x800A78FA`, comment la RAM est-elle sélectionnée ?
+    choix:
+      - "Les bits 31..20 sont comparés à `0x800`, et le résultat est combiné avec `ce`"
+      - "Les bits 19..0 sont comparés à `0xA78FA`"
+      - "La RAM répond à toutes les adresses"
+      - "Le CPU utilise une instruction spéciale pour la RAM"
+    reponse: 0
+    tolerance: null
+    explication: |
+      **Décodage d'adresse** : un comparateur teste les bits de poids fort (`addr[31:20] = 0x800`) ; une porte ET avec `ce`
+      donne `en` de la RAM. Les bits 19..0 sont l'adresse **à l'intérieur** de la RAM.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 4–5"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q011
+    type: qcm
+    enonce: |
+      Quel est l'avantage principal des **entrées/sorties mappées en mémoire** (MMIO) ?
+    choix:
+      - "On accède aux périphériques avec des `lw`/`sw` ordinaires, sans matériel ni instruction spéciale dans le CPU"
+      - "Les périphériques ont leur propre espace d'adresses séparé"
+      - "On utilise des instructions dédiées comme `IN` et `OUT`"
+      - "Les périphériques ne passent plus par le bus"
+    reponse: 0
+    tolerance: null
+    explication: |
+      En MMIO, les registres des périphériques sont des **adresses mémoire** : `lw`/`sw` suffisent. L'espace séparé et les
+      instructions `IN`/`OUT` (x86) caractérisent le **PMIO**.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 8–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q012
+    type: qcm
+    enonce: |
+      Sur le bus du convertisseur A/D, quel est le rôle du signal **/DTACK** ?
+    choix:
+      - "Le périphérique l'active pour signaler que l'accès est terminé (donnée prête ou capturée)"
+      - "Le CPU l'active pour indiquer qu'une adresse valide est sur le bus"
+      - "Il indique le sens du transfert (lecture ou écriture)"
+      - "Il lance une conversion"
+    reponse: 0
+    tolerance: null
+    explication: |
+      /DTACK (*Data Acknowledge*) est une **entrée** du CPU, activée à la fin de l'accès : le CPU attend tant que
+      `/DTACK == 1`. L'adresse valide est signalée par **/AS**, le sens par **R//W**, et la conversion est lancée par START.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 12, 16"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q013
+    type: qcm
+    enonce: |
+      Deux buffers trois états, l'un activé par $\bar S$ (entrée A) et l'autre par $S$ (entrée B), ont leurs sorties reliées. Quelle fonction réalisent-ils ?
+    choix:
+      - "Un multiplexeur 2→1 : la sortie vaut A si S = 0, B si S = 1"
+      - "Une porte ET entre A et B"
+      - "Une porte OU entre A et B"
+      - "Un registre qui mémorise A ou B"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Un seul buffer est actif à la fois et recopie son entrée sur le fil commun : c'est une sorte de **multiplexeur
+      décentralisé**. Dans le Lab B (FPGA), on utilise directement un multiplexeur.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slides 20–21"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q014
+    type: vrai_faux
+    enonce: |
+      Si des buffers trois états reliés au même fil ne sont pas correctement contrôlés, on peut provoquer un court-circuit.
+    reponse: true
+    tolerance: null
+    explication: |
+      Si deux buffers actifs pilotent le même fil avec des valeurs différentes, on obtient un **court-circuit** : il faut
+      garantir (par exemple par le décodage d'adresse) qu'au plus un buffer est actif à la fois.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slide 20"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s04-q015
+    type: qcm
+    enonce: |
+      Quel est le principal défaut du **polling** des périphériques ?
+    choix:
+      - "Le processeur passe beaucoup de temps à vérifier si les périphériques ont des données"
+      - "Il nécessite un contrôleur matériel spécial"
+      - "Il ne fonctionne qu'avec les périphériques PMIO"
+      - "Il empêche d'utiliser `lw` et `sw`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Avec le polling, le CPU visite régulièrement tous les périphériques. C'est **très coûteux** : si un périphérique est
+      rapide et demande une action immédiate, le processeur doit vérifier trop souvent. Le polling se fait justement avec
+      des `lw` ordinaires, sans matériel spécial.
+    source:
+      fichier: "computer_architecture/semaine-04/2b. Processor, IOs, and Exceptions (2).pdf"
+      emplacement: "slide 25"
+    verifie: false
+    incertain: null

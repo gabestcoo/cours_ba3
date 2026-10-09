@@ -1,5 +1,6 @@
 import type { Fiche } from '../content/schema'
 import { Html } from './Html'
+import { Schema } from './Schema'
 
 const LIBELLES: Record<Fiche['type'], string> = {
   definition: 'Définition',
@@ -112,6 +113,8 @@ export function FicheCard({ fiche }: { fiche: Fiche }) {
       )}
 
       <Corps fiche={fiche} />
+
+      {fiche.schema && <Schema svg={fiche.schema.svg} legende={fiche.schema.legende} />}
 
       <footer className="fiche-source" title={fiche.source.fichier}>
         Source : {nomFichier}, {fiche.source.emplacement}

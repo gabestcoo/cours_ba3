@@ -76,7 +76,11 @@ export async function rendreSemaine(donnees: unknown, fichier: string): Promise<
   const incertain = (t: string | null) => (t === null ? null : ligne(t))
 
   const fiche = (f: Fiche): Fiche => {
-    const commun = { titre: ligne(f.titre), incertain: incertain(f.incertain) }
+    const commun = {
+      titre: ligne(f.titre),
+      incertain: incertain(f.incertain),
+      schema: f.schema && { svg: f.schema.svg, legende: bloc(f.schema.legende) },
+    }
     switch (f.type) {
       case 'definition':
         return { ...f, ...commun, corps: bloc(f.corps) }

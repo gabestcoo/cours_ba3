@@ -1,0 +1,586 @@
+cours: comparch
+semaine: 5
+titre: "Interruptions, DMA, timer et exceptions"
+fiches:
+  - id: comparch-s05-001
+    type: resume
+    titre: "Les interruptions d'entrée/sortie"
+    importance: 3
+    corps: |
+      Le **polling** est très coûteux : si un périphérique est rapide et demande une action immédiate, le processeur passe
+      trop de temps à vérifier. **Idée des interruptions** : ne pas vérifier les périphériques tout le temps, mais les laisser
+      **« demander » l'attention**. Le programme en cours est alors interrompu au profit d'un **gestionnaire d'interruption**
+      (*interrupt handler*, ex. `read_adc`), puis reprend.
+    points_cles:
+      - "Mécanismes semblables dans certains langages (callbacks, listeners, signaux, promises…), mais là il y a des compilateurs et interpréteurs ; ici, plus rien de tout ça."
+      - "Vue (très naïve) du matériel : un multiplexeur devant le PC, commandé par la ligne **IRQ** (*Interrupt Request*), charge l'adresse du gestionnaire. Il faut aussi **sauver l'endroit où l'on exécutait**."
+      - "Questions à régler : **qui** demande l'attention (le logiciel interroge ensuite tous les périphériques, ou le périphérique envoie son identité) ; **quelles priorités** (certains peuvent attendre longtemps, d'autres non) ; **quel impact** sur l'exécution en cours (combien d'instructions se terminent ? que devient le programme ?)."
+      - "Séquence type : ① le périphérique demande l'attention par **IREQ** ; ② le processeur signale qu'il est prêt par **IACK** (*acknowledge*) ; ③ le périphérique donne son identité ; ④ le processeur transfère le contrôle au gestionnaire approprié ; ⑤ il revient à la tâche interrompue."
+      - "Le périphérique **maintient sa requête jusqu'à ce qu'elle soit acquittée**."
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 2–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-002
+    type: resume
+    titre: "Plusieurs périphériques sur une seule ligne IRQ : le OU câblé"
+    importance: 2
+    corps: |
+      Comment connecter beaucoup de périphériques à une seule entrée IRQ ? Plutôt qu'une grande porte OU, chaque périphérique
+      a une sortie **trois états** : s'il ne demande rien (0), il se met en **haute impédance (Z)** ; s'il demande (1), il pilote 1.
+      Une **grande résistance** relie la ligne à 0 : une « voix très faible » qui dit 0, « inaudible » si quelqu'un « crie » 1.
+    points_cles:
+      - "On obtient une sorte de **OU « décentralisé »** (*wired-OR*) : la ligne vaut 1 si au moins un périphérique demande."
+      - "Le slide précise que ce n'est « pas tout à fait le vrai circuit »."
+    schema:
+      svg: |
+        <svg viewBox="0 0 300 190" xmlns="http://www.w3.org/2000/svg" font-size="10"><path d="M60 22 L60 50" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="60" y="16" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">IRQ₀</text><path d="M40 50 L80 50 L60 82 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M60 36 L90 36 L90 64 L72 64" fill="none" stroke="currentColor" stroke-width="1"/><path d="M60 82 L60 120" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M130 22 L130 50" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="130" y="16" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">IRQ₁</text><path d="M110 50 L150 50 L130 82 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M130 36 L160 36 L160 64 L142 64" fill="none" stroke="currentColor" stroke-width="1"/><path d="M130 82 L130 120" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M60 120 L200 120" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M95 120 L95 150" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="95.0,150.0 91.8,143.0 98.2,143.0" fill="currentColor" stroke="none"/><text x="95" y="166" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">IRQ₀ OU IRQ₁</text><rect x="193" y="132" width="14" height="30" rx="1" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M200 120 L200 132" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M200 162 L200 172" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M186 172 L214 172" fill="none" stroke="currentColor" stroke-width="2.5"/><text x="222" y="176" text-anchor="start" fill="currentColor" font-weight="600" stroke="none">0</text><text x="216" y="140" text-anchor="start" font-size="8" class="acc" stroke="none">grande résistance :</text><text x="216" y="151" text-anchor="start" font-size="8" class="acc" stroke="none">« voix faible » qui dit 0</text><text x="190" y="40" text-anchor="start" font-size="8.5" class="acc" stroke="none">si 0 → Z, si 1 → 1</text></svg>
+      legende: |
+        Deux périphériques partagent la ligne IRQ : chacun ne pilote la ligne que lorsqu'il demande (1) et est déconnecté (Z)
+        sinon ; la résistance ramène la ligne à 0 quand personne ne demande. Résultat : IRQ₀ OU IRQ₁.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slide 7"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-003
+    type: resume
+    titre: "Priorités des interruptions : chaîne et contrôleur"
+    importance: 2
+    corps: |
+      **Arbitrage en chaîne** (*daisy chain*), l'une des méthodes les plus simples :
+      - n'importe quel périphérique place une requête (IREQ, *Request*) ;
+      - la ligne d'acquittement (IACK, *Grant*) passe d'un périphérique au suivant ;
+      - le périphérique qui veut l'accès **intercepte** le signal et le cache aux suivants.
+    points_cles:
+      - "Simple, mais ① **lent** et ② **priorités figées** (la position dans la chaîne fixe la priorité)."
+      - "Un **contrôleur d'interruptions** (matériel spécial) peut : ne propager qu'**une IREQ à la fois** au processeur (la plus prioritaire, ou à priorité égale celle servie il y a le plus longtemps) ; renvoyer l'IACK au bon périphérique ; **interdire** certains périphériques ; permettre l'**imbrication** (une IREQ plus prioritaire passe pendant qu'une moins prioritaire est servie)."
+    schema:
+      svg: |
+        <svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" font-size="10"><rect x="10" y="95" width="70" height="50" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="45" y="117" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Arbitre</text><text x="45" y="130" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">(processeur)</text><rect x="120" y="30" width="64" height="34" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="152" y="51" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Périph. 1</text><rect x="215" y="30" width="64" height="34" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="247" y="51" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Périph. 2</text><rect x="320" y="30" width="64" height="34" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="352" y="51" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Périph. n</text><text x="152" y="22" text-anchor="middle" font-size="8" class="acc" stroke="none">priorité haute</text><text x="352" y="22" text-anchor="middle" font-size="8" class="acc" stroke="none">priorité basse</text><text x="298" y="51" text-anchor="middle" font-size="12" fill="currentColor" stroke="none">…</text><path d="M80 105 L100 105 L100 80 L130 80 L130 64" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="130.0,64.0 133.2,71.0 126.8,71.0" fill="currentColor" stroke="none"/><path d="M170 64 L170 80 L225 80 L225 64" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="225.0,64.0 228.2,71.0 221.8,71.0" fill="currentColor" stroke="none"/><path d="M265 64 L265 80 L330 80 L330 64" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 3"/><polygon points="330.0,64.0 333.1,71.0 326.9,71.0" fill="currentColor" stroke="none"/><text x="115" y="92" text-anchor="middle" font-size="8" class="doux" stroke="none">Grant</text><text x="197" y="92" text-anchor="middle" font-size="8" class="doux" stroke="none">Grant</text><text x="298" y="92" text-anchor="middle" font-size="8" class="doux" stroke="none">Grant</text><path d="M360 64 L360 150 L80 150" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="80.0,150.0 87.0,146.8 87.0,153.2" fill="currentColor" stroke="none"/><path d="M150 64 L150 150" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M245 64 L245 150" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="300" y="163" text-anchor="middle" font-size="8" class="doux" stroke="none">Request (IREQ)</text></svg>
+      legende: |
+        Chaîne d'arbitrage : tous les périphériques partagent la ligne *Request* ; le *Grant* part de l'arbitre (le processeur
+        ou un intermédiaire) et passe de périphérique en périphérique. Le premier qui a une requête garde le *Grant* :
+        le périphérique 1 a la priorité la plus haute.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 10–12"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-004
+    type: resume
+    titre: "Accès direct à la mémoire (DMA)"
+    importance: 3
+    corps: |
+      Les interruptions évitent de vérifier sans cesse les périphériques, mais le processeur peut encore perdre beaucoup de
+      temps à **transférer de gros volumes de données** (disques, réseau) : un load puis un store, peut-être 1 000 000 de fois.
+      **Idée** : un périphérique spécial, le **DMA** (*Direct Memory Access*), fait ces transferts entre périphérique et mémoire,
+      et **libère le processeur** pour calculer.
+    points_cles:
+      - "Contenu minimal d'un DMA : un **registre d'incrément** (combien d'octets/mots par transfert), deux **pointeurs d'adresse** (source et destination, incrémentés à chaque transfert) et un **compteur** (nombre total à transférer)."
+      - "Séquence : ① le processeur indique au DMA le périphérique, l'adresse mémoire et le nombre d'octets ; ② le DMA devient **maître du bus** et fait les accès en pilotant directement les bus d'adresse et de contrôle ; ③ le DMA envoie une **interruption** pour signaler la fin (ou une erreur)."
+      - "Le DMA doit contrôler le bus… mais le maître est le processeur : celui-ci doit **céder le bus**, et le reprend quand le DMA envoie une interruption. Il a besoin d'« un peu de mémoire » pour travailler sans accès au bus."
+      - "**Timer** : un périphérique qui compte jusqu'à `max` et envoie une interruption ; `max` est programmable, le processeur choisit donc la fréquence des interruptions."
+    schema:
+      svg: |
+        <svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg" font-size="10"><path d="M10 172 L412 172" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M10 190 L412 190" fill="none" stroke="currentColor" stroke-width="2.4"/><text x="412" y="168" text-anchor="end" font-size="8" class="doux" stroke="none">A</text><text x="412" y="186" text-anchor="end" font-size="8" class="doux" stroke="none">D</text><rect x="10" y="70" width="74" height="60" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="47.0" y="98" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Processeur</text><path d="M26 130 L26 172" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="26.0,172.0 22.9,165.0 29.1,165.0" fill="currentColor" stroke="none"/><path d="M68 130 L68 190" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="68.0,190.0 64.8,183.0 71.2,183.0" fill="currentColor" stroke="none"/><polygon points="68.0,130.0 71.2,137.0 64.8,137.0" fill="currentColor" stroke="none"/><rect x="95" y="70" width="74" height="60" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="132.0" y="98" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Mémoire</text><path d="M111 130 L111 172" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="111.0,172.0 107.8,165.0 114.2,165.0" fill="currentColor" stroke="none"/><polygon points="111.0,130.0 114.2,137.0 107.8,137.0" fill="currentColor" stroke="none"/><path d="M153 130 L153 190" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="153.0,190.0 149.8,183.0 156.2,183.0" fill="currentColor" stroke="none"/><polygon points="153.0,130.0 156.2,137.0 149.8,137.0" fill="currentColor" stroke="none"/><rect x="180" y="70" width="64" height="60" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="212.0" y="98" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Périph.</text><path d="M196 130 L196 172" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="196.0,172.0 192.8,165.0 199.2,165.0" fill="currentColor" stroke="none"/><polygon points="196.0,130.0 199.2,137.0 192.8,137.0" fill="currentColor" stroke="none"/><path d="M228 130 L228 190" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="228.0,190.0 224.8,183.0 231.2,183.0" fill="currentColor" stroke="none"/><polygon points="228.0,130.0 231.2,137.0 224.8,137.0" fill="currentColor" stroke="none"/><rect x="255" y="70" width="64" height="60" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="287.0" y="98" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Périph.</text><path d="M271 130 L271 172" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="271.0,172.0 267.9,165.0 274.1,165.0" fill="currentColor" stroke="none"/><polygon points="271.0,130.0 274.1,137.0 267.9,137.0" fill="currentColor" stroke="none"/><path d="M303 130 L303 190" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="303.0,190.0 299.9,183.0 306.1,183.0" fill="currentColor" stroke="none"/><polygon points="303.0,130.0 306.1,137.0 299.9,137.0" fill="currentColor" stroke="none"/><text x="47" y="82" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">IRQs</text><rect x="335" y="30" width="75" height="100" rx="4" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="372" y="46" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">DMA</text><rect x="345" y="54" width="55" height="17" rx="2" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="372" y="66" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">from</text><rect x="345" y="76" width="55" height="17" rx="2" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="372" y="88" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">to</text><rect x="345" y="98" width="55" height="17" rx="2" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="372" y="110" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">count</text><path d="M352 130 L352 172" fill="none" class="acc" stroke-width="2"/><polygon points="352.0,172.0 348.9,165.0 355.1,165.0" class="acc-fill" stroke="none"/><path d="M395 130 L395 190" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="395.0,190.0 391.9,183.0 398.1,183.0" fill="currentColor" stroke="none"/><polygon points="395.0,130.0 398.1,137.0 391.9,137.0" fill="currentColor" stroke="none"/><path d="M372 30 L372 14 L40 14 L40 70" fill="none" class="acc" stroke-width="1.6"/><polygon points="40.0,70.0 36.9,63.0 43.1,63.0" class="acc-fill" stroke="none"/><text x="206" y="10" text-anchor="middle" font-size="8" class="acc" stroke="none">interruption de fin de transfert</text></svg>
+      legende: |
+        Le DMA, programmé avec `from`, `to` et `count`, pilote le bus d'adresses pendant le transfert (lecture puis écriture,
+        sans passer par le processeur) ; à la fin, il prévient le processeur par une interruption.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 13–27"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-005
+    type: resume
+    titre: "Exceptions et instruction indéfinie"
+    importance: 3
+    corps: |
+      Normalement, le flot de contrôle est entièrement décidé par le programmeur (sauts, branches, appels).
+      Les **exceptions** sont des changements du flot de contrôle **non explicites dans le programme**, déclenchés par des
+      conditions spéciales ; des **gestionnaires d'exception** (*handlers*) prennent les mesures appropriées.
+
+      **Convention (RISC-V, COD)** : *exception* est le nom général ; une **interruption** est une exception générée
+      **à l'extérieur** du processeur.
+    points_cles:
+      - "**Instruction indéfinie** : le contrôleur détecte que l'instruction dans IR n'existe pas et active `undef`. On pourrait arrêter le processeur, mais c'est plus polyvalent de **sauter à un gestionnaire**."
+      - "Cette exception est **synchrone** : si on relance le programme depuis le même état, elle se produit à chaque fois, au même endroit. Si on la sert **avant l'instruction suivante**, on peut faire des choses utiles…"
+      - "… comme **émuler** une instruction absente (ex. `fadd.s` sur un processeur sans unité flottante) : ① sauver sur la pile tous les registres modifiés (**les conventions d'appel ne s'appliquent pas !**) ; ② lire l'instruction fautive ; ③ la décoder en logiciel ; ④ lire les sources et calculer ; ⑤ écrire le résultat ; ⑥ incrémenter le PC sauvé pour pointer sur l'instruction suivante ; ⑦ y sauter."
+    schema:
+      svg: |
+        <svg viewBox="0 0 380 190" xmlns="http://www.w3.org/2000/svg" font-size="10"><rect x="10" y="70" width="34" height="30" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="27" y="89" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">IR</text><rect x="60" y="50" width="80" height="70" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="100" y="72" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Contrôleur</text><text x="134" y="113" text-anchor="end" font-size="8" fill="currentColor" stroke="none">undef</text><path d="M44 85 L60 85" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="60.0,85.0 53.0,88.2 53.0,81.8" fill="currentColor" stroke="none"/><rect x="170" y="30" width="80" height="40" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="210" y="47" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Logique</text><text x="210" y="60" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">PC suivant</text><text x="166" y="20" text-anchor="start" font-size="8" class="doux" stroke="none">PC, branches, ALU</text><path d="M160 50 L170 50" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="170.0,50.0 163.0,53.1 163.0,46.9" fill="currentColor" stroke="none"/><path d="M275 38 L293 44 L293 84 L275 90 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="284.0" y="50" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">0</text><text x="284.0" y="85" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">1</text><rect x="315" y="50" width="40" height="30" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="335" y="69" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">PC</text><path d="M250 50 L275 50" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="275.0,50.0 268.0,53.1 268.0,46.9" fill="currentColor" stroke="none"/><path d="M293 64 L315 64" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="315.0,64.0 308.0,67.2 308.0,60.9" fill="currentColor" stroke="none"/><path d="M355 64 L372 64" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="372.0,64.0 365.0,67.2 365.0,60.9" fill="currentColor" stroke="none"/><path d="M262 50 L262 14" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="262.0,14.0 265.1,21.0 258.9,21.0" fill="currentColor" stroke="none"/><text x="266" y="12" text-anchor="start" font-size="8" class="acc" stroke="none">sauver le PC suivant</text><text x="272" y="108" text-anchor="end" font-size="8" class="acc" stroke="none">adresse du gestionnaire</text><path d="M160 80 L275 80" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="275.0,80.0 268.0,83.2 268.0,76.8" fill="currentColor" stroke="none"/><path d="M276 140 Q284 128 292 140 L292 150 Q284 145 276 150 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><text x="284" y="146" text-anchor="middle" font-size="7" fill="currentColor" stroke="none">≥1</text><path d="M284 128 L284 90" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="284.0,90.0 287.1,97.0 280.9,97.0" fill="currentColor" stroke="none"/><path d="M140 110 L160 110 L160 160 L280 160 L280 150" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="280.0,150.0 283.1,157.0 276.9,157.0" fill="currentColor" stroke="none"/><path d="M300 175 L300 162 L288 162 L288 150" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="288.0,150.0 291.1,157.0 284.9,157.0" fill="currentColor" stroke="none"/><text x="304" y="182" text-anchor="start" font-size="9" fill="currentColor" font-weight="600" stroke="none">IRQ</text><text x="205" y="175" text-anchor="middle" font-size="8" class="doux" stroke="none">instruction indéfinie</text></svg>
+      legende: |
+        Le signal `undef` du contrôleur (instruction indéfinie) et la ligne IRQ (interruption) sont combinés par un OU :
+        si l'un est actif, le multiplexeur charge dans le PC l'**adresse du gestionnaire** au lieu du PC suivant normal,
+        et le PC suivant est **sauvé**.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 2–7"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-006
+    type: resume
+    titre: "Classer les exceptions"
+    importance: 2
+    corps: |
+      Causes possibles : requêtes d'E/S, interruptions du timer, instructions non supportées, fautes arithmétiques
+      (ex. division par zéro), violation de protection mémoire, débogage (*breakpoints*), pannes matérielles, coupures de courant.
+
+      | type | synchrone ? | imposée ? | reprise ? |
+      |---|---|---|---|
+      | requête d'E/S | asynchrone | imposée | reprise |
+      | appel de l'OS, trace, breakpoint | synchrone | demandée | reprise |
+      | page fault, accès mal aligné | synchrone | imposée | reprise |
+      | violation de protection, bus error, faute arithmétique, instruction indéfinie | synchrone | imposée | terminaison |
+      | panne matérielle, coupure de courant | asynchrone | imposée | terminaison |
+    points_cles:
+      - "Trois dimensions : **synchrone ou asynchrone** (liée à une instruction ou externe ?), **demandée par l'utilisateur ou imposée** (*coerced*), **reprise ou terminaison**."
+      - "Certains choix relèvent d'une **politique** (ex. OS) : en cas de coupure de courant, éteindre (disque propre, travail perdu) ou hiberner (session préservée… s'il reste le temps)."
+      - "Le tableau n'est qu'**une** classification possible."
+      - "**Watchpoint** : des registres spéciaux `Register` et `Value`, écrits par l'utilisateur, déclenchent une exception quand une instruction écrit `Value` dans `Register`."
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 8–11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-007
+    type: resume
+    titre: "Lever une exception : où revenir, quelle cause, quoi faire si une autre arrive"
+    importance: 3
+    corps: |
+      L'adresse de l'instruction courante ou suivante doit être sauvée, mais **pas dans `ra`** (ou là où se fait le retour
+      ordinaire) : dans un registre **EPC** (*Exception PC*), avec une instruction spéciale de retour.
+    points_cles:
+      - "**Exception asynchrone** : on sauve la **prochaine** instruction à exécuter. **Exception synchrone** : on sauve l'instruction **fautive** ; on y revient pour réessayer après correction (ex. appel à l'OS), ou on repart de la suivante si l'on a émulé la fonctionnalité (ex. instruction indéfinie)."
+      - "Où sauver l'EPC : un registre ordinaire réservé (Nios II), la pile (x86), ou des **registres spéciaux** avec des instructions dédiées (MIPS, RISC-V)."
+      - "Identifier la cause : un **gestionnaire unique** et un **registre de cause** (RISC-V, MIPS ; aiguillage en logiciel) ; un **vecteur d'adresses** de gestionnaires (saut à `mem[EVA + 4 × N]`, ex. 68k) ; un **vecteur de gestionnaires** (saut à `EVA + 32 × N`, ex. PA-RISC, SPARC)."
+      - "**En RISC-V** : `mtvec` contient le plus souvent une adresse constante (gestionnaire unique, cause lue dans `mcause`) ; il peut aussi implémenter des interruptions vectorisées. En mode vectorisé, le processeur saute à `BASE + 4 × cause` (une instruction par entrée, typiquement un saut) **sans lire la mémoire**, et seulement pour les interruptions."
+      - "Une exception imbriquée peut arriver pendant le traitement : **désactiver** celles qui peuvent l'être (les interruptions) et **éviter** celles qui ne le peuvent pas (division par zéro, instruction indéfinie)."
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 12–14"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-008
+    type: resume
+    titre: "Gestion des exceptions en RISC-V (mode machine)"
+    importance: 3
+    corps: |
+      | CSR | rôle |
+      |---|---|
+      | `mtvec` | adresse où le processeur saute lors d'une exception (champs BASE et MODE) |
+      | `mepc` | instruction où l'exception s'est produite (**non exécutée**) |
+      | `mcause` | quelle exception : bit 31 = interruption, bits 30..0 = code |
+      | `mstatus` | MIE (bit 3) : interruptions globalement autorisées ; MPIE (bit 7) : valeur de MIE avant le trap |
+      | `mie` | interruptions autorisées : MEIE (externes), MTIE (timer) |
+      | `mip` | interruptions en attente : MEIP (externes), MTIP (timer) |
+
+      Accès aux CSR : `csrrw`, `csrrs`, `csrrc` (lire puis écrire / mettre à 1 / mettre à 0 des bits), et leurs versions avec
+      immédiat `csrrwi`, `csrrsi`, `csrrci` ; pseudo-instructions qui ne font que lire ou écrire un CSR.
+    points_cles:
+      - "`mret` : `mstatus.MIE ← mstatus.MPIE`, `mstatus.MPIE ← 1`, `pc ← mepc`."
+      - "`mcause[31] = 1` pour une interruption : vu comme un nombre en complément à 2, `mcause` est alors **négatif** (test avec `bltz` / `bgez`)."
+      - "Codes utiles : interruption **11** = *machine external interrupt* (E/S) ; exception **2** = *illegal instruction*."
+    schema:
+      svg: |
+        <svg viewBox="0 0 400 175" xmlns="http://www.w3.org/2000/svg" font-size="10"><rect x="10" y="50" width="90" height="70" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="55" y="80" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Programme</text><text x="55" y="94" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">(instr. à pc)</text><rect x="290" y="50" width="100" height="70" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="340" y="80" text-anchor="middle" fill="currentColor" font-weight="600" stroke="none">Gestionnaire</text><text x="340" y="94" text-anchor="middle" font-size="8" fill="currentColor" stroke="none">(adresse mtvec)</text><path d="M100 64 L290 64" fill="none" class="acc" stroke-width="1.6"/><polygon points="290.0,64.0 283.0,67.2 283.0,60.9" class="acc-fill" stroke="none"/><text x="195" y="56" text-anchor="middle" font-size="8.5" class="acc" font-weight="600" stroke="none">exception / interruption</text><text x="112" y="20" text-anchor="middle" font-size="1" fill="currentColor" stroke="none"></text><text x="112" y="20" text-anchor="middle" font-size="1" fill="currentColor" stroke="none"></text><text x="112" y="20" text-anchor="middle" font-size="1" fill="currentColor" stroke="none"></text><text x="112" y="20" text-anchor="middle" font-size="1" fill="currentColor" stroke="none"></text><text x="195" y="12" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">mepc ← pc · mcause ← cause</text><text x="195" y="26" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">MPIE ← MIE · MIE ← 0 · pc ← mtvec</text><path d="M290 108 L100 108" fill="none" stroke="currentColor" stroke-width="1.6"/><polygon points="100.0,108.0 107.0,104.8 107.0,111.2" fill="currentColor" stroke="none"/><text x="195" y="101" text-anchor="middle" font-size="8.5" fill="currentColor" font-weight="600" stroke="none">mret</text><text x="195" y="136" text-anchor="middle" font-size="8.5" fill="currentColor" stroke="none">MIE ← MPIE · MPIE ← 1 · pc ← mepc</text><text x="195" y="160" text-anchor="middle" font-size="8" class="doux" stroke="none">interruption : mepc inchangé · instruction émulée : mepc ← mepc + 4</text></svg>
+      legende: |
+        À l'entrée d'un trap, le matériel sauve le PC dans `mepc` et la cause dans `mcause`, mémorise MIE dans MPIE et
+        **masque les interruptions** (MIE ← 0), puis saute à `mtvec`. `mret` fait le chemin inverse. Pour une interruption,
+        `mepc` désigne l'instruction interrompue, qui doit encore s'exécuter ; pour une instruction émulée, le gestionnaire
+        fait `mepc ← mepc + 4` avant `mret`.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 15–20, 27 (et notes « Suivi des slides 2d », section 6)"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-009
+    type: resume
+    titre: "Écrire un gestionnaire d'exception : les pièges"
+    importance: 3
+    corps: |
+      Un gestionnaire doit **sauver tous les registres** qu'il modifie (et que ses appelés modifient) : **les conventions
+      d'appel ne s'appliquent pas**, le code interrompu n'a rien appelé. Ex. réserver 128 octets sur la pile et y ranger
+      `x0`…`x31` comme un tableau, lire `mcause`, `mepc`, puis l'instruction fautive.
+    points_cles:
+      - "Détecter un **débordement de pile** : comparer la nouvelle valeur de `sp` (x2) à une limite (`Limit`) et lever une exception *watch*… mais alors le gestionnaire **ne peut pas utiliser la pile** !"
+      - "En général, on ne peut toucher **aucun registre**, et peut-être pas la pile. Solutions : registres réservés (MIPS `$k0`, `$k1`), registres fantômes (anciens processeurs), passage automatique à une pile sûre (x86). **RISC-V : le CSR `mscratch`**, un mot de stockage temporaire, ex. un pointeur vers une pile sûre."
+      - "**Ne jamais stocker de données utiles sous `sp`** : un prologue qui fait `sw ra, -12(sp)` **avant** `addi sp, sp, -12` n'est pas équivalent à la version normale, car une interruption entre les deux peut écraser ces données."
+      - "Autres difficultés : un gestionnaire qui utilise des emplacements statiques (dont `mscratch`) n'est **pas réentrant** ; le système ne supporte pas forcément de ne pas servir les interruptions longtemps (tampons d'E/S qui débordent). Les pilotes de périphériques bogués sont souvent responsables de l'instabilité des OS."
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 19, 21–24, 29 (et notes « Suivi des slides 2d », sections 7–8)"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-010
+    type: resume
+    titre: "Protection et niveaux de privilège"
+    importance: 2
+    corps: |
+      **Les E/S ne sont pas pour tout le monde** : si un accès mémoire vise l'adresse d'un périphérique et que le processeur
+      est en mode **utilisateur**, une exception est levée.
+    points_cles:
+      - "Il faut ① **au moins deux modes** : utilisateur, et noyau/superviseur pour l'OS (RISC-V en a jusqu'à trois : *Machine*, *Supervisor*, *User*) ; ② une partie de l'état **lisible par tous mais modifiable seulement en mode privilégié** (au moins le mode courant) ; ③ des moyens de **changer de mode** : une instruction qui déclenche une exception logicielle (**`ecall`**) et une instruction de retour (**`mret`/`sret`**)."
+      - "Tâches du processeur sur une exception : masquer les interruptions, sauver l'EPC, sauver la cause, élever le niveau de privilège, libérer des registres (registres fantômes si disponibles), sauter au gestionnaire."
+      - "La plupart sont annulées implicitement à la sortie (`mret` restaure le niveau de privilège et l'autorisation des interruptions) ; le programmeur peut vouloir **réactiver les interruptions** plus tôt, dès que c'est sûr."
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 25–27"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-011
+    type: resume
+    titre: "Priorités, imbrication et exceptions précises"
+    importance: 2
+    corps: |
+      Un contrôleur d'interruptions ne change que l'**ordre** dans lequel les IRQ sont présentées. Pour servir une
+      interruption prioritaire **pendant** qu'on en sert une autre, il y a un problème : il n'y a qu'**un seul `mepc`
+      et un seul `mcause`**. C'est pourquoi, dès qu'il prend une interruption, le processeur **désactive** les suivantes.
+    points_cles:
+      - "Solution : sauver les informations critiques (`mepc`, `mcause`, `mstatus`) sur une pile sûre, puis **réactiver manuellement** les interruptions (`mstatus`) sans quitter le gestionnaire."
+      - "Gérer les exceptions est l'un des plus grands défis de la conception des processeurs performants : il est difficile de connaître l'état exact d'exécution et d'offrir un **redémarrage précis**."
+      - "Les anciens processeurs ne supportaient pas du tout les exceptions précises : toute exception était une terminaison."
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 28, 30"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-012
+    type: resume
+    titre: "Exemple : convertisseur A/D par interruption"
+    importance: 2
+    corps: |
+      La boucle de polling (`poll: lw t0, 4(t1)` / `beqz t0, poll`) est **inefficace**. Nouvelle interface : tout accès à
+      `0xFFFFF0` lance une conversion ; **à la fin, le convertisseur lève une interruption** (IREQ3) ; le résultat se lit à
+      `0xFFFFF8`. IREQ3 est activé de façon asynchrone et **reste actif jusqu'à l'acquittement** (IACK3).
+
+      Le gestionnaire sauve les registres (sauf `zero` et `sp`), lit `mcause` : si le bit 31 vaut 0 (`bgez`), ce n'est pas une
+      interruption ; sinon il efface le bit 31 (`slli` puis `srli` de 1) et compare le code à **11** (interruption externe).
+      Il appelle alors `readADC` (`lw a0, 8(t0)` avec `t0 = 0xfffff0`) et `insertIntoBuffer`, restaure les registres et fait `mret`.
+    points_cles:
+      - "`startADC` doit construire `0xFFFFF0` : `li t0, 0xfffff0` (ou `lui t0, 0x1000` puis `addi t0, t0, -16`). La version du slide 36, `lui t0, 0xfff` + `addi t0, t0, 0xff0`, donne `0xFFEFF0`, car l'immédiat `0xff0` est étendu en signe (−16)."
+      - "`mepc` n'est **pas modifié** : c'est une interruption, l'instruction interrompue n'a pas été exécutée et doit l'être au retour."
+      - "`insertIntoBuffer` range la valeur dans un **tampon circulaire** de taille 1024 (« doit être une puissance de deux ») : l'indice suivant est `(i + 1) & (N − 1)`."
+    schema:
+      svg: |
+        <svg viewBox="0 0 380 150" xmlns="http://www.w3.org/2000/svg" font-size="10"><rect x="10" y="30" width="80" height="70" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="50" y="52" text-anchor="middle" font-size="9" fill="currentColor" font-weight="600" stroke="none">Convertisseur</text><text x="50" y="64" text-anchor="middle" font-size="9" fill="currentColor" font-weight="600" stroke="none">A/D</text><text x="86" y="86" text-anchor="end" font-size="8" fill="currentColor" stroke="none">/DV</text><path d="M108 74 L108 98 L128 86 Z" class="bloc" stroke="currentColor" stroke-width="1.5"/><circle cx="131" cy="86" r="3" class="bloc" stroke="currentColor" stroke-width="1.2"/><path d="M90 86 L108 86" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="150" y="80" text-anchor="middle" font-size="8" class="doux" stroke="none">DV</text><rect x="170" y="40" width="60" height="70" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="176" y="58" text-anchor="start" font-size="9" fill="currentColor" stroke="none">D</text><text x="224" y="76" text-anchor="end" font-size="9" fill="currentColor" stroke="none">Q</text><text x="200" y="104" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">Rst</text><path d="M170 80 L180 86 L170 92" class="bloc" stroke="currentColor" stroke-width="1.5"/><path d="M134 86 L170 86" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M150 54 L170 54" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="146" y="58" text-anchor="end" fill="currentColor" font-weight="600" stroke="none">1</text><rect x="290" y="20" width="80" height="110" rx="4" class="bloc-acc" stroke="currentColor" stroke-width="1.5"/><text x="330" y="40" text-anchor="middle" font-size="9" fill="currentColor" font-weight="600" stroke="none">Processeur</text><path d="M230 72 L290 72" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="290.0,72.0 283.0,75.2 283.0,68.8" fill="currentColor" stroke="none"/><text x="296" y="76" text-anchor="start" font-size="8.5" fill="currentColor" stroke="none">IREQ3</text><path d="M290 118 L200 118 L200 110" fill="none" stroke="currentColor" stroke-width="1.3"/><polygon points="200.0,110.0 203.2,117.0 196.8,117.0" fill="currentColor" stroke="none"/><text x="296" y="122" text-anchor="start" font-size="8.5" fill="currentColor" stroke="none">IACK3</text><text x="200" y="140" text-anchor="middle" font-size="8" class="acc" stroke="none">front montant de DV → Q = 1 (requête maintenue jusqu'à IACK)</text></svg>
+      legende: |
+        La sortie `/DV` est inversée : le front montant de DV (« conversion terminée ») fait passer à 1 une bascule D dont
+        l'entrée est câblée à 1. Sa sortie Q pilote **IREQ3** et reste à 1 jusqu'à ce que le processeur l'acquitte : **IACK3**
+        remet la bascule à zéro (Rst).
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 31–40"
+    verifie: false
+    incertain: null
+
+quiz:
+  - id: comparch-s05-q001
+    type: qcm
+    enonce: |
+      Quelle est l'idée des interruptions d'entrée/sortie, par rapport au polling ?
+    choix:
+      - "Le périphérique demande l'attention du processeur, au lieu que le processeur vienne le vérifier sans cesse"
+      - "Le processeur vérifie les périphériques plus souvent"
+      - "Les périphériques écrivent directement dans les registres du processeur"
+      - "Le programme appelle le gestionnaire avec `jal`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Avec le polling, le processeur visite régulièrement tous les périphériques, ce qui est très coûteux. Avec les
+      interruptions, c'est le périphérique qui « demande » (IRQ), et le contrôle passe à un gestionnaire **sans que le
+      programme l'ait écrit** : pas de `jal`.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 2–5"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q002
+    type: qcm
+    enonce: |
+      Dans la séquence IREQ/IACK, que signifie l'activation de **IACK** par le processeur ?
+    choix:
+      - "Le processeur est prêt à servir le périphérique (il acquitte la requête)"
+      - "Le périphérique demande l'attention"
+      - "Le transfert de données est terminé"
+      - "Les interruptions sont désactivées"
+    reponse: 0
+    tolerance: null
+    explication: |
+      ① Le périphérique demande par **IREQ** ; ② le processeur signale qu'il est prêt par **IACK** ; ③ le périphérique donne
+      son identité ; ④ le processeur saute au gestionnaire ; ⑤ il revient à la tâche interrompue. La requête est maintenue
+      jusqu'à l'acquittement.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 8–9"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q003
+    type: qcm
+    enonce: |
+      Dans un **OU câblé** (*wired-OR*) sur la ligne IRQ, que fait un périphérique qui ne demande **pas** d'interruption ?
+    choix:
+      - "Il met sa sortie en haute impédance (Z)"
+      - "Il pilote la ligne à 0"
+      - "Il pilote la ligne à 1"
+      - "Il coupe l'alimentation de la ligne"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Un périphérique qui ne demande rien se met en **Z** (déconnecté) ; c'est la **grande résistance** qui ramène la ligne
+      à 0. S'il pilotait 0 pendant qu'un autre pilote 1, ce serait un court-circuit.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slide 7"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q004
+    type: qcm
+    enonce: |
+      Quels sont les défauts de l'arbitrage en chaîne (*daisy chain*) ?
+    choix:
+      - "Il est lent et les priorités sont figées"
+      - "Il demande un contrôleur d'interruptions coûteux"
+      - "Il ne permet qu'un seul périphérique"
+      - "Il provoque des courts-circuits"
+    reponse: 0
+    tolerance: null
+    explication: |
+      La chaîne est simple, mais le *Grant* doit traverser les périphériques un à un (**lent**), et la priorité est fixée par
+      la **position** dans la chaîne (**priorités figées**). Un contrôleur d'interruptions est justement l'alternative plus
+      sophistiquée.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 10–11"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q005
+    type: qcm
+    enonce: |
+      Quel problème le **DMA** résout-il, que les interruptions ne résolvent pas ?
+    choix:
+      - "Le temps perdu par le processeur à transférer lui-même de gros volumes de données"
+      - "Le temps perdu à vérifier si les périphériques ont des données"
+      - "Le manque de registres dans le processeur"
+      - "Les courts-circuits sur le bus de données"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Les interruptions évitent déjà de vérifier sans cesse les périphériques. Mais pour un disque ou le réseau, le processeur
+      peut encore passer son temps à faire des load/store (peut-être 1 000 000 de fois). Le DMA fait ces transferts et
+      **libère le processeur**.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 13–21"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q006
+    type: vrai_faux
+    enonce: |
+      Pendant un transfert DMA, c'est le DMA qui pilote le bus (adresses et contrôle) ; le processeur lui a cédé le bus.
+    reponse: true
+    tolerance: null
+    explication: |
+      Le DMA devient **maître du bus** et pilote directement les bus d'adresse et de contrôle. Le processeur, maître
+      normal du bus, le **cède**, puis le reprend quand le DMA envoie son interruption de fin.
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 22–23, 26"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q007
+    type: qcm
+    enonce: |
+      Que contient au minimum un contrôleur DMA ?
+    choix:
+      - "Un registre d'incrément, des pointeurs source et destination, et un compteur"
+      - "Un banc de 32 registres et une ALU"
+      - "Une copie de la mémoire principale"
+      - "Seulement l'adresse du périphérique"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Il faut savoir **combien** transférer à la fois (incrément), **d'où** et **vers où** (deux pointeurs, incrémentés à
+      chaque transfert), et **combien** au total (compteur).
+    source:
+      fichier: "computer_architecture/semaine-05/2c. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slide 25"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q008
+    type: qcm
+    enonce: |
+      Selon la convention RISC-V / COD, qu'est-ce qu'une **interruption** ?
+    choix:
+      - "Une exception générée à l'extérieur du processeur"
+      - "N'importe quelle exception"
+      - "Une exception causée par une instruction indéfinie"
+      - "Un appel de fonction avec `jal`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      *Exception* est le nom général de tous les changements de flot non explicites ; une **interruption** est le cas
+      particulier d'une exception générée **hors du processeur** (ex. un périphérique). L'instruction indéfinie est une
+      exception interne et synchrone.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 2–3"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q009
+    type: vrai_faux
+    enonce: |
+      L'exception « instruction indéfinie » est **synchrone**.
+    reponse: true
+    tolerance: null
+    explication: |
+      Si on relance le programme depuis le même état initial, elle se produit à chaque fois, **sur la même instruction**.
+      Une interruption d'E/S, elle, peut arriver n'importe où (asynchrone).
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slide 5"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q010
+    type: qcm
+    enonce: |
+      Pourquoi un gestionnaire d'exception doit-il sauver **tous** les registres qu'il modifie, y compris les temporaires `t0`–`t6` ?
+    choix:
+      - "Parce que le code interrompu n'a rien appelé : les conventions d'appel ne s'appliquent pas"
+      - "Parce que les registres temporaires sont *callee saved*"
+      - "Parce que le processeur efface tous les registres en entrant dans le gestionnaire"
+      - "Ce n'est pas nécessaire, seuls les `s` doivent être sauvés"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Avec un `jal`, l'appelant sait qu'il appelle et sauve ses temporaires. Le programme interrompu, lui, **ne sait rien** :
+      le gestionnaire doit être invisible et sauver tout ce qu'il touche. Les temporaires sont normalement *caller saved*,
+      et le processeur n'efface pas les registres.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 7, 19"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q011
+    type: qcm
+    enonce: |
+      En RISC-V, où est sauvée l'adresse de l'instruction au moment d'une exception ?
+    choix:
+      - "Dans le CSR `mepc`"
+      - "Dans `ra` (x1)"
+      - "Dans `mtvec`"
+      - "Au sommet de la pile"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Pas dans `ra`, que le code interrompu utilise peut-être : RISC-V utilise un **registre spécial**, `mepc`.
+      `mtvec` contient l'adresse du gestionnaire ; la pile est la solution de x86.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 12–13, 17"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q012
+    type: qcm
+    enonce: |
+      Le gestionnaire lit `mcause` puis fait `bltz` vers le traitement des interruptions. Pourquoi ce test fonctionne-t-il ?
+    choix:
+      - "Le bit 31 de `mcause` vaut 1 pour une interruption, donc la valeur est négative en complément à 2"
+      - "Les codes d'interruption sont des nombres négatifs choisis par l'OS"
+      - "`bltz` teste si `mcause` vaut zéro"
+      - "Les exceptions ont un code supérieur à 31"
+    reponse: 0
+    tolerance: null
+    explication: |
+      `mcause[31]` = 1 signifie « interruption » : vu comme un entier signé, le nombre est **négatif**, d'où `bltz`
+      (ou `bgez` pour les exceptions). Les bits 30..0 donnent le code (ex. 11 = interruption externe).
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 18–19, 38"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q013
+    type: qcm
+    enonce: |
+      À la fin du gestionnaire d'une **interruption** (ex. fin de conversion A/D), que faut-il faire de `mepc` avant `mret` ?
+    choix:
+      - "Ne rien changer : l'instruction interrompue doit encore s'exécuter"
+      - "Ajouter 4 pour sauter l'instruction interrompue"
+      - "Le mettre à zéro"
+      - "Y copier `mtvec`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      `mepc` désigne une instruction **non exécutée**. Pour une interruption, c'est l'instruction interrompue : on y revient
+      telle quelle. On ajoute 4 seulement quand on a **émulé** l'instruction fautive (ex. instruction indéfinie).
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 17, 38"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q014
+    type: qcm
+    enonce: |
+      Après avoir **émulé** en logiciel une instruction indéfinie (ex. `fadd.s`), que doit faire le gestionnaire avant de revenir ?
+    choix:
+      - "Avancer l'adresse sauvée de 4 (`mepc ← mepc + 4`) pour pointer sur l'instruction suivante"
+      - "Laisser `mepc` inchangé pour réexécuter l'instruction"
+      - "Désactiver définitivement les interruptions"
+      - "Écrire le résultat dans `mcause`"
+    reponse: 0
+    tolerance: null
+    explication: |
+      L'instruction fautive a été faite en logiciel : il faut **la sauter** (étape ⑥ du gestionnaire), sinon on la
+      réexécuterait et l'exception recommencerait indéfiniment. Le résultat va dans le registre destination, pas dans `mcause`.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slides 7, 13"
+    verifie: false
+    incertain: null
+
+  - id: comparch-s05-q015
+    type: qcm
+    enonce: |
+      Pourquoi le processeur **désactive-t-il les interruptions** dès qu'il en prend une ?
+    choix:
+      - "Parce qu'il n'y a qu'un seul `mepc` et un seul `mcause`, qu'une nouvelle interruption écraserait"
+      - "Parce que les gestionnaires n'ont pas le droit d'utiliser la pile"
+      - "Parce que le DMA a besoin du bus"
+      - "Pour économiser de l'énergie"
+    reponse: 0
+    tolerance: null
+    explication: |
+      Une seconde interruption écraserait `mepc` et `mcause`, et le retour vers le code d'origine serait perdu. Pour servir
+      une interruption prioritaire pendant un gestionnaire, il faut d'abord sauver `mepc`, `mcause` et `mstatus` sur une pile
+      sûre, puis réactiver les interruptions manuellement.
+    source:
+      fichier: "computer_architecture/semaine-05/2d. Processor, IOs, and Exceptions (1).pdf"
+      emplacement: "slide 28"
+    verifie: false
+    incertain: null
