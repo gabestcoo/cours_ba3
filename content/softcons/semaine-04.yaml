@@ -1,0 +1,381 @@
+cours: softcons
+semaine: 4
+titre: "Preuves par induction, généricité et listes"
+fiches:
+  - id: softcons-s04-001
+    type: resume
+    titre: "L'essentiel en 5 lignes"
+    importance: 3
+    corps: |
+      **Semaine 4 : prouver des propriétés de programmes, puis écrire du code générique sur les listes.**
+    points_cles:
+      - "On prouve une propriété d'une fonction récursive par **induction** : sur les entiers, puis **structurelle** sur les listes et les arbres."
+      - "Les **équations de définition** d'une fonction (une par cas du `match`) et l'**exécution symbolique** sont les briques des preuves."
+      - "Les **paramètres de type** `[T]` (généricité, *parametric polymorphism*) évitent de réécrire `IntList`, `BoidSequence`… pour chaque type."
+      - "Les fonctions d'ordre supérieur `map`, `filter`, `reduceLeft`, `foldLeft`, `foldRight` capturent les schémas récurrents sur les listes."
+      - "Les listes Scala (`List`, `Nil`, `::`) sont **immuables** ; on les décompose par pattern matching (ex. tri par insertion, tri fusion)."
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 2, 4, 16, 25, 45, 52, 73"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-002
+    type: syntaxe
+    titre: "Liste définie à la main : sealed trait et case object"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      sealed trait IntList
+      case object Nil extends IntList
+      case class Cons(head: Int, tail: IntList) extends IntList
+    usage: |
+      Une liste est soit vide (`Nil`, un **case object**), soit une tête suivie d'une queue (`Cons`). Un `case object`
+      s'utilise comme motif dans un `match` : `case Nil => 0`. Le cours abrège `Cons(x, xs)` en `x :: xs`.
+    exemple: |
+      extension (xs: IntList)
+        def ++(ys: IntList): IntList = xs match
+          case Nil        => ys
+          case Cons(h, t) => Cons(h, t ++ ys)
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 10–11, 13"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-003
+    type: syntaxe
+    titre: "Paramètres de type : [T]"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      case class Cons[T](head: T, tail: List[T]) extends List[T]
+    usage: |
+      Les **paramètres de type** s'écrivent entre crochets, `[T]` (≈ `<T>` en Java). Ils généralisent `IntList` à
+      `List[T]`. Beaucoup de méthodes ne dépendent pas du type des éléments : `extension [T](xs: List[T])` définit
+      `length` ou `++` une seule fois pour tous les `T`.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 45–46"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-004
+    type: syntaxe
+    titre: "Fonctions génériques"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def singleton[T](elem: T) = Cons[T](elem, Nil[T]())
+    usage: |
+      Comme les classes, les fonctions peuvent avoir des paramètres de type : `singleton[Int](1)`. Le compilateur
+      **déduit** souvent le type à partir des arguments : `singleton(1)`, `singleton(true)`.
+    piege: |
+      Les paramètres de type n'influencent pas l'évaluation : ils sont **effacés** avant l'exécution (*type erasure*).
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 47, 50"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-005
+    type: syntaxe
+    titre: "Listes Scala : List, Nil et ::"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      val nums = 1 :: 2 :: 3 :: 4 :: Nil
+    usage: |
+      `List(x1, …, xn)` crée une liste de type `List[T]` ; `List()` a le type `List[Nothing]`. Toute liste est construite
+      à partir de la liste vide `Nil` et de l'opération `::` (*cons*) : `x :: xs` ajoute `x` en tête de `xs`.
+      Les listes sont **immuables**, l'ajout en tête est efficace mais l'accès au n-ième élément coûte $O(n)$.
+    piege: |
+      Les opérateurs qui finissent par `:` **associent à droite** : `A :: B :: C` se lit `A :: (B :: C)`.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 73–76"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-006
+    type: syntaxe
+    titre: "Motifs de listes"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      case y :: ys => insert(y, isort(ys))
+    usage: |
+      | motif | correspond à |
+      |---|---|
+      | `Nil` ou `List()` | la liste vide |
+      | `p :: ps` | tête qui correspond à `p`, queue à `ps` |
+      | `1 :: 2 :: xs` | listes qui commencent par 1 puis 2 |
+      | `x :: Nil` ou `List(x)` | listes de longueur 1 |
+      | `List(p1, …, pn)` | `p1 :: … :: pn :: Nil` |
+    exemple: |
+      def insert(x: Int, xs: List[Int]): List[Int] = xs match
+        case List()  => List(x)
+        case y :: ys => if x < y then x :: xs else y :: insert(x, ys)
+      def isort(xs: List[Int]): List[Int] = xs match
+        case List()  => List()
+        case y :: ys => insert(y, isort(ys))
+      isort(List(7, 3, 9, 2))   // List(2, 3, 7, 9)
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 78–80"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-007
+    type: syntaxe
+    titre: "Paires et tuples"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      val pair = ("answer", 42)   // type (String, Int)
+    usage: |
+      La paire de `x` et `y` s'écrit `(x, y)`. Elle peut servir de **motif** : `val (label, value) = pair`, ou
+      `(xs, ys) match { case (Nil, ys) => … }`. Accès direct : `pair._1`, `pair._2`. Pareil pour plus de deux éléments.
+    exemple: |
+      def merge(xs: List[Int], ys: List[Int]): List[Int] = (xs, ys) match
+        case (Nil, ys) => ys
+        case (xs, Nil) => xs
+        case (x :: xs1, y :: ys1) =>
+          if x < y then x :: merge(xs1, ys) else y :: merge(xs, ys1)
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 87–88"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-008
+    type: syntaxe
+    titre: "Écriture courte des fonctions : _"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      xs.foldLeft(0)(_ + _)
+    usage: |
+      `(_ * _)` remplace `((x, y) => x * y)`. Chaque `_` est un **nouveau paramètre**, de gauche à droite. Les paramètres
+      sont définis au niveau de la paire de parenthèses englobante la plus proche (ou de toute l'expression).
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slide 63"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-009
+    type: syntaxe
+    titre: "Entiers non bornés : BigInt"
+    importance: 1
+    langage: scala
+    syntaxe: |
+      def sum(n: BigInt): BigInt = if n == 0 then 1 else n + sum(n - 1)
+    usage: |
+      `BigInt` remplace `Int` pour raisonner comme en mathématiques, sans dépassement : `2147483647 + 1` vaut
+      `2147483648` en `BigInt`.
+    piege: |
+      Avec `Int`, `Int.MaxValue + 1 == -2147483648` : une preuve faite sur les entiers mathématiques ne s'applique plus.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 7–8"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-010
+    type: resume
+    titre: "Méthodes de la bibliothèque standard"
+    importance: 3
+    corps: |
+      Méthodes des listes vues cette semaine. `p` est un prédicat, `f` une fonction, `op` un opérateur binaire.
+
+      | méthode | résultat |
+      |---|---|
+      | `xs.head`, `xs.tail`, `xs.isEmpty` | premier élément, le reste, liste vide ? |
+      | `xs.length`, `xs ++ ys` | longueur, concaténation |
+      | `xs.map(f)` | `f` appliquée à chaque élément |
+      | `xs.filter(p)`, `xs.filterNot(p)` | éléments qui vérifient (ou pas) `p` |
+      | `xs.partition(p)` | `(xs.filter(p), xs.filterNot(p))` en un seul parcours |
+      | `xs.takeWhile(p)`, `xs.dropWhile(p)` | plus long préfixe qui vérifie `p`, et le reste |
+      | `xs.span(p)` | `(xs.takeWhile(p), xs.dropWhile(p))` en un seul parcours |
+      | `xs.splitAt(n)` | paire : les éléments avant l'indice `n`, puis à partir de `n` |
+    points_cles:
+      - "`List(x1, …, xn).reduceLeft(op)` = `x1.op(x2). … .op(xn)` ; lève une exception sur une liste vide."
+      - "`List(x1, …, xn).foldLeft(z)(op)` = `z.op(x1). … .op(xn)` ; renvoie `z` sur une liste vide."
+      - "`List(x1, x2, x3).reduceRight(op)` = `x1.op(x2.op(x3))` et `foldRight(z)(op)` = `x1.op(x2.op(x3.op(z)))`."
+      - "`foldLeft` et `reduceLeft` donnent des arbres de calcul penchés à gauche, `foldRight` et `reduceRight` à droite. Pour un opérateur **associatif et commutatif**, `foldLeft` et `foldRight` sont équivalents (l'efficacité peut différer)."
+      - "`xs.head` sur une liste vide lève `NoSuchElementException(\"head of empty list\")`."
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 54, 59–68, 77, 86"
+    verifie: false
+    incertain: |
+      Le slide 65 lève `IllegalOperationException` dans `reduceLeft` : cette classe n'existe pas (erreur de compilation).
+      Le slide 67 utilise `UnsupportedOperationException`, qui est aussi ce que lève la bibliothèque (`empty.reduceLeft`).
+      Les implémentations des slides 54 et 59 ne compilent pas non plus : `case Nil => xs` renvoie une `List[T]` là où
+      `map` doit renvoyer une `List[U]` (il faut `Nil`), et `filter` utilise `this` dans une extension (il faut `xs`).
+
+  - id: softcons-s04-011
+    type: resume
+    titre: "À retenir : prouver des propriétés de programmes"
+    importance: 3
+    corps: |
+      Une preuve s'appuie sur le **modèle de substitution**, appliqué à des valeurs symboliques.
+    points_cles:
+      - |
+        **Induction sur les entiers** : prouver $P(0)$ (cas de base), puis, pour tout $n \ge 0$, $P(n) \Rightarrow P(n+1)$
+        (pas d'induction, avec l'**hypothèse d'induction** $P(n)$).
+      - |
+        **Induction structurelle sur les listes** : prouver $P(\texttt{Nil})$, puis, pour une liste `xs` et un élément `x`
+        quelconques, $P(\texttt{xs}) \Rightarrow P(\texttt{x :: xs})$.
+      - |
+        **Sur les arbres** : prouver $P$ pour toutes les feuilles, puis, pour chaque type de nœud interne de sous-arbres
+        $s_1, …, s_n$, $P(s_1) \wedge … \wedge P(s_n) \Rightarrow P(t)$. Ex. `s.incl(x).contains(x) = true` pour un `IntSet`.
+      - |
+        **Équations de définition** : une par cas du `match`. Pour `++` : `Nil ++ ys = ys` et
+        `(h :: t) ++ ys = h :: (t ++ ys)`. On en déduit par induction `xs ++ Nil = xs` et
+        `(xs ++ ys) ++ zs = xs ++ (ys ++ zs)`.
+      - |
+        **Équations utilisables** : équations de définition, réflexivité, symétrie, transitivité, **instanciation**
+        (remplacer une variable symbolique par une valeur), remplacement d'une expression par une expression égale.
+      - |
+        **Exécution symbolique** : exécuter avec des valeurs inconnues. `(x :: (y :: Nil)).length = 2` pour tous `x`, `y`.
+      - |
+        **Programme ≠ maths** : une preuve peut ne pas s'appliquer en cas de `StackOverflow` ou de dépassement d'entier ;
+        on utilise alors un modèle précis des entiers machine, on borne les valeurs, ou on prend `BigInt`.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 4–7, 14–17, 23–27, 29, 32–35"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-012
+    type: resume
+    titre: "À retenir : listes génériques et tri"
+    importance: 2
+    corps: |
+      Les fonctions génériques d'ordre supérieur remplacent les fonctions dupliquées par type.
+    points_cles:
+      - "Sans paramètres de type, il faut dupliquer les fonctions : `mapBoid` n'accepte que des fonctions `Boid => Boid`."
+      - "`scaleList`, `posElems`, `sum` deviennent `xs.map(x => x * factor)`, `xs.filter(x => x > 0)`, `xs.foldLeft(0)(_ + _)`."
+      - "**Tri par insertion** : trier la queue, puis insérer la tête à sa place."
+      - "**Tri fusion** : une liste de 0 ou 1 élément est triée ; sinon, la couper en deux (`splitAt`), trier chaque moitié, puis fusionner (`merge`)."
+      - "Pour trier autre chose que des `Int`, on passe la comparaison en paramètre : `msort[T](xs: List[T], lessThan: (T, T) => Boolean)`, appelé avec `msort(xs, (x, y) => x < y)`."
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 53–55, 58–59, 62–64, 79, 84–92"
+    verifie: false
+    incertain: |
+      Le slide 90 appelle `merge(msort(fst)(lt), msort(snd))` alors que `msort` prend `(xs, lessThan)` en une seule
+      liste de paramètres ; la version complète du slide 91, reprise ici, est cohérente (vérifiée en compilant).
+
+  - id: softcons-s04-013
+    type: resume
+    titre: "Partie Software Engineering : instrumenter et tester"
+    importance: 3
+    corps: |
+      **Rendre un logiciel digne de confiance** : comprendre, spécifier et vérifier son comportement.
+    points_cles:
+      - "**Instrumenter** une fonction récursive : ajouter un paramètre `indent`, afficher l'entrée (`→`) et le résultat (`←`) avec `println`, et augmenter l'indentation à chaque appel récursif. On voit l'arbre des appels et l'usage de la pile."
+      - "**Acceptance testing** : le client essaie le logiciel."
+      - "**System testing** : on l'essaie soi-même avec une **checklist**."
+      - "**Integration testing** : tests de sous-systèmes complets, de bout en bout."
+      - "**Unit testing** : tests d'un seul composant."
+      - "**Monitoring (pré/postconditions)** : surveiller les composants pendant l'exécution réelle. `{ … } ensuring Q` ≡ `val res = …; assert(Q(res)); res`. `require(P)` ≡ `if !P then throw IllegalArgumentException(…)`, `assert(Q)` ≡ `if !Q then throw AssertionError(…)`."
+      - "**À quoi servent les tests** : documenter ce que le programme doit faire, éviter les régressions, localiser les problèmes, confirmer qu'on peut livrer, détecter les changements de composants qu'on ne contrôle pas, faciliter l'interaction entre composants."
+    source:
+      fichier: "software_construction/semaine-04/[CS-214 W04 SE] From tests to proofs I (2025-10-01) (1).pdf"
+      emplacement: "slides 8–13, 15–16, 18, 21–24, 25–26, 29"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-014
+    type: resume
+    titre: "Pièges fréquents"
+    importance: 2
+    corps: |
+      Les erreurs typiques de la semaine 4, au format **erreur → correction**.
+    points_cles:
+      - "Lire `1 :: 2 :: Nil` comme `(1 :: 2) :: Nil` → les opérateurs finissant par `:` associent à droite : `1 :: (2 :: Nil)`."
+      - "Appeler `xs.head` ou `reduceLeft` sur une liste vide → une exception ; utiliser `foldLeft(z)` qui renvoie `z`."
+      - "Supposer `foldLeft` et `foldRight` interchangeables → seulement pour un opérateur associatif et commutatif."
+      - "Écrire `def msort[T](xs: List[T])` avec `<` dans `merge` → `<` n'existe pas pour tout `T` : passer la comparaison en paramètre."
+      - "Utiliser une preuve sur `Int` près de `Int.MaxValue` → dépassement possible : passer à `BigInt`."
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 7, 62–68, 76–77, 89"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-015
+    type: resume
+    titre: "Exercices du cours"
+    importance: 2
+    corps: |
+      Les exercices des slides de la semaine, avec la solution **quand les slides la donnent**.
+    points_cles:
+      - |
+        **`sumAcc`** (slide 9) : tester `def sumAcc(s: BigInt, n: BigInt): BigInt = if n == 0 then s else sumAcc(s + n, n - 1)`
+        avec de grands `n`. Obtient-on un `StackOverflow` ? un dépassement d'entier ? Proposer une spécification et la
+        prouver par induction ; avec `Int`, trouver `n` tel que `sumAcc(1, n)` soit négatif. *Pas de solution dans les slides.*
+      - |
+        **Quelles lois vérifie `++` ?** (slide 12) → `Nil` est neutre à gauche (`Nil ++ ys = ys`) et à droite
+        (`xs ++ Nil = xs`), et `++` est associatif : `(xs ++ ys) ++ zs = xs ++ (ys ++ zs)` (slides 14–15).
+      - |
+        **`nth`** (slides 48–49) : le n-ième élément (à partir de 0), `IndexOutOfBoundsException` hors bornes.
+        ```scala
+        def nth[T](xs: List[T], n: Int): T = xs match
+          case Nil() => throw new IndexOutOfBoundsException()
+          case Cons(h, t) => if n == 0 then h else nth(t, n - 1)
+        ```
+      - |
+        **`squareList`** (slides 56–57) : élever au carré chaque élément, de deux façons.
+        ```scala
+        def squareList(xs: List[Int]): List[Int] = xs match
+          case Nil     => Nil
+          case y :: ys => y * y :: squareList(ys)
+        def squareList2(xs: List[Int]): List[Int] = xs.map(x => x * x)
+        ```
+      - |
+        **`concat` avec `foldRight`** (slide 69) : `def concat[T](xs: List[T], ys: List[T]) = xs.foldRight(ys)(_ :: _)`.
+        Pourquoi ne peut-on pas remplacer `foldRight` par `foldLeft` ? *Pas de solution dans les slides.*
+      - |
+        **`reverse` avec `foldLeft`** (slide 70) : trouver `z?` et `op?` dans `xs.foldLeft(z?)(op?)` pour inverser une
+        liste en temps linéaire. *Pas de solution dans les slides.*
+      - |
+        **`map` et `length` avec `foldRight`** (slide 71) : compléter `xs.foldRight(Nil)(???)` et `xs.foldRight(0)(???)`.
+        *Pas de solution dans les slides.*
+      - |
+        **Complexité de `isort`** (slides 80–82) : dans le pire cas, $O(N \cdot N)$ pour une liste de longueur $N$.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 9, 12, 48–49, 56–57, 69–71, 80–82"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s04-016
+    type: resume
+    titre: "Exercices Software Engineering"
+    importance: 2
+    corps: |
+      Les exercices des slides SE de la semaine.
+    points_cles:
+      - |
+        **Tester une pièce de théâtre** (slide 30) : répéter son monologue devant le miroir → *unit test* ; une scène à deux
+        en classe → *integration test* ; une répétition complète au théâtre → *system test* ; la première →
+        *acceptance test* ; le souffleur qui vous souffle le texte → *monitoring*.
+      - |
+        **`boidsWithinRadius`** (slide 27) : quelle postcondition aurait détecté le bug ? → la fonction incluait
+        `thisBoid` lui-même ; on ajoute `b != thisBoid &&` au filtre et on documente l'exclusion par une postcondition
+        `!_.contains(thisBoid)`.
+      - |
+        **La postcondition de `sort`** (slide 25) : « les éléments du résultat sont croissants » est-elle complète ?
+        Permet-elle des implémentations fausses ? La solution est au slide 37 de la semaine 5 (même longueur, et chaque
+        élément apparaît autant de fois).
+    source:
+      fichier: "software_construction/semaine-04/[CS-214 W04 SE] From tests to proofs I (2025-10-01) (1).pdf"
+      emplacement: "slides 25, 27, 30"
+    verifie: false
+    incertain: |
+      Le slide 27 écrit `.ensures(!_.contains(thisBoid))` : la méthode de la bibliothèque Scala s'appelle `ensuring`.
+quiz: []

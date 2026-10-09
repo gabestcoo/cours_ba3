@@ -192,8 +192,8 @@ La matière se retrouve ainsi :
 ### Software Construction (Scala 3)
 Chaque semaine est une fiche de résumé lue sur téléphone : agréable et rapide à parcourir.
 Base : **uniquement** les PDF de la semaine (cours `swc-weekN` + slides SE). Rien d'inventé.
-On se concentre sur la **matière** : pas de liens vers la doc, et rien de tiré des **exercices** du cours
-(ni énoncés, ni solutions).
+Pas de liens vers la doc. Les **exercices** du cours ne nourrissent pas les fiches de matière :
+ils sont regroupés dans des cartes dédiées en fin de semaine (point 7).
 Les cartes suivent cet ordre :
 
 1. **L'essentiel en 5 lignes** — une fiche `resume` (`importance: 3`) : `corps` = thème de la semaine,
@@ -210,6 +210,8 @@ Les cartes suivent cet ordre :
 5. **Partie Software Engineering** — une fiche `resume` de 3 à 6 points (debugging, tests, specs, Git) :
    pour chacun, ce qu'on fait **concrètement** avec, pas seulement sa définition.
 6. **Pièges fréquents** — une fiche `resume` de 3 à 5 points au format « erreur → correction », en une ligne.
+7. **Exercices du cours** — une fiche `resume` pour les exercices du cours, une autre pour ceux des slides SE :
+   énoncé court, puis la solution **seulement si les slides la donnent** (sinon « Pas de solution dans les slides »).
 
 Contraintes de forme : phrases courtes ; blocs de code de **8 lignes maximum** ; tableaux de
 **3 colonnes maximum** ; code **Scala 3 avec la syntaxe par indentation**, en style fonctionnel

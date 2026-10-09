@@ -1,0 +1,415 @@
+cours: softcons
+semaine: 5
+titre: "Sous-typage et généricité, collections, for-expressions"
+fiches:
+  - id: softcons-s05-001
+    type: resume
+    titre: "L'essentiel en 5 lignes"
+    importance: 3
+    corps: |
+      **Semaine 5 : faire cohabiter sous-typage et généricité, puis découvrir les autres collections.**
+    points_cles:
+      - "Les **bornes de type** (`S <: T`, `S >: T`) restreignent les types qu'un paramètre de type peut prendre."
+      - "La **variance** (`+T`, `-T`) dit si `C[A] <: C[B]` quand `A <: B` ; elle doit respecter le **principe de substitution de Liskov**."
+      - "Les fonctions sont **contravariantes** dans leurs arguments et **covariantes** dans leur résultat."
+      - "Au-delà de `List` : `Vector`, `Range`, `Set`, `Map` et `Option` partagent le même vocabulaire (`map`, `filter`, `flatMap`…)."
+      - "Une **for-expression** `for … yield …` remplace des combinaisons de `map`, `flatMap` et `filter` difficiles à lire."
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 2, 5, 12, 28, 34, 50–54, 69, 76, 83, 87"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-002
+    type: syntaxe
+    titre: "Bornes de type : <: et >:"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def assertAllPos[S <: IntSet](r: S): S = ...
+    usage: |
+      | notation | signification |
+      |---|---|
+      | `S <: T` | `S` est un sous-type de `T` (borne **supérieure**) |
+      | `S >: T` | `S` est un supertype de `T` (borne **inférieure**) |
+      | `[S >: NonEmpty <: IntSet]` | `S` entre `NonEmpty` et `IntSet` |
+
+      Ici, `assertAllPos` envoie un `Empty` sur un `Empty` et un `NonEmpty` sur un `NonEmpty`, ce que
+      `(s: IntSet): IntSet` ne dit pas. Avec `[S >: NonEmpty]`, `S` peut être `NonEmpty`, `IntSet`, `AnyRef` ou `Any`.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 3–7"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-003
+    type: syntaxe
+    titre: "Annotations de variance : +T et -T"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      trait Function1[-T, +U]:
+        def apply(x: T): U
+    usage: |
+      Si `A <: B` :
+
+      | déclaration | relation | `C` est… |
+      |---|---|---|
+      | `class C[+A]` | `C[A] <: C[B]` | covariant |
+      | `class C[-A]` | `C[A] >: C[B]` | contravariant |
+      | `class C[A]` | aucune | non variant |
+
+      Le compilateur vérifie, en gros : un paramètre covariant n'apparaît qu'en **résultat** de méthode, un paramètre
+      contravariant qu'en **paramètre** de méthode, un paramètre non variant n'importe où.
+    piege: |
+      Un type qui permet de **modifier** ses éléments ne doit pas être covariant : `class Array[+T] { def update(x: T) … }`
+      est refusé, car `T` covariant apparaît en position de paramètre.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 27–29, 34–37"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-004
+    type: syntaxe
+    titre: "Liste covariante et borne inférieure dans une méthode"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def prepend[U >: T](elem: U): List[U] = Node(elem, this)
+    usage: |
+      Avec `trait List[+T]`, la liste vide peut devenir un **objet** : `object Empty extends List[Nothing]`.
+      Mais `def prepend(elem: T): List[T]` échoue à la vérification de variance. La borne inférieure `U >: T` la
+      fait passer : un paramètre covariant peut apparaître dans la **borne inférieure** d'un paramètre de type de méthode
+      (et un paramètre contravariant dans une borne supérieure).
+    exemple: |
+      trait List[+T]:
+        def prepend[U >: T](elem: U): List[U] = Node(elem, this)
+      def f(xs: List[Apple], x: Orange) = xs.prepend(x)   // List[Fruit]
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 38–45"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-005
+    type: syntaxe
+    titre: "Vector : +: et :+"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      val nums = Vector(1, 2, 3, -88)
+    usage: |
+      Une séquence à l'accès **plus équilibré** que `List`. Mêmes opérations que les listes, sauf `::`, remplacé par
+      `x +: xs` (ajout en tête) et `xs :+ x` (ajout en fin).
+    piege: |
+      Le `:` pointe toujours vers la **séquence** : `0 +: v`, `v :+ 4`.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 50–51"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-006
+    type: syntaxe
+    titre: "Range : to, until, by"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      1 to 10 by 3   // 1, 4, 7, 10
+    usage: |
+      Une séquence d'entiers régulièrement espacés : `to` (borne incluse), `until` (borne exclue), `by` (pas).
+      `1 until 5` donne 1 à 4, `6 to 1 by -2` donne 6, 4, 2. Représentée par un seul objet à trois champs :
+      borne inférieure, borne supérieure, pas.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slide 54"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-007
+    type: syntaxe
+    titre: "Fonction par pattern matching et paramètres détuplés"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      xs.zip(ys).map { case (x, y) => x * y }
+    usage: |
+      `{ case p1 => e1 … case pn => en }` équivaut à `x => x match { case p1 => e1 … case pn => en }`.
+      Pour une simple décomposition de tuple, on peut omettre le `case` : `map((x, y) => x * y)`, ou même `map(_ * _)`.
+    exemple: |
+      def scalarProduct(xs: Vector[Double], ys: Vector[Double]): Double =
+        xs.zip(ys).map((x, y) => x * y).sum
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 58–60"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-008
+    type: syntaxe
+    titre: "For-expression : for … yield"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      for p <- persons if p.age > 20 yield p.name
+    usage: |
+      `for s yield e` : `s` est une suite de **générateurs** `p <- e` (`e` une collection, `p` un motif) et de
+      **filtres** `if f`, qui commence par un générateur ; `e` est la valeur produite par chaque itération. Le résultat
+      est la collection de toutes ces valeurs. Ici, équivaut à `persons.filter(p => p.age > 20).map(p => p.name)`.
+    exemple: |
+      for
+        i <- 1 until n
+        j <- 1 until i
+        if isPrime(i + j)
+      yield (i, j)
+    piege: |
+      Avec plusieurs générateurs, les **derniers varient le plus vite** (comme des boucles imbriquées).
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 70–72"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-009
+    type: syntaxe
+    titre: "Set"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      val fruit = Set("apple", "banana", "pear")
+    usage: |
+      S'écrit comme une séquence et offre la plupart de ses opérations (`map`, `filter`, `nonEmpty`…). Différences :
+      un ensemble n'est **pas ordonné**, n'a **pas de doublons** (`(1 to 6).toSet.map(_ / 2)` a 4 éléments), et son
+      opération fondamentale est `contains`.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 76–77"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-010
+    type: syntaxe
+    titre: "Map : ->"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      val romanNumerals = Map("I" -> 1, "V" -> 5, "X" -> 10)
+    usage: |
+      Un `Map[Key, Value]` associe des clés à des valeurs. `key -> value` est une autre écriture de la paire
+      `(key, value)`. Un map est un `Iterable[(Key, Value)]` (mêmes opérations que les collections) et une **fonction**
+      `Key => Value` : `capitalOfCountry("US")`. Mise à jour **fonctionnelle** : `m + (k -> v)`, `m ++ kvs` renvoient
+      un nouveau map, `m` ne change pas.
+    piege: |
+      `capitalOfCountry("Andorra")` lève `NoSuchElementException` si la clé manque : utiliser `get`, qui renvoie une `Option`.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 83–86, 89"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-011
+    type: syntaxe
+    titre: "Option : Some et None"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      trait Option[+A]
+      case class Some[+A](value: A) extends Option[A]
+      object None extends Option[Nothing]
+    usage: |
+      `map.get(key)` renvoie `None` si la clé est absente, `Some(x)` si elle est associée à `x`. On décompose une
+      `Option` par pattern matching ; elle offre aussi beaucoup d'opérations des autres collections.
+    exemple: |
+      def showCapital(country: String) = capitalOfCountry.get(country) match
+        case Some(capital) => capital
+        case None          => "missing data"
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 86–88"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-012
+    type: resume
+    titre: "Méthodes de la bibliothèque standard"
+    importance: 3
+    corps: |
+      Opérations sur les séquences et les maps vues cette semaine.
+
+      | méthode | résultat |
+      |---|---|
+      | `xs.exists(p)`, `xs.forall(p)` | un élément / tous les éléments vérifient `p` |
+      | `xs.zip(ys)` | séquence des paires d'éléments correspondants |
+      | `xs.unzip` | sépare une séquence de paires en deux séquences |
+      | `xs.flatMap(f)` | applique `f` (qui renvoie une collection) et concatène |
+      | `xss.flatten` | concatène les sous-collections |
+      | `xs.sum`, `xs.product`, `xs.max` | somme, produit, maximum |
+      | `m.get(k)` | `Some(v)` ou `None` |
+      | `xs.sortWith(lt)`, `xs.sorted` | tri selon `lt`, tri naturel |
+      | `xs.groupBy(f)` | map des sous-collections, selon la valeur de `f` |
+    points_cles:
+      - "Loi utile : `xs.flatMap(f) = xs.map(f).flatten`."
+      - "`fruit.groupBy(_.head)` donne `Map(p -> List(pear, pineapple), a -> List(apple), o -> List(orange))`."
+      - "Les `Array` et les `String` ont les mêmes opérations que `Seq` et y sont convertis implicitement : `\"Hello world!\".filter(_.isUpper)`."
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 53, 55, 66–67, 86, 90"
+    verifie: false
+    incertain: |
+      Le slide 66 écrit `xss.foldRight(Seq[Int]())(_ ++ _)` : ça ne compile pas, car les éléments sont des paires
+      `(Int, Int)` ; il faudrait `Seq[(Int, Int)]()`. `xss.flatten`, sur le même slide, est correct.
+
+  - id: softcons-s05-013
+    type: resume
+    titre: "À retenir"
+    importance: 3
+    corps: |
+      Deux formes de polymorphisme, le **sous-typage** et la **généricité**, et leurs interactions : bornes et variance.
+    points_cles:
+      - |
+        **Principe de substitution de Liskov** : si `A <: B`, tout ce qu'on peut faire avec une valeur de type `B`, on doit
+        pouvoir le faire avec une valeur de type `A`.
+      - |
+        **Tableaux Java covariants** (`NonEmpty[] <: IntSet[]`) : en écrivant un `Empty` via `b: IntSet[] = a`, on finit
+        par lire un `Empty` dans une variable `NonEmpty`. Un type **mutable** ne doit pas être covariant ; un type
+        **immuable** peut l'être, si ses méthodes respectent certaines conditions.
+      - |
+        **Sous-typage des fonctions** : si `A2 <: A1` et `B1 <: B2`, alors `A1 => B1 <: A2 => B2`.
+        D'où `Function1[-T, +U]`.
+      - |
+        **`prepend` sans borne viole Liskov** : on peut faire `xs.prepend(Orange)` sur une `List[Fruit]`, pas sur une
+        `List[Apple]`. Avec `[U >: T]`, préfixer un `Orange` à une `List[Apple]` donne une `List[Fruit]`.
+      - |
+        **Hiérarchie des collections** : `Iterable` ← `Seq`, `Set`, `Map` ; `Seq` ← `List`, `Vector` (`Array` et `String`
+        s'y convertissent). `List` est linéaire : accès au premier élément bien plus rapide qu'au milieu ou à la fin.
+      - |
+        **Tuples** : `(T1, …, Tn)` abrège `scala.Tuplen[T1, …, Tn]` ; `(e1, …, en)` et le motif `(p1, …, pn)` correspondent
+        à `scala.Tuplen(…)`.
+      - |
+        **Collections immuables** : faciles à utiliser, concises, sûres, rapides, universelles.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 2, 10–12, 20–21, 27, 33–34, 43–45, 50, 52–53, 108"
+    verifie: false
+    incertain: |
+      Le slide 21 écrit `case class Tuple2[T1, T2](_1: +T1, _2: +T2)` : ça ne compile pas, les annotations de variance
+      se placent sur les paramètres de type, `Tuple2[+T1, +T2](_1: T1, _2: T2)`.
+
+  - id: softcons-s05-014
+    type: resume
+    titre: "Partie Software Engineering : des user stories aux specs formelles"
+    importance: 3
+    corps: |
+      Formuler ce que le logiciel doit faire, de l'anglais jusqu'aux maths et au code.
+    points_cles:
+      - "**User stories** : quelques mots pour capturer l'essentiel, structure *qui / où / quoi*. Ex. « As a passenger, when opening the CFF timetable, I want to quickly find out which platform my train departs from »."
+      - "**Requirements** : description complète de ce que veut l'utilisateur. **Fonctionnels** : objectifs concrets et testables (« simplify should be idempotent »). **Non fonctionnels** : propriétés générales (« the API should respond quickly »)."
+      - "**Specifications** : requirements fonctionnels reformulés **sans ambiguïté** (fonctionnalité, performance, gestion d'erreurs…). Les requirements sont pour les clients, les specs pour les ingénieurs."
+      - "**L'anglais et le français sont de mauvais langages de spec** : rattachement (« a newspaper based in Morges »), logique (« Building D and Building E »), nombres (« more than 13 years old »), négations imbriquées."
+      - "**Specs formelles** : écrites en maths ou en code, pour ingénieurs et ordinateurs, et permettent des preuves. **Modèle logiciel** : `ensuring (res => res == slowExponentiation(x, n))` ; **axiomatique** : un monitor (`ensuring` sur `filter`) ou un test d'intégration paramétrique (`pop(push(t, s)) == (t, s)`)."
+      - "**Récap** : acceptance et system tests valident les **requirements** ; integration tests, unit tests et monitors valident les **specs**."
+    source:
+      fichier: "software_construction/semaine-05/[CS-214 W05 SE] From tests to proofs II_ Specs and proofs (2025-10-08) (1).pdf"
+      emplacement: "slides 9–12, 16, 26–31, 38"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-015
+    type: resume
+    titre: "Pièges fréquents"
+    importance: 2
+    corps: |
+      Les erreurs typiques de la semaine 5, au format **erreur → correction**.
+    points_cles:
+      - "Rendre covariant un type modifiable (`Array[+T]` avec `update(x: T)`) → refusé : un `T` covariant ne peut apparaître qu'en résultat."
+      - "`def prepend(elem: T): List[T]` dans `List[+T]` → ajouter une borne inférieure : `prepend[U >: T](elem: U): List[U]`."
+      - "Croire que `A => B` est covariant dans `A` → les fonctions sont **contravariantes** dans leurs arguments."
+      - "Écrire `v :: x` sur un `Vector` → `v :+ x` (fin) ou `x +: v` (tête)."
+      - "Appeler `m(k)` sans savoir si la clé existe → `m.get(k)`, puis `match` sur `Some` / `None`."
+      - "Enchaîner `flatMap`, `map` et `filter` illisibles → une for-expression."
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 33–35, 40–45, 51, 68–69, 86"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s05-016
+    type: resume
+    titre: "Exercices du cours"
+    importance: 2
+    corps: |
+      Les exercices des slides de la semaine, avec la solution **quand les slides la donnent**.
+    points_cles:
+      - |
+        **Le tableau covariant en Scala** (slides 13–14) : que se passe-t-il ?
+        ```scala
+        val a: Array[NonEmpty] = Array(NonEmpty(1, Empty(), Empty()))
+        val b: Array[IntSet] = a
+        b(0) = Empty()
+        val s: NonEmpty = a(0)
+        ```
+        *Réponse non donnée dans le texte des slides* (voir l'encadré ⚠️).
+      - |
+        **Types de fonctions** (slides 30–32) : avec `Apple <: Fruit`, `Orange <: Fruit`, `type A = Fruit => Orange` et
+        `type B = Apple => Fruit`, Liskov donne **`A <: B`** (argument contravariant, résultat covariant).
+      - |
+        **Pourquoi `def prepend(elem: T): List[T]` ne type-checke pas** dans `List[+T]` (slides 41–43) → elle échoue à la
+        vérification de variance, et le compilateur a raison : elle viole Liskov.
+      - |
+        **Type de `f(xs: List[Apple], x: Orange) = xs.prepend(x)`** avec `prepend[U >: T]` (slides 46–48) → `List[Fruit]`.
+      - |
+        **`isPrime`** (slides 61–62) : un test de primalité concis.
+        ```scala
+        def isPrime(n: Int): Boolean = (2 to n - 1).forall(d => n % d != 0)
+        ```
+      - |
+        **`scalarProduct` avec un `for`** (slides 73–74) :
+        ```scala
+        def scalarProduct(xs: List[Double], ys: List[Double]): Double =
+          (for ((x, y) <- xs.zip(ys)) yield x * y).sum
+        ```
+      - |
+        **`isSafe`** (slide 81) : tester si une reine placée en colonne `col`, à la ligne `queens.length`, n'est menacée
+        par aucune des reines déjà placées. *Pas de solution dans les slides.*
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 13–14, 30–32, 41–43, 46–48, 61–62, 73–74, 81"
+    verifie: false
+    incertain: |
+      Tableau (slide 14) : la réponse n'apparaît pas dans le texte du slide. En compilant, on obtient une **erreur de type
+      à la ligne 2** (`Array[NonEmpty]` n'est pas un `Array[IntSet]` : les tableaux Scala ne sont pas covariants).
+      `isPrime` (slide 62) : la solution du slide écrit `n % d == 0`, ce qui ne retient que 2 parmi 2 à 12 (vérifié) ;
+      il faut `n % d != 0`, comme dans la fiche.
+
+  - id: softcons-s05-017
+    type: resume
+    titre: "Exercices Software Engineering"
+    importance: 2
+    corps: |
+      Les exercices des slides SE de la semaine : compléter des specs formelles.
+    points_cles:
+      - |
+        **`max`** (slides 34–35) : `ensuring (res => l.forall(x => x <= res))` est incomplet, car n'importe quel majorant
+        convient. Il faut aussi que le résultat soit dans la liste :
+        ```scala
+        } ensuring (res => l.forall(x => x <= res) && l.contains(res))
+        ```
+      - |
+        **`sort`** (slides 36–37) : « le résultat est croissant » ne suffit pas. Il faut aussi la même longueur et les
+        mêmes éléments avec les mêmes multiplicités :
+        ```scala
+        } ensuring (res =>
+            l.length == res.length &&
+            (0 to l.length - 2).forall(idx => res(idx) <= res(idx + 1)) &&
+            l.forall(x => res.count(_ == x) == l.count(_ == x)))
+        ```
+      - |
+        **Quels types de requirements ont nos labs ?** (slide 12) *Pas de solution dans les slides.*
+    source:
+      fichier: "software_construction/semaine-05/[CS-214 W05 SE] From tests to proofs II_ Specs and proofs (2025-10-08) (1).pdf"
+      emplacement: "slides 12, 34–37"
+    verifie: false
+    incertain: |
+      Les slides 34–35 écrivent `requires(!l.isEmpty)` : la fonction Scala s'appelle `require`.
+quiz: []
