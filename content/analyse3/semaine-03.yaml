@@ -1,0 +1,168 @@
+cours: analyse3
+semaine: 3
+titre: "Champs qui dérivent d'un potentiel"
+fiches:
+  - id: analyse3-s03-001
+    type: definition
+    titre: "Champ dérivant d'un potentiel (champ conservatif)"
+    importance: 3
+    corps: |
+      Soit $\Omega \subset \mathbb{R}^n$ un **ouvert** et $F : \Omega \to \mathbb{R}^n$, $x \mapsto F(x) = (F_1(x), \dots, F_n(x))$,
+      un champ vectoriel avec $F \in C^1(\Omega, \mathbb{R}^n)$.
+
+      $F$ **dérive d'un potentiel** dans $\Omega$ s'il existe un champ scalaire $f : \Omega \to \mathbb{R}$ de classe
+      $f \in C^1(\Omega)$ tel que
+      $$F = \operatorname{grad}(f) = \left(\frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n}\right).$$
+      Dans ce cas, $F$ est un **champ conservatif** et $f$ est **un potentiel**.
+
+      Remarques :
+      1. Le champ gravitationnel : $f = \frac{c}{r}$, $c = g\,m\,M$, $F = \operatorname{grad} f = -\frac{c}{r^3}(x, y, z)$.
+      2. Si le potentiel existe, il est défini **à une constante près** $\alpha \in \mathbb{R}$ : $F = \operatorname{grad}(f) = \operatorname{grad}(f + \alpha)$.
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Wed (2).pdf"
+      emplacement: "p. 1–2 (section 2.3.1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-002
+    type: theoreme
+    titre: "Théorème 1 : condition nécessaire et condition suffisante"
+    importance: 3
+    hypotheses: |
+      $\Omega \subset \mathbb{R}^n$ un **ouvert** et $F : \Omega \to \mathbb{R}^n$ un champ vectoriel avec $F \in C^1(\Omega, \mathbb{R}^n)$.
+    corps: |
+      **(a) Condition nécessaire.** Si $F$ dérive d'un potentiel dans $\Omega$, alors
+      $$\frac{\partial F_i}{\partial x_j}(x) = \frac{\partial F_j}{\partial x_i}(x) \qquad \forall i, j = 1, \dots, n,\ \forall x \in \Omega. \qquad (*)$$
+
+      **(b) Condition suffisante.** Si $(*)$ est vérifiée **et** si $\Omega$ est **simplement connexe et/ou convexe**,
+      alors $F$ dérive d'un potentiel dans $\Omega$.
+    remarques: |
+      1. La condition $(*)$ est **nécessaire mais pas suffisante**.
+      2. La condition $(*)$ est **équivalente à $\operatorname{curl}(F) = 0$** ; ex. pour $n = 2$,
+         $\operatorname{curl} F = \frac{\partial F_2}{\partial x_1} - \frac{\partial F_1}{\partial x_2} = 0$
+         (cohérent avec $\operatorname{curl}(\operatorname{grad} f) = 0$).
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Wed (2).pdf"
+      emplacement: "p. 3–4 (section 2.3.2, thm 1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-003
+    type: definition
+    titre: "Ouvert, connexe, simplement connexe, convexe"
+    importance: 3
+    corps: |
+      1. $\Omega$ est **ouvert** si son bord $\partial\Omega$ n'appartient pas à $\Omega$.
+      2. $\Omega \subset \mathbb{R}^n$ est **connexe** (*connected*) si pour tous $x, y \in \Omega$, il existe une courbe $\Gamma$
+         qui relie $x$ et $y$ et qui est entièrement contenue dans $\Omega$.
+      3. $\Omega \subset \mathbb{R}^n$ est **simplement connexe** (*simply connected*) si pour tous $x, y \in \Omega$ et toutes
+         deux courbes $\Gamma_1, \Gamma_2 \subset \Omega$ qui relient $x$ et $y$, on peut **déformer** l'une en l'autre en restant
+         dans $\Omega$ pendant toute la déformation. (Un anneau ou un tore ne sont pas simplement connexes.)
+      4. $\Omega \subset \mathbb{R}^n$ est **convexe** si pour tout $t \in [0, 1]$ et tous $x, y \in \Omega$,
+         $$x + t(y - x) \in \Omega,$$
+         c'est-à-dire que le segment entre $x$ et $y$ est entièrement contenu dans $\Omega$.
+
+      $$\text{convexe} \Longrightarrow \text{simplement connexe.}$$
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Wed (2).pdf"
+      emplacement: "p. 4–8 (rappels)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-004
+    type: theoreme
+    titre: "Théorème 2 : potentiel et intégrales curvilignes"
+    importance: 3
+    hypotheses: |
+      $\Omega \subset \mathbb{R}^n$ un **ouvert** et $F : \Omega \to \mathbb{R}^n$ avec $F \in C^1(\Omega, \mathbb{R}^n)$.
+    corps: |
+      Les affirmations suivantes sont **équivalentes** :
+      1. $F$ dérive d'un potentiel ;
+      2. $\int_{\Gamma_1} F \cdot d\ell = \int_{\Gamma_2} F \cdot d\ell$ pour **toutes** les courbes simples régulières (par morceaux)
+         $\Gamma_1, \Gamma_2 \subset \Omega$ joignant **tout** couple de points $x, y \in \Omega$ ;
+      3. $\int_\Gamma F \cdot d\ell = 0$ pour toute courbe simple régulière (par morceaux) $\Gamma$ **fermée** avec $\Gamma \subset \Omega$.
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Wed (2).pdf"
+      emplacement: "p. 9 (section 2.3.2, thm 2)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-005
+    type: methode
+    titre: "Décider si F dérive d'un potentiel (résumé des théorèmes 1 et 2)"
+    importance: 3
+    etapes:
+      - "**(a)** Si $\\operatorname{curl} F \\neq 0$ dans $\\Omega$ ⟹ $F$ **ne dérive pas** d'un potentiel (théorème 1)."
+      - "**(b1)** Si $\\operatorname{curl} F = 0$ dans $\\Omega$ et $\\Omega$ est **simplement connexe et/ou convexe** ⟹ $F$ **dérive** d'un potentiel (théorème 1)."
+      - "**(b2)** Si $\\operatorname{curl} F = 0$ mais $\\Omega$ n'est ni simplement connexe ni convexe ⟹ le théorème 1 **ne dit rien**."
+      - "**(c)** Si on trouve **au moins une** courbe fermée simple régulière par morceaux $\\Gamma \\subset \\Omega$ avec $\\int_\\Gamma F \\cdot d\\ell \\neq 0$ ⟹ $F$ **ne dérive pas** d'un potentiel (théorème 2)."
+      - "**(d)** Si on trouve une (ou plusieurs) courbes fermées $\\Gamma \\subset \\Omega$ avec $\\int_\\Gamma F \\cdot d\\ell = 0$ ⟹ le théorème 2 **ne dit rien**."
+    exemple: |
+      $F(x, y) = (4x^3y^2,\ 2x^4y + y)$ sur $\Omega = \mathbb{R}^2$ (simplement connexe et convexe) :
+      $\frac{\partial F_1}{\partial y} = \frac{\partial F_2}{\partial x} = 8x^3y$, donc $\operatorname{curl} F = 0$ : cas (b1), $F$ dérive d'un potentiel.
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Wed (2).pdf"
+      emplacement: "p. 10–11 (résumé des thm 1 et 2, ex. 1)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-006
+    type: methode
+    titre: "Trouver un potentiel"
+    importance: 3
+    etapes:
+      - "Écrire $\\operatorname{grad} f = F$, c'est-à-dire $\\frac{\\partial f}{\\partial x} = F_1$, $\\frac{\\partial f}{\\partial y} = F_2$ (et $\\frac{\\partial f}{\\partial z} = F_3$)."
+      - "Intégrer $\\frac{\\partial f}{\\partial x} = F_1$ par rapport à $x$ : $f = G_1 + \\alpha(y)$ (ou $\\alpha(y, z)$ en 3D), où $\\frac{\\partial G_1}{\\partial x} = F_1$ et la « constante » dépend des autres variables."
+      - "Dériver par rapport à $y$ et identifier avec $F_2$ pour trouver $\\alpha'(y)$ (ou $\\frac{\\partial \\alpha}{\\partial y}$), puis intégrer."
+      - "En 3D, recommencer avec $z$ pour la fonction restante $\\beta(z)$. Le potentiel est défini à une constante $C \\in \\mathbb{R}$ près."
+    exemple: |
+      **Ex. 1** $F = (4x^3y^2,\ 2x^4y + y)$ : $f = x^4y^2 + \alpha(y)$, puis $2x^4y + \alpha'(y) = 2x^4y + y$, donc
+      $\alpha(y) = \frac12 y^2 + C$ et
+      $$f(x, y) = x^4y^2 + \tfrac12 y^2 + C.$$
+      **Ex. 2** $F = (ye^x\sin z,\ 1 + e^x\sin z,\ ye^x\cos z + z)$ sur $\mathbb{R}^3$ ($\operatorname{curl} F = 0$) :
+      $f = ye^x\sin z + \alpha(y, z)$ ; $\frac{\partial \alpha}{\partial y} = 1$ donc $\alpha = y + \beta(z)$ ; $\beta'(z) = z$ donc
+      $$f(x, y, z) = ye^x\sin z + y + \tfrac12 z^2 + C.$$
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Wed (2).pdf"
+      emplacement: "Wed p. 11–14 ; suite dans lecture_03_Thu (2).pdf, p. 1–2"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-007
+    type: formule
+    titre: "Construction du potentiel (preuve du théorème 1, n = 2, Ω convexe)"
+    importance: 2
+    corps: |
+      (a) **Nécessaire** : si $F = \operatorname{grad} f$ avec $f \in C^2(\Omega)$, alors $\operatorname{curl}(\operatorname{grad} f) = \operatorname{curl}(F) = 0$.
+
+      (b) **Suffisante** (version limitée : $\Omega$ convexe, $(0, 0) \in \Omega$, $\operatorname{curl} F = 0$). On pose
+      $$\varphi(x, y) = \int_{\Gamma(x, y)} F \cdot d\ell = \int_0^1 \big(x\,F_1(tx, ty) + y\,F_2(tx, ty)\big)\,dt,$$
+      où $\Gamma(x, y)$ est le segment $\gamma(t) = (tx, ty)$, $t \in [0, 1]$, contenu dans $\Omega$ car $\Omega$ est convexe.
+      Avec $\frac{\partial F_2}{\partial x} = \frac{\partial F_1}{\partial y}$,
+      $$\frac{\partial \varphi}{\partial x} = \int_0^1 \frac{d}{dt}\big(t\,F_1(\gamma(t))\big)\,dt = F_1(x, y),$$
+      et de même $\frac{\partial \varphi}{\partial y} = F_2(x, y)$ : $\operatorname{grad} \varphi = F$.
+    conditions: |
+      Le potentiel est l'intégrale curviligne de $F$ depuis un point fixe ($(0, 0)$) jusqu'à $(x, y)$.
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Thu (2).pdf"
+      emplacement: "p. 3–6 (section 2.3.4)"
+    verifie: false
+    incertain: null
+
+  - id: analyse3-s03-008
+    type: formule
+    titre: "Exemple : F = (−y, x)/(x² + y²) selon le domaine"
+    importance: 3
+    corps: |
+      $$F : \mathbb{R}^2 \setminus \{(0, 0)\} \to \mathbb{R}^2, \qquad F(x, y) = \left(\frac{-y}{x^2 + y^2},\ \frac{x}{x^2 + y^2}\right), \qquad \operatorname{curl} F = 0.$$
+      Domaines considérés :
+      - $\Omega_1 = \{(x, y) : y > 0\}$ et $\Omega_2 = \{(x, y) : y < 0\}$ : **convexes** ⟹ $F$ dérive d'un potentiel ;
+      - $\Omega_3 = \mathbb{R}^2 \setminus \{(x, y) : x \le 0 \text{ et } y = 0\}$ (on retire la demi-droite, les deux conditions
+        devant être vraies à la fois) : **simplement connexe** ⟹ $F$ dérive d'un potentiel ;
+      - $\Omega_4 = \mathbb{R}^2 \setminus \{(0, 0)\} = \operatorname{dom}(F)$ : **non simplement connexe**.
+    source:
+      fichier: "analyse_III/semaine-03/lecture_03_Thu (2).pdf"
+      emplacement: "p. 7–8 (section 2.3.2, ex. 2, suite)"
+    verifie: false
+    incertain: null
+quiz: []
