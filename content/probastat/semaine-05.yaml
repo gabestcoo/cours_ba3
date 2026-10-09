@@ -1,0 +1,185 @@
+cours: probastat
+semaine: 5
+titre: "Moments, modélisation, probabilité conditionnelle et indépendance"
+fiches:
+  - id: probastat-s05-001
+    type: definition
+    titre: "Moments d'une variable aléatoire"
+    importance: 2
+    corps: |
+      **Définition 2.2.12.** Soit $p > 0$. $X$ **admet un moment d'ordre $p$** si $E(|X|^p) < \infty$. On définit alors
+      - le **$p$-ième moment** de $X$ : $E(X^p)$ ;
+      - le **$p$-ième moment absolu** de $X$ : $E(|X|^p)$.
+
+      Pour $p$ entier on parle de moment, sinon de moment fractionnaire (le cours ne considère que les moments entiers).
+      Le cas $p \to \infty$ donne la notion de variable **essentiellement bornée** : $X$ est essentiellement bornée par
+      $C \in (0, +\infty)$ si $P(|X| \le C) = 1$.
+
+      Avoir des moments renseigne sur les grandes valeurs : pour $f_X(x) = c_\alpha \frac{1}{x^\alpha} \mathbf{1}_{[1, +\infty)}(x)$,
+      $E(|X|^p) = c_\alpha \int_1^\infty x^{p - \alpha}\,dx$ est fini **si et seulement si** $\alpha > p + 1$ :
+      avoir de grands moments impose que $f_X$ décroisse assez vite à l'infini.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.7 (déf. 2.2.12), p. 48"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s05-002
+    type: theoreme
+    titre: "Fonction génératrice des moments"
+    importance: 3
+    hypotheses: |
+      $X$, $Y$ deux variables aléatoires ; il existe $\delta > 0$ tel que $E(e^{\delta|X|}) < \infty$ et $E(e^{\delta|Y|}) < \infty$
+      (moments exponentiels d'ordre $\delta$).
+    corps: |
+      **Définition 2.2.13.** Si $X$ admet des moments exponentiels d'ordre $\delta > 0$, sa **fonction génératrice des moments**
+      (*moment generating function*) est
+      $$M_X(t) = E(e^{tX}), \qquad t \in (-\delta, \delta).$$
+
+      **Théorème 2.2.5.**
+      - $X$ admet des moments de **tout ordre entier** ;
+      - $M_X$ est **analytique** au voisinage de $0$, et pour tout $n \in \mathbb{N}$,
+        $$M_X^{(n)}(0) = E(X^n) ;$$
+      - $M_X$, $M_Y$ **caractérisent** $X$, $Y$ : si $M_X(t) = M_Y(t)$ pour tout $t \in (-\delta, \delta)$, alors $X \overset{\text{Law}}{=} Y$.
+    remarques: |
+      Pour voir pourquoi $M_X^{(n)}(0) = E(X^n)$, remplacer l'exponentielle par sa série de Taylor.
+      La preuve du troisième point dépasse le cadre du cours.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.7 (déf. 2.2.13, thm 2.2.5), p. 48–49"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s05-003
+    type: formule
+    titre: "Exemple de modélisation : lancer une pièce jusqu'à obtenir pile"
+    importance: 2
+    corps: |
+      **Avec un espace de probabilité** : $\Omega = \{H, TH, TTH, TTTH, \dots\}$, et
+      $p(\underbrace{T \dots T}_{n}H) = \frac{1}{2^{n+1}}$ (bien une fonction de masse : $\sum_{n \ge 0} \frac{1}{2^{n+1}} = 1$).
+      Le nombre de lancers est $X(\underbrace{T \dots T}_{n}H) = n + 1$, discrète d'image $\mathbb{N}^*$, avec
+      $$P_p(X = n) = \frac{1}{2^n}, \qquad F_X(t) = \begin{cases} 0 & \text{si } t < 1, \\ 1 - 2^{-\lfloor t \rfloor} & \text{si } t \ge 1, \end{cases} \qquad E_p(X) = \sum_{n=1}^\infty n\Big(\frac12\Big)^n = 2$$
+      (série géométrique dérivée).
+
+      **Avec des variables aléatoires** : on aurait pu prendre $\Omega = \mathbb{R}$, $P = P_f$ avec $f = \mathbf{1}_{[0,1]}$, et
+      $Y(x) = \sum_{n=0}^\infty \mathbf{1}_{[0, 2^{-n}]}(x)$, qui a **la même loi** que $X$ : $P(Y = n) = 2^{1-n} - 2^{-n} = 2^{-n}$.
+    conditions: |
+      **Principe général (2.3.3)** : on ne se soucie souvent pas de l'espace de probabilité précis ($\Omega$, $P$), du moment qu'on
+      peut y définir les variables/vecteurs aléatoires étudiés. On omet alors souvent l'indice $P$ dans l'espérance
+      et on ne précise que les propriétés des variables aléatoires.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.3 (2.3.1–2.3.3), p. 50–51"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s05-004
+    type: definition
+    titre: "Probabilité conditionnelle et espérance conditionnelle"
+    importance: 3
+    corps: |
+      **Définition 2.4.1.** Soit $P$ une mesure de probabilité sur $\Omega$ et $A \subset \Omega$ un événement tel que
+      $P(A) > 0$. La mesure $P$ **conditionnée par $A$**, notée $P(\cdot \mid A)$, est
+      $$P(B \mid A) = \frac{P(A \cap B)}{P(A)}, \qquad \forall \text{ événement } B.$$
+      C'est bien une mesure de probabilité. L'**espérance conditionnelle** d'une variable aléatoire $X$ est
+      $$E_P(X \mid A) = E_{P_A}(X) = \frac{E_P(X \mathbf{1}_A)}{P(A)}, \qquad P_A = P(\cdot \mid A).$$
+
+      Intuition : une **fréquence relative**, parmi les répétitions où $A$ s'est produit. Une information supplémentaire
+      revient à conditionner la mesure déjà conditionnelle : $P(W \mid h \cap f) = \frac{P(W \cap f \mid h)}{P(f \mid h)}$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.4.1 (déf. 2.4.1), p. 52–53"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s05-005
+    type: formule
+    titre: "Pièges du conditionnement : les deux enfants"
+    importance: 2
+    corps: |
+      Chaque enfant est de type XX ou XY avec probabilité $\frac12$ ; $\Omega = \{(X,X), (Y,X), (X,Y), (Y,Y)\}$ (aîné, cadet), $P$ uniforme.
+      - Famille de deux enfants dont **au moins un** est XX : $P\big(\{(X,X)\} \mid \{(X,X), (Y,X), (X,Y)\}\big) = \frac13$.
+      - Famille de deux enfants dont **l'aîné** est XX : $P\big(\{(X,X)\} \mid \{(X,X), (X,Y)\}\big) = \frac12$.
+      - Bob a deux enfants et **un enfant XX ouvre la porte** (on ajoute qui ouvre, 8 réalisations équiprobables) :
+        la probabilité que les deux soient XX vaut $\frac24 = \frac12$.
+
+      Dans le 1er et le 3e cas, on sait qu'au moins un enfant est XX, mais **la façon dont l'information est obtenue** change la probabilité.
+    conditions: |
+      **Remarque 2.4.1** : avec les probabilités conditionnelles, l'intuition trompe facilement ; il vaut mieux appliquer
+      systématiquement les règles et calculer formellement.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.4.1 (ex. 2.4.1–2.4.2, rem. 2.4.1), p. 53–54"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s05-006
+    type: definition
+    titre: "Indépendance d'événements"
+    importance: 3
+    corps: |
+      **Définition 2.4.2.**
+      - Deux événements $A, B$ sont **indépendants** si $P(A \cap B) = P(A)\,P(B)$.
+      - Une famille $(A_i)_{i \in I}$ est **indépendante deux à deux** si pour tous $i \neq j$, $A_i$ et $A_j$ sont indépendants.
+      - Une famille $(A_i)_{i \in I}$ est une **famille indépendante** si pour tout $J \subset I$ **fini**,
+        $$P\Big(\bigcap_{i \in J} A_i\Big) = \prod_{i \in J} P(A_i).$$
+
+      Si $P(A) > 0$ et $P(B) > 0$, $A$ et $B$ sont indépendants **si et seulement si** $P(A \mid B) = P(A)$ :
+      la réalisation de $B$ n'influence pas celle de $A$ (et réciproquement).
+
+      **Attention** : indépendance deux à deux est **strictement plus faible** que famille indépendante.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.4.2 (déf. 2.4.2), p. 55–56"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s05-007
+    type: definition
+    titre: "Indépendance de variables aléatoires et suites i.i.d."
+    importance: 3
+    corps: |
+      **Définition 2.4.3.**
+      - $X, Y$ sont **indépendantes** si pour tous événements $A, B \subset \mathbb{R}$,
+        $P(X \in A, Y \in B) = P(X \in A)\,P(Y \in B)$ ; de façon équivalente, si pour toutes $f, g : \mathbb{R} \to \mathbb{R}$,
+        $E\big(f(X)g(Y)\big) = E\big(f(X)\big)\,E\big(g(Y)\big)$.
+      - $(X_i)_{i \in I}$ est **indépendante deux à deux** si $X_i$ et $X_j$ sont indépendantes pour tous $i \neq j$.
+      - $(X_i)_{i \in I}$ est une **famille indépendante** si pour tout $J \subset I$ fini et tous $A_i \subset \mathbb{R}$,
+        $P\big(\bigcap_{i \in J} \{X_i \in A_i\}\big) = \prod_{i \in J} P(X_i \in A_i)$
+        (de façon équivalente, $E\big(\prod_{i \in J} f_i(X_i)\big) = \prod_{i \in J} E\big(f_i(X_i)\big)$).
+
+      Même définition pour des vecteurs aléatoires. Mathématiquement, l'indépendance est une **propriété de factorisation**.
+
+      **Définition 2.4.4.** Une famille $(X_i)_{i \in I}$ est **i.i.d.** (*independent identically distributed*) si c'est une
+      famille indépendante et si $X_i \overset{\text{Law}}{=} X_j$ pour tous $i, j \in I$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.4.2 (déf. 2.4.3–2.4.4, rem. 2.4.2), p. 56–58"
+    verifie: false
+    incertain: |
+      Le polycop (rem. 2.4.2) précise que la définition par les fonctions $f, g$ n'est pas complètement rigoureuse
+      (il faudrait que $f(X)$, $g(Y)$ soient des variables aléatoires), problème ignoré dans le cours.
+
+  - id: probastat-s05-008
+    type: theoreme
+    titre: "Indépendance et factorisation des densités / fonctions de masse"
+    importance: 3
+    hypotheses: |
+      $d, d' \ge 1$ ; $X : \Omega \to \mathbb{R}^d$ et $Y : \Omega \to \mathbb{R}^{d'}$ deux vecteurs aléatoires.
+    corps: |
+      **Théorème 2.4.1.**
+      - **$X$, $Y$ continus** : $X$ et $Y$ sont indépendants **si et seulement si** $(X, Y)$ a pour densité
+        $$f_{(X,Y)}(x, y) = f_X(x)\,f_Y(y),$$
+        où $f_X$ est une densité de $X$ et $f_Y$ une densité de $Y$.
+      - **$X$, $Y$ discrets** : indépendants **si et seulement si** pour tous $x \in \mathbb{R}^d$, $y \in \mathbb{R}^{d'}$,
+        $P(X = x, Y = y) = P(X = x)\,P(Y = y)$.
+      - **$X$ discret, $Y$ continu** : indépendants **si et seulement si** pour tous $x \in \mathbb{R}^d$, $A \subset \mathbb{R}^{d'}$,
+        $P(X = x, Y \in A) = P(X = x) \int_A f_Y(y)\,dy$.
+    remarques: |
+      Le théorème se généralise à plus de deux vecteurs aléatoires, tant qu'ils forment une famille indépendante.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.4.2 (thm 2.4.1), p. 58"
+    verifie: false
+    incertain: null
+quiz: []

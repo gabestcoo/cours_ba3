@@ -1,0 +1,132 @@
+cours: probastat
+semaine: 4
+titre: "Théorème de transfert, vecteurs aléatoires, changement de variable"
+fiches:
+  - id: probastat-s04-001
+    type: theoreme
+    titre: "Théorème de transfert"
+    importance: 3
+    hypotheses: |
+      $X$ une variable aléatoire et $g : \mathbb{R} \to \mathbb{R}$.
+    corps: |
+      **Theorem 2.2.2 (Transfer Theorem,** aussi appelé *Law of the unconscious statistician*).
+      1. Si $X$ est **discrète**, $g(X)$ est une variable aléatoire discrète et
+         $$E\big(g(X)\big) = \sum_{x \in \mathrm{Image}(X)} g(x)\,P(X = x)$$
+         dès que la somme **converge absolument** ;
+      2. si $X$ est **continue**,
+         $$E\big(g(X)\big) = \int_{-\infty}^{+\infty} f_X(x)\,g(x)\,dx$$
+         dès que l'intégrale **converge absolument**.
+    remarques: |
+      Le théorème garantit que l'intuition est correcte, même si $g$ n'est pas injective
+      (ex. $g(x_1) = g(x_2) \neq g(x_3)$, où la définition regrouperait les valeurs égales de $g(X)$).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.4 (thm 2.2.2), p. 42–43"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s04-002
+    type: definition
+    titre: "Vecteur aléatoire, marginales et CDF"
+    importance: 3
+    corps: |
+      **Définition 2.2.9.** Soit $d \ge 1$. Un **vecteur aléatoire** de dimension $d$ est une fonction
+      $X : \Omega \to \mathbb{R}^d$, notée $X(\omega) = \big(X_1(\omega), \dots, X_d(\omega)\big)$.
+      Les $X_i : \Omega \to \mathbb{R}$ sont des variables aléatoires, appelées les **marginales** de $X$.
+      La **fonction de répartition** de $X$ est $F_X : \mathbb{R}^d \to [0, 1]$,
+      $$F_X(t_1, \dots, t_d) = P(X_1 \le t_1, \dots, X_d \le t_d).$$
+
+      **Définition 2.2.11.** $X$ est un vecteur aléatoire
+      - **discret** s'il existe $D_X \subset \mathbb{R}^d$ fini ou dénombrable avec $P(X \in D_X) = 1$ ;
+      - **continu** s'il existe une densité $f_X : \mathbb{R}^d \to [0, +\infty)$ telle que $P(X \in A) = \int_{\mathbb{R}^d} \mathbf{1}_A(x) f_X(x)\,dx$.
+
+      De même, une **variable aléatoire complexe** est une fonction $X : \Omega \to \mathbb{C}$ ; ses parties réelle et
+      imaginaire sont des variables aléatoires (déf. 2.2.10).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.5 (déf. 2.2.9–2.2.11, rem. 2.2.5), p. 43–44"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s04-003
+    type: formule
+    titre: "Densité d'une marginale"
+    importance: 3
+    corps: |
+      Si $X : \Omega \to \mathbb{R}^d$ est un vecteur continu de densité $f_X$, ses marginales sont des variables
+      aléatoires continues, et la densité de $X_i$ s'obtient en **intégrant les autres coordonnées** :
+      $$f_{X_i}(x_i) = \int_{\mathbb{R}} dx_1 \cdots \int_{\mathbb{R}} dx_{i-1} \int_{\mathbb{R}} dx_{i+1} \cdots \int_{\mathbb{R}} dx_d\, f_X(x_1, \dots, x_{i-1}, x_i, x_{i+1}, \dots, x_d).$$
+
+      *Exemple 2.2.4* : $(X, Y)$ uniforme dans le disque unité, $f_{(X,Y)}(x, y) = \frac{1}{\pi} \mathbf{1}_{[0,1]}(x^2 + y^2)$. Pour $|x| \le 1$,
+      $$f_X(x) = \frac{1}{\pi} \int_{-\sqrt{1-x^2}}^{\sqrt{1-x^2}} dy = \frac{2}{\pi}\sqrt{1 - x^2}, \qquad \text{donc} \qquad f_X(x) = \frac{2}{\pi} \mathbf{1}_{[-1,1]}(x) \sqrt{1 - x^2}.$$
+    conditions: |
+      $X$ vecteur aléatoire **continu**.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.5 (ex. 2.2.4), p. 44"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s04-004
+    type: theoreme
+    titre: "Formule du changement de variable"
+    importance: 2
+    hypotheses: |
+      $d \ge 1$, $U \subset \mathbb{R}^d$ un **ouvert**, $V \subset \mathbb{R}^d$, et $\varphi : U \to V$ une **bijection
+      continûment différentiable** (dérivées partielles $\frac{\partial \varphi_i}{\partial y_j}$ existantes et continues sur $U$)
+      avec $\det D\varphi(y) \neq 0$ pour tout $y \in U$.
+    corps: |
+      Pour toute fonction $f : V \to \mathbb{R}$,
+      $$\int_U dy_1 \dots dy_d\, f\big(\varphi(y)\big)\,|\det D\varphi(y)| = \int_V dx_1 \dots dx_d\, f(x),$$
+      où $D\varphi(y) = \Big(\frac{\partial \varphi_i}{\partial y_j}(y)\Big)_{i,j}$ est la **matrice jacobienne** de $\varphi$ en $y$.
+    remarques: |
+      Le polycop précise qu'il faudrait quelques restrictions sur $f$, qu'on ignore dans le cours.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.6 (thm 2.2.3), p. 45–46"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s04-005
+    type: theoreme
+    titre: "Densité de φ(X)"
+    importance: 3
+    hypotheses: |
+      $X : \Omega \to \mathbb{R}^d$ un vecteur aléatoire de densité $f_X$ ; $U$, $V$, $\varphi : U \to V$ comme dans
+      le théorème du changement de variable ; $P(X \in U) = 1$.
+    corps: |
+      **Corollaire 2.2.4.** $Y = \varphi(X)$ est un vecteur aléatoire continu de densité
+      $$f_Y(y) = f_X\big(\varphi^{-1}(y)\big)\,|\det D\varphi^{-1}(y)| = \frac{1}{|\det D\varphi(\varphi^{-1}(y))|}\,f_X\big(\varphi^{-1}(y)\big).$$
+      En dimension $d = 1$ :
+      $$f_Y(y) = f_X\big(\varphi^{-1}(y)\big)\,\big|(\varphi^{-1})'(y)\big| = \frac{1}{|\varphi'(\varphi^{-1}(y))|}\,f_X\big(\varphi^{-1}(y)\big).$$
+    remarques: |
+      *Exemple 2.2.5* : $U$ uniforme sur $[0, 1]$ ($f_U = \mathbf{1}_{[0,1]}$), $a \in \mathbb{R}$, $r > 0$, $X = a + rU$.
+      Avec $\varphi(x) = a + rx$, $\varphi^{-1}(x) = \frac{x - a}{r}$ :
+      $$f_X(x) = \mathbf{1}_{[0,1]}\Big(\frac{x-a}{r}\Big)\frac{1}{r} = \frac{1}{r}\mathbf{1}_{[a, a+r]}(x),$$
+      donc $X$ est uniforme sur $[a, a + r]$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.6 (cor. 2.2.4, ex. 2.2.5), p. 46"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s04-006
+    type: formule
+    titre: "Coordonnées polaires"
+    importance: 2
+    corps: |
+      $\varphi : (-\pi, \pi] \times [0, +\infty) \to \mathbb{R}^2$, $\varphi(\theta, r) = \big(r\cos\theta,\ r\sin\theta\big)$,
+      d'inverse $\varphi^{-1}(x, y) = \big(\mathrm{atan2}(y, x),\ \sqrt{x^2 + y^2}\big)$. Le jacobien vaut
+      $$|\det D\varphi(\theta, r)| = \left|\det\begin{pmatrix} \cos\theta & -r\sin\theta \\ \sin\theta & r\cos\theta \end{pmatrix}\right| = r\cos^2\theta + r\sin^2\theta = r,$$
+      d'où
+      $$\int_{-\infty}^{+\infty} dx \int_{-\infty}^{+\infty} dy\, f(x, y) = \int_{-\pi}^{\pi} d\theta \int_0^\infty dr\, r\, f(r\cos\theta, r\sin\theta),$$
+      en abrégé $dx\,dy = r\,d\theta\,dr$.
+    conditions: |
+      $\mathrm{atan2}(y, x) = \arctan(y/x)$ si $x > 0$ ; $\arctan(y/x) + \pi$ si $x < 0, y \ge 0$ ; $\arctan(y/x) - \pi$ si $x < 0, y < 0$ ;
+      $\frac{\pi}{2}$ si $x = 0, y > 0$ ; $-\frac{\pi}{2}$ si $x = 0, y < 0$ ; non défini en $(0, 0)$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.6 (rem. 2.2.6), p. 47"
+    verifie: false
+    incertain: null
+quiz: []
