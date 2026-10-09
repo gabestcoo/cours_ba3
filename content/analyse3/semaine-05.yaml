@@ -71,14 +71,13 @@ fiches:
       **Sphériques** $(r, \theta, \varphi)$, $r > 0$, $\theta \in [0, 2\pi]$, $\varphi \in [0, \pi]$ :
       $x_1 = r\sin\varphi\cos\theta$, $x_2 = r\sin\varphi\sin\theta$, $x_3 = r\cos\varphi$,
       $$\det(\nabla u) = -r^2\sin\varphi, \qquad \|\det \nabla u\| = r^2\sin\varphi \quad (r > 0,\ \varphi \in [0, \pi]).$$
-      Volume de la boule de rayon $R$ : $\frac43 \pi R^3$.
+      Volume de la boule $\Omega = \{x_1^2 + x_2^2 + x_3^2 < R^2\}$ :
+      $\operatorname{vol}(\Omega) = \iiint_{\hat\Omega} r^2\sin\varphi\,dr\,d\theta\,d\varphi = \frac43 \pi R^3$.
     source:
       fichier: "analyse_III/semaine-05/lecture_05_Wed.pdf"
       emplacement: "p. 7–9 (section 3.1.1, ex. 1–2)"
     verifie: false
-    incertain: |
-      Dans l'exemple sphérique, le cours écrit $\Omega = \{x_1^2 + x_2^2 + x_3^2 = R^2\}$ (une sphère), alors que le volume
-      calculé, $\frac43 \pi R^3$, est celui de la **boule** $\{x_1^2 + x_2^2 + x_3^2 < R^2\}$.
+    incertain: null
 
   - id: analyse3-s05-005
     type: definition
