@@ -1,0 +1,244 @@
+cours: softcons
+semaine: 1
+titre: "Programmation fonctionnelle, modèle de substitution et récursion terminale"
+fiches:
+  - id: softcons-s01-001
+    type: resume
+    titre: "L'essentiel en 5 lignes"
+    importance: 3
+    corps: |
+      **Semaine 1 : pourquoi la programmation fonctionnelle, et comment Scala évalue un programme.**
+    points_cles:
+      - "La programmation fonctionnelle se concentre sur les **fonctions** et les **données immuables**, au lieu de muter des variables mot par mot."
+      - "Un programme sans effets de bord s'évalue par le **modèle de substitution** : on réduit une expression jusqu'à une valeur."
+      - "**Call-by-value** évalue chaque argument une fois ; **call-by-name** n'évalue pas un argument inutilisé. Scala est CBV par défaut, CBN avec `=>`."
+      - "`if-then-else` et les **blocs** sont des **expressions** : la dernière expression d'un bloc est son résultat, sans `return`."
+      - "Une fonction qui s'appelle elle-même **en dernière action** est **récursive terminale** : son stack frame est réutilisé (`@tailrec`)."
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 10–12, 44, 55, 68, 94, 100, 125"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-002
+    type: syntaxe
+    titre: "Définir une fonction : def"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def power(x: Double, y: Int): Double = ...
+    usage: |
+      Chaque paramètre a son **type après `:`** ; le **type de retour** suit la liste des paramètres.
+      Il est **optionnel** pour une fonction non récursive, **obligatoire** pour une fonction récursive.
+    piege: |
+      Oublier le type de retour d'une fonction **récursive** (`def gcd(a: Int, b: Int) = …`) : le compilateur le refuse.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 33–34, 87"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-003
+    type: syntaxe
+    titre: "Types primitifs"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      val n: Int = 42
+    usage: |
+      Comme en Java, mais **avec une majuscule** :
+
+      | type | contenu |
+      |---|---|
+      | `Int` / `Long` | entier 32 / 64 bits |
+      | `Short` / `Byte` | entier 16 / 8 bits |
+      | `Double` / `Float` | flottant 64 / 32 bits |
+      | `Char` | caractère Unicode 16 bits |
+      | `Boolean` | `true` ou `false` |
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slide 34"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-004
+    type: syntaxe
+    titre: "Définir une valeur : val (par valeur) vs def (par nom)"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      val y = square(x)
+    usage: |
+      Le membre droit d'un `val` est évalué **une seule fois, au moment de la définition** ; ensuite le nom désigne
+      la valeur (`y` vaut `4`, pas `square(2)`). Un `def` est « par nom » : il est réévalué **à chaque usage**.
+    exemple: |
+      def loop: Boolean = loop
+      def x = loop   // OK : rien n'est évalué ici
+      val y = loop   // boucle infinie dès la définition
+    piege: |
+      La différence n'est visible que si le membre droit ne termine pas : `val` l'évalue tout de suite.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 82–83"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-005
+    type: syntaxe
+    titre: "Paramètre par nom : => T"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def constOne(x: Int, y: => Int) = 1
+    usage: |
+      Scala évalue normalement les arguments **par valeur** (CBV). Si le type d'un paramètre commence par `=>`,
+      ce paramètre est passé **par nom** (CBN) : il n'est évalué que s'il est utilisé.
+    exemple: |
+      def loop: Int = loop
+      def constOne(x: Int, y: => Int) = 1
+      constOne(1 + 2, loop)  // 1 : y n'est jamais évalué
+      constOne(loop, 1 + 2)  // ne termine pas : x est CBV
+    piege: |
+      Seuls les paramètres marqués `=>` sont par nom : un `loop` passé à un paramètre normal est évalué et bloque tout.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 68–73"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-006
+    type: syntaxe
+    titre: "Expression conditionnelle : if-then-else"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def abs(x: Int) = if x >= 0 then x else -x
+    usage: |
+      Ressemble au `if-else` de Java, mais c'est une **expression** (elle a une valeur), pas une instruction.
+      La condition est un prédicat de type `Boolean`, construit avec `!`, `&&`, `||` et les comparaisons
+      `<=`, `>=`, `<`, `>`, `==`, `!=`.
+    piege: |
+      Écrire `var x: Int` puis `if c then x = 1 else x = 2` → écrire `val x = if c then 1 else 2`.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 75–76, 101"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-007
+    type: syntaxe
+    titre: "Blocs, indentation et portée lexicale"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      val result =
+        val x = f(3)
+        x * x
+    usage: |
+      Un **bloc** contient des définitions puis une dernière expression, qui donne sa **valeur**. C'est une expression :
+      il peut apparaître partout. En Scala 3, les accolades sont **optionnelles** autour d'une expression correctement
+      **indentée** après `=`, `then`, `else`… Les définitions d'un bloc n'y sont visibles qu'à l'intérieur et **masquent**
+      (*shadow*) celles de même nom à l'extérieur. On y range les fonctions auxiliaires (ex. `sqrtIter` dans `sqrt`).
+    exemple: |
+      val x = 0
+      def f(y: Int) = y + 1
+      val result =
+        val x = f(3)   // masque le x extérieur
+        x * x          // 16
+    piege: |
+      Croire que le `x` du bloc modifie le `x` extérieur : il le **masque** seulement dans le bloc.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 92–95, 98–99, 102"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-008
+    type: syntaxe
+    titre: "Exiger la récursion terminale : @tailrec"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      @tailrec def gcd(a: Int, b: Int): Int = if b == 0 then a else gcd(b, a % b)
+    usage: |
+      Après `import scala.annotation.tailrec`, l'annotation demande au compilateur de **vérifier** que la fonction
+      est récursive terminale ; sinon, il émet une **erreur**.
+    piege: |
+      En Scala, seuls les appels **directement récursifs** à la fonction courante sont optimisés. `factorial` avec
+      `n * factorial(n - 1)` est refusée : l'appel n'est pas en position terminale.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 125–127"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-009
+    type: resume
+    titre: "À retenir : raisonner sur l'évaluation"
+    importance: 3
+    corps: |
+      Le **modèle de substitution** : évaluer, c'est réduire une expression à une valeur. Il s'applique à toute
+      expression **sans effets de bord** et est formalisé par le λ-calcul.
+    points_cles:
+      - |
+        **Règle d'application** : `f(v1, …, vn)` se réécrit en `[v1/x1, …, vn/xn] B`, le corps de `f` où chaque paramètre
+        est remplacé par sa valeur.
+        ```scala
+        sumOfSquares(3, 2 + 2) → sumOfSquares(3, 4) → square(3) + square(4) → … → 25
+        ```
+      - |
+        **CBV et CBN donnent la même valeur** si les fonctions sont pures et si les deux évaluations terminent.
+        Si CBV termine, CBN termine aussi ; **l'inverse est faux** : `first(1, loop)` vaut `1` en CBN, boucle en CBV.
+      - |
+        **Court-circuit** : `true && e → e`, `false && e → false`, `true || e → true`, `false || e → e`.
+      - |
+        **Récursion terminale** : `gcd(14, 21) → gcd(21, 14) → gcd(14, 7) → gcd(7, 0) → 7` garde une taille constante
+        (processus itératif), alors que `factorial(4) → 4 * (3 * (2 * (1 * factorial(0))))` grandit.
+      - |
+        **Terminaison** : toute expression ne se réduit pas à une valeur : `def loop: Int = loop`.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 35–55, 64–67, 77, 105–125"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s01-010
+    type: resume
+    titre: "Partie Software Engineering : versionner avec Git"
+    importance: 2
+    corps: |
+      Un **VCS** (*Version Control System*) garde des **instantanés étiquetés et incrémentaux** du code.
+      Il sert à suivre l'évolution du code (cette semaine) et au développement distribué (la suite).
+    points_cles:
+      - "**Pourquoi pas de simples sauvegardes** : pas de *changesets* qui ont un sens, granularité trop grosse ou trop fine, historique difficile à parcourir, collaboration asynchrone mal supportée."
+      - "**Le cycle de travail** : écrire le code → déboguer → relire le *changeset* → écrire une description → sauvegarder l'instantané (*commit*) → lancer les tests de bout en bout."
+      - "**Suivre son propre code** : `git init` pour créer le dépôt, `git status` pour voir l'état, `git add` / `git restore` pour préparer ou annuler, `git commit -m \"…\"` pour enregistrer, `.gitignore` pour exclure des fichiers, `git tag` pour marquer une version."
+      - "**Corriger le dernier commit** : `git commit --amend`. Relire : `git log` (historique) et `git show` (un commit)."
+      - "**Explorer l'histoire d'un projet** : `git clone` pour le récupérer, `git shortlog --since` pour résumer qui a fait quoi, `git blame` et `git log -L` pour savoir quand et pourquoi une ligne a changé."
+      - "**Git ≠ GitHub / GitLab** : Git est l'outil de versionnage, GitHub et GitLab sont des services d'hébergement."
+    source:
+      fichier: "software_construction/semaine-01/[CS-214 W01 SE] SE Intro, Version control (2025-09-10) (2).pdf"
+      emplacement: "slides 9–11, 16–17"
+    verifie: false
+    incertain: |
+      Les slides 16–17 écrivent `git commit –amend` et `git shortlog –since` avec un tiret long (–) :
+      les vraies options s'écrivent avec deux tirets, `--amend` et `--since`.
+
+  - id: softcons-s01-011
+    type: resume
+    titre: "Pièges fréquents"
+    importance: 2
+    corps: |
+      Les erreurs typiques de la semaine 1, au format **erreur → correction**.
+    points_cles:
+      - "Écrire un `return` explicite → la dernière expression du bloc est le résultat ; pour sortir tôt, découper en petites fonctions avec `if-then-else`."
+      - "`var x` puis l'affecter dans un `if` → `val x = if c then 1 else 2`."
+      - "Fonction récursive sans type de retour → ajouter `: Int` (ou le bon type) après les paramètres."
+      - "`val x = loop` pour « définir sans évaluer » → utiliser `def x = loop`, réévalué à chaque usage."
+      - "`@tailrec` sur `n * factorial(n - 1)` → l'appel récursif doit être la **dernière** action de la fonction."
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 83, 87, 100–101, 126"
+    verifie: false
+    incertain: null
+quiz: []

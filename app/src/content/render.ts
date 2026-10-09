@@ -96,7 +96,7 @@ export async function rendreSemaine(donnees: unknown, fichier: string): Promise<
           ...commun,
           syntaxe: blocCode(md, h, f.syntaxe, f.langage),
           usage: bloc(f.usage),
-          exemple: blocCode(md, h, f.exemple, f.langage),
+          exemple: f.exemple === undefined ? undefined : blocCode(md, h, f.exemple, f.langage),
           piege: opt(f.piege),
         }
       case 'resume':

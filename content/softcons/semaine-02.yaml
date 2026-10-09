@@ -1,0 +1,327 @@
+cours: softcons
+semaine: 2
+titre: "Fonctions d'ordre supérieur, currying, classes et opérateurs"
+fiches:
+  - id: softcons-s02-001
+    type: resume
+    titre: "L'essentiel en 5 lignes"
+    importance: 3
+    corps: |
+      **Semaine 2 : abstraire avec des fonctions, puis regrouper données et opérations dans des classes.**
+    points_cles:
+      - "Les fonctions sont des **valeurs** : on peut les passer en paramètre et les retourner (**fonctions d'ordre supérieur**)."
+      - "Une **fonction anonyme** `x => x * x` évite de nommer chaque petite fonction ; c'est du sucre syntaxique."
+      - "Le **currying** : une fonction à plusieurs listes de paramètres retourne une fonction ; `sum(cube)(1, 10)`."
+      - "Une **classe** regroupe des données et leurs **méthodes** ; l'**abstraction de données** permet de changer l'implémentation sans changer ce que voit le client."
+      - "Les **méthodes d'extension** et les **opérateurs** (`+`, `infix`) rendent un type comme `Rational` aussi naturel que `Int`."
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 2, 7–9, 18–20, 44–58, 80–88"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-002
+    type: syntaxe
+    titre: "Type de fonction : A => B"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def sum(f: Int => Int, a: Int, b: Int): Int
+    usage: |
+      `A => B` est le type d'une fonction qui prend un argument de type `A` et retourne un résultat de type `B`.
+      Plusieurs arguments : `(Int, Int) => Int`.
+    piege: |
+      Les types de fonction **associent à droite** : `Int => Int => Int` signifie `Int => (Int => Int)`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 5–6, 22"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-003
+    type: syntaxe
+    titre: "Fonction anonyme"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      (x: Int) => x * x * x
+    usage: |
+      Un littéral de fonction, sans nom : `(x: Int)` est le paramètre, `x * x * x` le corps. Le type du paramètre peut
+      être omis s'il est inféré par le contexte : `sum(x => x * x * x, a, b)`. Plusieurs paramètres :
+      `(x: Int, y: Int) => x + y`. C'est du **sucre syntaxique** pour `def f(x: Int) = x * x * x; f`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 7–10"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-004
+    type: syntaxe
+    titre: "Listes de paramètres multiples (currying)"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      def sum(f: Int => Int)(a: Int, b: Int): Int = ...
+    usage: |
+      Une fonction à plusieurs listes de paramètres est une fonction qui **retourne une fonction**.
+      On peut l'appliquer liste par liste : `sum(cube)` est la fonction « somme des cubes ».
+    exemple: |
+      def sum(f: Int => Int)(a: Int, b: Int): Int =
+        if a > b then 0 else f(a) + sum(f)(a + 1, b)
+      val sumCubes = sum(cube)   // (Int, Int) => Int
+      sum(cube)(1, 3)            // 36, comme sumCubes(1, 3)
+    piege: |
+      L'application **associe à gauche** : `sum(cube)(1, 10) == (sum(cube))(1, 10)`.
+      Le type de `sum` est `(Int => Int) => (Int, Int) => Int`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 13–22"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-005
+    type: syntaxe
+    titre: "Classe, objets et membres"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      class Rational(x: Int, y: Int):
+    usage: |
+      Définit un nouveau **type** `Rational` et un **constructeur** `Rational` (types et valeurs ont des espaces de noms
+      séparés). On crée un **objet** en appelant le constructeur, `Rational(1, 2)`, et on sélectionne ses membres avec
+      `.` : `x.numer`. Les fonctions définies dans la classe sont ses **méthodes** : `x.add(y).mul(z)`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 44–51"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-006
+    type: syntaxe
+    titre: "Redéfinir une méthode : override"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      override def toString = s"$numer/$denom"
+    usage: |
+      `override` déclare que la méthode **redéfinit** une méthode qui existe déjà (ici `toString`, de `java.lang.Object`).
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slide 50"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-007
+    type: syntaxe
+    titre: "Chaîne interpolée : s\"…\""
+    importance: 2
+    langage: scala
+    syntaxe: |
+      s"${r.numer}/${r.denom}"
+    usage: |
+      Les valeurs entre `${…}` (ou `$nom` pour un simple nom) sont insérées dans la chaîne.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slide 48"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-008
+    type: syntaxe
+    titre: "Membres privés : private"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      private val g = gcd(x, y)
+    usage: |
+      Un membre `private` n'est accessible **que depuis l'intérieur** de la classe. Exemple : simplifier les rationnels
+      à la construction avec un `gcd` privé, pour que `numer` et `denom` soient toujours réduits (`Rational(2, 4)` vaut `1/2`).
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 54–57"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-009
+    type: syntaxe
+    titre: "Référence à soi-même : this"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      def max(that: Rational) = if this.less(that) then that else this
+    usage: |
+      Dans une classe, `this` désigne l'objet sur lequel la méthode s'exécute. Un nom simple `m` qui désigne un autre
+      membre est une abréviation de `this.m`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 59–60"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-010
+    type: syntaxe
+    titre: "Constructeur auxiliaire : def this"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      def this(x: Int) = this(x, 1)
+    usage: |
+      La classe définit implicitement un **constructeur primaire** : il prend les paramètres de la classe et exécute
+      toutes les instructions du corps (ex. un `require`). On peut ajouter des **constructeurs auxiliaires**, des méthodes
+      nommées `this` : `Rational(2)` vaut `2/1`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 63–64"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-011
+    type: syntaxe
+    titre: "Marqueurs de fin : end"
+    importance: 1
+    langage: scala
+    syntaxe: |
+      end Rational
+    usage: |
+      Rend explicite la fin d'une définition longue : suivi du **nom** défini, aligné sur le mot-clé d'ouverture.
+      Pour une expression de contrôle, on répète le mot-clé : `end if`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 65–66"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-012
+    type: syntaxe
+    titre: "Méthodes d'extension"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      extension (r: Rational)
+        def abs: Rational = Rational(r.numer.abs, r.denom)
+    usage: |
+      Ajoute des méthodes à une classe **sans la modifier**, pour celles qui n'ont pas besoin de ses internes.
+      Elles sont visibles si elles sont dans l'objet compagnon de la classe, définies ou importées dans la portée,
+      et s'appellent comme des membres : `r.abs`.
+    piege: |
+      Une extension ne peut qu'**ajouter** des membres, pas en redéfinir ; elle ne peut pas désigner les autres membres
+      via `this`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 80–82"
+    verifie: false
+    incertain: |
+      Le slide 81 appelle `Rational(1/2).min(Rational(2/3))` : il faut lire `Rational(1, 2).min(Rational(2, 3))`.
+      Au slide 83, la réécriture contient `if x.less(r)` : c'est `if s.less(r)`, comme dans la définition de `min`.
+
+  - id: softcons-s02-013
+    type: syntaxe
+    titre: "Opérateurs comme noms de méthodes, notation infixe"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      extension (x: Rational)
+        def + (y: Rational): Rational = x.add(y)
+    usage: |
+      Les opérateurs comme `+` ou `<` sont des **identifiants** : on peut s'en servir comme noms de méthodes.
+      Une méthode à un paramètre s'utilise en **infixe** : `r + s` pour `r.+(s)`. Une méthode alphanumérique doit être
+      déclarée `infix` pour cela : `r min s`.
+    exemple: |
+      extension (x: Rational)
+        def + (y: Rational): Rational = x.add(y)
+        def * (y: Rational): Rational = x.mul(y)
+        infix def min(s: Rational): Rational = if s.less(x) then s else x
+      val a = Rational(1, 2); val b = Rational(1, 3)
+      a * a + b * b   // 13/36 : * avant +
+      a min b         // 1/3
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 85–89"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-014
+    type: resume
+    titre: "Méthodes de la bibliothèque standard"
+    importance: 2
+    corps: |
+      Deux fonctions prédéfinies pour vérifier des conditions ; elles prennent une condition et un message optionnel.
+    points_cles:
+      - "`require(cond, message)` : lève une `IllegalArgumentException` si la condition est fausse. Sert à imposer une **précondition à l'appelant** (ex. `require(y > 0, \"denominator must be positive\")`)."
+      - "`assert(cond, message)` : lève une `AssertionError` si la condition est fausse. Sert à **vérifier le code de la fonction elle-même** (ex. `assert(x >= 0)` après `val x = sqrt(y)`)."
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 61–62"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-015
+    type: resume
+    titre: "À retenir"
+    importance: 3
+    corps: |
+      Le modèle de substitution s'étend aux fonctions d'ordre supérieur et aux objets.
+    points_cles:
+      - |
+        **Currying** : `def f(ps1)…(psn) = E` équivaut à `def f(ps1)…(psn−1) = (psn => E)`, et en répétant,
+        à `def f = (ps1 => (ps2 => … (psn => E)…))`.
+      - |
+        **Instancier une classe** : `C(e1, …, em)` évalue seulement les arguments ; `C(v1, …, vm)` est déjà une valeur.
+      - |
+        **Appeler une méthode** : `C(v1, …, vm).f(w1, …, wn)` se réécrit en
+        `[w1/y1, …, wn/yn][v1/x1, …, vm/xm][C(v1, …, vm)/this] b` (paramètres de `f`, paramètres de la classe, `this`).
+        ```scala
+        Rational(1, 2).less(Rational(2, 3))  →  1 * 3 < 2 * 2  →  true
+        ```
+      - |
+        **Méthode d'extension** : même principe, mais c'est le **paramètre de l'extension** qui est substitué (pas `this`),
+        et les paramètres de la classe ne sont pas visibles.
+      - |
+        **Abstraction de données** : calculer `gcd` à la construction, dans `numer`/`denom`, ou en `val` donne le même
+        comportement vu du client ; on choisit selon la fréquence des appels.
+      - |
+        **Priorité des opérateurs** : fixée par le **premier caractère**, de la plus faible à la plus forte :
+        lettres, `|`, `^`, `&`, `= !`, `< >`, `:`, `+ -`, `* / %`, autres caractères spéciaux. Ex. `a * a + b * b`.
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 19–20, 56–58, 70–84, 89"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-016
+    type: resume
+    titre: "Partie Software Engineering : déboguer (presque) tout"
+    importance: 3
+    corps: |
+      Le guide de débogage CS-214 : d'abord **trier**, puis **diagnostiquer et corriger**.
+    points_cles:
+      - "**Trier** : ① vérifier qu'il y a bien un problème (le comparer à la spec, à la doc) ; ② le reproduire (à chaque fois ? pour toute entrée ? selon la configuration ?) ; ③ décider si c'est à vous de le corriger et si ça vaut la peine ; ④ l'écrire."
+      - "**Écrire un bon rapport (ou une question Ed)** : titre précis (« Infinite loop in minMax », pas « infinite loop »), comportement observé et attendu, étapes de reproduction, code dans un bloc (pas une capture), ce que vous avez déjà essayé."
+      - "**Diagnostiquer** : ① apprendre le système (doc, énoncé, outils) ; ② observer le défaut sous plusieurs angles ; ③ **simplifier et minimiser** (raccourcir l'entrée, isoler, rendre l'échec déterministe et automatisé par un test) ; ④ émettre une hypothèse et la vérifier."
+      - "**Corriger** : ⑤ appliquer le correctif, annuler les autres changements avec le VCS, relancer **tous** les tests ; ⑥ **prévenir les régressions** : message de commit détaillé, documenter la cause, chercher les bugs similaires."
+      - "**Techniques** : tenir des notes, **changer une seule chose à la fois**, méthode scientifique (conjecture → expérience → accepter/rejeter), instrumenter (ex. un `println`), diviser pour régner, demander de l'aide."
+      - "**À éviter** : modifier au hasard « jusqu'à ce que ça marche », fixer le code sans but, corriger du code correct sans avoir vérifié, croire qu'un bug a disparu tout seul, corriger les effets au lieu des causes, perdre des données."
+    source:
+      fichier: "software_construction/semaine-02/[CS-214 W02 SE] How to diagnose (almost) anything (2026-09-16) (1).pdf"
+      emplacement: "slides 5, 9–22"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s02-017
+    type: resume
+    titre: "Pièges fréquents"
+    importance: 2
+    corps: |
+      Les erreurs typiques de la semaine 2, au format **erreur → correction**.
+    points_cles:
+      - "Lire `Int => Int => Int` comme `(Int => Int) => Int` → les types de fonction associent à droite : `Int => (Int => Int)`."
+      - "Recopier les paramètres `a`, `b` dans chaque `sumX` → passer par le currying : `def sumCubes = sum(cube)`."
+      - "Redéfinir `toString` sans `override` → `override def toString = …`."
+      - "Simplifier les rationnels dans chaque opération (et l'oublier dans une) → le faire une fois, à la construction, avec un `gcd` privé."
+      - "Écrire `r min s` sans `infix` → déclarer `infix def min…`, ou écrire `r.min(s)`."
+    source:
+      fichier: "software_construction/semaine-02/swc-week2 (2).pdf"
+      emplacement: "slides 12–14, 22, 50, 54, 88"
+    verifie: false
+    incertain: null
+quiz: []

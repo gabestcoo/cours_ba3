@@ -80,7 +80,7 @@ export const fiche = z.discriminatedUnion('type', [
     langage: texte,
     syntaxe: texte,
     usage: markdown,
-    exemple: texte,
+    exemple: texte.optional(), // seulement si la construction a un piège ou un comportement non évident
     piege: markdown.optional(),
   }),
   z.strictObject({

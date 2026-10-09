@@ -110,7 +110,7 @@ quiz: []                          # questions de quiz de la semaine (voir plus b
 | `theoreme`   | théorème, proposition, lemme, corollaire | `hypotheses` (obligatoire), `corps`, `remarques`    |
 | `formule`    | formule ou identité à connaître         | `corps`, `conditions` (domaine de validité)         |
 | `methode`    | méthode de calcul ou de résolution      | `etapes` (liste), `exemple`                         |
-| `syntaxe`    | nouvelle syntaxe (Soft Cons)            | `langage`, `syntaxe`, `usage`, `exemple`, `piege`   |
+| `syntaxe`    | nouvelle syntaxe (Soft Cons)            | `langage`, `syntaxe`, `usage`, `exemple`, `piege` (optionnels : `exemple`, `piege`) |
 | `resume`     | résumé d'une notion (Comp Arch)         | `corps`, `points_cles` (liste)                      |
 
 Champs communs à toutes les fiches : `id`, `type`, `titre`, `importance`, `source`, `verifie`, `incertain`.
@@ -189,12 +189,35 @@ La matière se retrouve ainsi :
    Les fiches portent sur les sections du polycop listées dans le mapping, avec les mêmes règles
    que pour Algebra et Analyse III.
 
-### Software Construction
-- Mettre en évidence les **nouvelles syntaxes introduites chaque semaine**, une fiche `syntaxe` par construction.
-- Ne pas répéter les syntaxes déjà vues lors des semaines précédentes.
-- `exemple` : court (moins de 15 lignes), **compilable**, et montrant un cas d'usage réaliste.
-- `piege` : l'erreur classique ou la subtilité, si elle existe.
-- Le langage est déterminé d'après les sources du cours ; ne pas le supposer.
+### Software Construction (Scala 3)
+Chaque semaine est une fiche de résumé lue sur téléphone : agréable et rapide à parcourir.
+Base : **uniquement** les PDF de la semaine (cours `swc-weekN` + slides SE). Rien d'inventé.
+On se concentre sur la **matière** : pas de liens vers la doc, et rien de tiré des **exercices** du cours
+(ni énoncés, ni solutions).
+Les cartes suivent cet ordre :
+
+1. **L'essentiel en 5 lignes** — une fiche `resume` (`importance: 3`) : `corps` = thème de la semaine,
+   `points_cles` = les 5 idées clés, une par point.
+2. **Nouvelles syntaxes** — une fiche `syntaxe` par construction introduite cette semaine :
+   `syntaxe` = la forme minimale en une ligne ; `usage` = ce qu'elle fait ;
+   `exemple` **seulement** si la construction a un piège ou un comportement non évident
+   (variance, for-comprehension avec gardes, currying…) ; `piege` si pertinent.
+   Ne pas répéter les syntaxes des semaines précédentes.
+3. **Méthodes de la bibliothèque standard** — une fiche `resume` : chaque méthode introduite cette
+   semaine sous forme de signature (ex. `def foldLeft[B](z: B)(op: (B, A) => B): B`) suivie d'une phrase.
+4. **À retenir** — une fiche `resume` : les règles de raisonnement de la semaine (substitution,
+   preuve par induction, règles de variance…), chacune avec un mini-exemple.
+5. **Partie Software Engineering** — une fiche `resume` de 3 à 6 points (debugging, tests, specs, Git) :
+   pour chacun, ce qu'on fait **concrètement** avec, pas seulement sa définition.
+6. **Pièges fréquents** — une fiche `resume` de 3 à 5 points au format « erreur → correction », en une ligne.
+
+Contraintes de forme : phrases courtes ; blocs de code de **8 lignes maximum** ; tableaux de
+**3 colonnes maximum** ; code **Scala 3 avec la syntaxe par indentation**, en style fonctionnel
+(pas de `var`, `while` ni `for … do`, sauf si le PDF de la semaine les introduit) ; texte en français
+avec les termes techniques en anglais quand c'est le terme du cours.
+**Tout exemple de code est compilé avec `scala-cli` avant d'être écrit.**
+Si le PDF contient une erreur, la signaler (champ `incertain`, affiché comme encadré ⚠️) au lieu de la recopier.
+Pas de quiz pour l'instant (un format spécifique sera proposé plus tard).
 
 ### Computer Architecture (cours prioritaire, le plus difficile)
 - Des fiches `resume` structurées : une par notion importante, avec `points_cles`.

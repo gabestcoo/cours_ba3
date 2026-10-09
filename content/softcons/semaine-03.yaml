@@ -1,0 +1,353 @@
+cours: softcons
+semaine: 3
+titre: "Hiérarchies de classes, objets, traits, pattern matching et enums"
+fiches:
+  - id: softcons-s03-001
+    type: resume
+    titre: "L'essentiel en 5 lignes"
+    importance: 3
+    corps: |
+      **Semaine 3 : organiser les classes en hiérarchies, et décomposer les données avec le pattern matching.**
+    points_cles:
+      - "Une **classe abstraite** ou un **trait** déclare des membres sans implémentation ; les **sous-classes** les implémentent."
+      - "Un **objet** (`object`) est une valeur unique (*singleton*) ; un **objet compagnon** joue le rôle des membres statiques de Java."
+      - "La **liaison dynamique** : le code exécuté par un appel dépend du type **à l'exécution** de l'objet."
+      - "Les **case classes** et `match` décomposent des données hétérogènes sans tests de type ni accesseurs."
+      - "Un **`enum`** définit un type de données algébrique (ADT) : une liste fermée de cas, simples ou paramétrés."
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 2, 8–9, 13, 69–70, 81–82"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-002
+    type: syntaxe
+    titre: "Classe abstraite"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      abstract class IntSet:
+    usage: |
+      Une classe abstraite peut contenir des **membres abstraits**, sans implémentation (ex. `def incl(x: Int): IntSet`).
+      On ne peut pas en créer d'instance directe : `IntSet()` est illégal.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slide 2"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-003
+    type: syntaxe
+    titre: "Sous-classe : extends"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      class NonEmpty(elem: Int, left: IntSet, right: IntSet) extends IntSet:
+    usage: |
+      `NonEmpty` **étend** `IntSet` : c'est une **sous-classe**, `IntSet` est sa **superclasse**. Un objet `NonEmpty` peut
+      être utilisé partout où un `IntSet` est attendu. Sans `extends`, une classe étend `java.lang.Object`. Les superclasses
+      directes ou indirectes sont les **classes de base**. Une sous-classe implémente les membres abstraits, ou redéfinit
+      un membre concret avec `override`.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 3–7"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-004
+    type: syntaxe
+    titre: "Objet singleton : object"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      object Empty extends IntSet:
+    usage: |
+      Définit un **objet singleton** nommé `Empty` : on n'en crée pas d'autres instances, et il n'y en a pas besoin.
+      Un singleton est une **valeur** : `Empty` s'évalue en lui-même.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slide 8"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-005
+    type: syntaxe
+    titre: "Objet compagnon"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      object IntSet:
+        def singleton(x: Int) = NonEmpty(x, Empty, Empty)
+    usage: |
+      Une classe et un objet de **même nom**, dans le même fichier, sont **compagnons** (possible car les types et les
+      valeurs vivent dans deux espaces de noms). L'objet compagnon joue le rôle des définitions `static` de Java, absentes
+      en Scala : `IntSet.singleton(elem)`.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slide 9"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-006
+    type: syntaxe
+    titre: "Programme autonome : main et @main"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      @main def birthday(name: String, age: Int) = println(s"Happy birthday, $name!")
+    usage: |
+      Un programme est un objet avec une méthode `def main(args: Array[String]): Unit`, comme en Java, ou plus simplement
+      une fonction annotée `@main`, dont les paramètres sont les arguments de la ligne de commande :
+      `scala birthday Peter 11`.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 10–11"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-007
+    type: syntaxe
+    titre: "Packages et imports"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      import week3.{Rational, Hello}
+    usage: |
+      `package progfun.examples` en tête de fichier place les classes et objets dans ce package (nom complet
+      `progfun.examples.Hello`). Imports : nommés (`import week3.Rational`, `import week3.{Rational, Hello}`) ou
+      *wildcard* (`import week3.*`), depuis un package ou un objet. Sont importés automatiquement : les membres de
+      `scala`, de `java.lang` et de l'objet `scala.Predef` (ex. `require`, `assert`).
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 22–25"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-008
+    type: syntaxe
+    titre: "Trait"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      trait Planar:
+    usage: |
+      Se déclare comme une classe abstraite, avec `trait`. Une classe, un objet ou un trait hérite d'**au plus une
+      classe** mais d'**autant de traits** qu'on veut : `class Square extends Shape, Planar, Movable`.
+      Plus puissants que les interfaces Java : ils peuvent avoir des paramètres, des champs et des méthodes concrètes.
+    exemple: |
+      trait Planar:
+        def height: Int
+        def width: Int
+        def surface = height * width   // méthode concrète
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 27–28"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-009
+    type: syntaxe
+    titre: "Lever une exception : throw"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      throw Error("Unknown expression")
+    usage: |
+      `throw Exc` interrompt l'évaluation avec l'exception `Exc`, comme en Java. Le type de cette expression est `Nothing`.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 32, 57"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-010
+    type: syntaxe
+    titre: "Case class"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      case class Sum(e1: Expr, e2: Expr) extends Expr
+    usage: |
+      Comme une classe normale, précédée de `case`. Elle permet de **décomposer** ses valeurs par pattern matching,
+      sans écrire de méthodes de test ni d'accès.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slide 69"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-011
+    type: syntaxe
+    titre: "Pattern matching : match"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      e match
+        case Number(n) => n
+    usage: |
+      Généralise le `switch` aux hiérarchies de classes : un sélecteur, puis des cas `pat => expr`. Motifs possibles :
+      constructeurs (`Number(n)`), variables (`n`, en minuscule), joker `_`, constantes (`1`, `true`), tests de type
+      (`e: Sum`). Une `MatchError` est levée si aucun motif ne correspond.
+    exemple: |
+      def eval(e: Expr): Int = e match
+        case Number(n)   => n
+        case Sum(e1, e2) => eval(e1) + eval(e2)
+      // Sum(x, x) est illégal : une variable n'apparaît qu'une fois
+    piege: |
+      Une variable de motif commence par une **minuscule** ; un nom en majuscule est une **constante**
+      (sauf `null`, `true`, `false`).
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 70–74, 77"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-012
+    type: syntaxe
+    titre: "enum : types de données algébriques"
+    importance: 3
+    langage: scala
+    syntaxe: |
+      enum Expr:
+        case Number(n: Int)
+        case Sum(e1: Expr, e2: Expr)
+    usage: |
+      Un `enum` énumère **tous les cas** d'un ADT et rien d'autre. Il équivaut à un trait et des case classes rangées
+      dans son objet compagnon, en plus court : `Expr.Number(1)`, ou `Number(1)` après `import Expr.*`.
+      On le décompose avec `match` comme d'habitude.
+    exemple: |
+      def show(e: Expr): String = e match
+        case Var(x)     => x
+        case Number(n)  => n.toString
+        case Sum(a, b)  => s"${show(a)} + ${show(b)}"
+        case Prod(a, b) => s"${showP(a)} * ${showP(b)}"
+      def showP(e: Expr): String = e match
+        case e: Sum => s"(${show(e)})"
+        case _      => show(e)
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 79–83"
+    verifie: false
+    incertain: |
+      Au slide 83, le cas `Sum` s'écrit `s"${show(a)} + ${show(b)}}"` : l'accolade en trop ajoute un `}` au résultat
+      (`1 + 2}`, vérifié en compilant). La fiche donne la version corrigée.
+
+  - id: softcons-s03-013
+    type: syntaxe
+    titre: "enum simple et motifs alternatifs"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      enum Color:
+        case Red, Green, Blue
+    usage: |
+      Les cas d'un enum peuvent être de simples valeurs, sans paramètres ; en pattern matching, ils comptent comme des
+      **constantes**. Plusieurs motifs se combinent avec `|`.
+    exemple: |
+      def isWeekend(day: DayOfWeek) = day match
+        case Saturday | Sunday => true
+        case _                 => false
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 84–85"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-014
+    type: syntaxe
+    titre: "enum avec paramètres et méthodes"
+    importance: 2
+    langage: scala
+    syntaxe: |
+      enum Direction(val dx: Int, val dy: Int):
+    usage: |
+      Un enum peut prendre des paramètres et définir des méthodes. Les cas qui passent des paramètres utilisent un
+      `extends` explicite. Le compilateur le traduit à peu près en une classe abstraite et un objet compagnon.
+    exemple: |
+      enum Direction(val dx: Int, val dy: Int):
+        case Right extends Direction(1, 0)
+        case Up    extends Direction(0, 1)
+        case Left  extends Direction(-1, 0)
+        case Down  extends Direction(0, -1)
+        def leftTurn = Direction.values((ordinal + 1) % 4)
+      Direction.Right.leftTurn   // Up, avec (dx, dy) = (0, 1)
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 86–88"
+    verifie: false
+    incertain: |
+      Au slide 86, `val u = x.leftTurn` doit se lire `r.leftTurn`, et le commentaire `v = (1, 0)` est faux :
+      `Up` vaut `(0, 1)` (vérifié en compilant).
+
+  - id: softcons-s03-015
+    type: resume
+    titre: "Méthodes de la bibliothèque standard"
+    importance: 2
+    corps: |
+      Méthodes vues cette semaine, définies dans `Any` ou générées pour les enums.
+    points_cles:
+      - "`def isInstanceOf[T]: Boolean` : teste si le type de l'objet est conforme à `T` (comme `x instanceof T` en Java). **Déconseillé** en Scala."
+      - "`def asInstanceOf[T]: T` : traite l'objet comme une instance de `T` (comme `(T) x`), lève une `ClassCastException` sinon. **Déconseillé**."
+      - "`e.ordinal` : le numéro d'un cas d'enum, à partir de zéro, dans l'ordre de déclaration."
+      - "`Direction.values` : tableau immuable, dans l'objet compagnon, de tous les cas simples ; `valueOf` est aussi généré."
+      - "`def apply(x: A): B` (trait `Function1[A, B]`) : la méthode appelée par `f(x)` sur une valeur de fonction."
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 46, 61, 87–88"
+    verifie: false
+    incertain: |
+      Le slide 87 affirme que seuls les cas simples ont un numéro (`ordinal`). En compilant, un cas paramétré comme
+      `Expr.Var("x")` a bien un `ordinal` (0) ; seuls les cas simples apparaissent en revanche dans `values`.
+
+  - id: softcons-s03-016
+    type: resume
+    titre: "À retenir"
+    importance: 3
+    corps: |
+      Les objets, les fonctions et la décomposition des données vus avec le modèle de substitution.
+    points_cles:
+      - |
+        **Liaison dynamique** : le code appelé dépend du type de l'objet **à l'exécution**.
+        ```scala
+        Empty.contains(1)  →  [1/x][Empty/this] false  =  false
+        ```
+      - |
+        **Hiérarchie des types** : `Any` en haut (`==`, `!=`, `equals`, `hashCode`, `toString`) ; `AnyRef` pour les types
+        référence (alias de `java.lang.Object`) ; `AnyVal` pour les types primitifs ; `Nothing` en bas, sous-type de tout,
+        sans valeur (fin anormale, éléments d'une collection vide).
+      - |
+        **Les fonctions sont des objets** : `A => B` abrège `scala.Function1[A, B]`. `(x: Int) => x * x` devient un objet
+        avec `def apply(x: Int) = x * x`, et `f(7)` devient `f.apply(7)`. Une méthode `def f` n'est pas une valeur de
+        fonction, mais elle est convertie en `(x: Int) => f(x)` là où une fonction est attendue.
+      - |
+        **Évaluer un `match`** : les motifs sont essayés **dans l'ordre** ; l'expression se réécrit en la partie droite du
+        premier cas qui correspond, avec les variables remplacées par les parties du sélecteur.
+        `eval(Sum(Number(1), Number(2))) → eval(Number(1)) + eval(Number(2)) → 3`.
+      - |
+        **Décomposer des données** : méthodes de test et d'accès (explosion quadratique), tests de type et casts
+        (dangereux), **décomposition OO** (facile d'ajouter des données, difficile d'ajouter des opérations, et ne marche pas
+        pour une simplification non locale comme `a * b + a * c → a * (b + c)`), ou **pattern matching**.
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 13–19, 29–32, 46–51, 61–76"
+    verifie: false
+    incertain: null
+
+  - id: softcons-s03-017
+    type: resume
+    titre: "Pièges fréquents"
+    importance: 2
+    corps: |
+      Les erreurs typiques de la semaine 3, au format **erreur → correction**.
+    points_cles:
+      - "Écrire `IntSet()` sur une classe abstraite → instancier une sous-classe concrète (`Empty`, `NonEmpty(…)`)."
+      - "Hériter de deux classes → une seule classe, mais autant de traits que voulu : `extends Shape, Planar, Movable`."
+      - "Classer les données avec `isInstanceOf` / `asInstanceOf` → utiliser des case classes (ou un `enum`) et `match`."
+      - "Écrire le motif `Sum(x, x)` → deux variables différentes, `Sum(a, b)`, puis comparer `a` et `b` dans la partie droite du cas."
+      - "Oublier un cas dans un `match` → une `MatchError` à l'exécution : couvrir tous les cas, ou ajouter `case _`."
+    source:
+      fichier: "software_construction/semaine-03/swc-week3 (2).pdf"
+      emplacement: "slides 2, 28, 61–62, 71–72"
+    verifie: false
+    incertain: null
+quiz: []
