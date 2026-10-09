@@ -1,0 +1,146 @@
+cours: algebra
+semaine: 5
+titre: "Groups 3 : courbes elliptiques, groupe diédral, quotients"
+fiches:
+  - id: algebra-s05-001
+    type: definition
+    titre: "Le groupe d'une courbe elliptique"
+    importance: 2
+    corps: |
+      Une **courbe elliptique** est l'ensemble des points du plan $\mathbb{K}^2$ qui satisfont
+      $$y^2 = x^3 + ax + b, \qquad a, b \in \mathbb{K}.$$
+
+      Les points de la courbe forment un **groupe** : on pose $P + Q = -R$ dès que $P, Q, R$ sont trois
+      points **alignés** de la courbe.
+      1. Le neutre est le point $O$ « à l'infini en haut ».
+      2. L'opposé $-P$ est le symétrique de $P$ par rapport à l'axe horizontal : $P + (-P) = O$.
+      3. $P + O = -(-P) = P$ (la verticale par $P$ recoupe la courbe en $-P$).
+      4. Si $P, Q, R$ sont les trois intersections d'une droite avec la courbe : $P + Q = -R$, $Q + R = -P$, $P + R = -Q$.
+      5. Pour $P + P$ : la **tangente** en $P$ recoupe la courbe en $R$, et $P + P = -R$.
+      6. Si $P$ a une ordonnée nulle, $P + P = O$.
+
+      L'addition est clairement **commutative** ; elle est aussi **associative** (plus difficile à montrer).
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 3–6"
+    verifie: false
+    incertain: |
+      Les annotations manuscrites du slide 3 précisent $\mathbb{K} = \mathbb{R}$ et la condition
+      $4a^3 + 27b^2 \neq 0$, qui ne figurent pas dans le texte tapé de la définition.
+
+  - id: algebra-s05-002
+    type: methode
+    titre: "Algorithme de factorisation de Lenstra"
+    importance: 1
+    etapes:
+      - "Pour factoriser $n \\in \\mathbb{N}$ : choisir une courbe elliptique $y^2 = x^3 + ax + b$ sur $\\mathbb{Z}/n\\mathbb{Z}$ et un point $P$ dessus."
+      - "Calculer $2P$, $3!P$, $4!P$, etc. ($3!P = 3 \\cdot 2P = 2 \\cdot 2P + 2P$, …) jusqu'à ce que le calcul échoue."
+      - "Ces calculs demandent des pentes $\\frac{u}{v}$ modulo $n$, qui n'ont de sens que si $\\gcd(v, n) = 1$ ($v$ inversible dans $\\mathbb{Z}/n\\mathbb{Z}$)."
+      - "Si le calcul échoue, c'est que $\\gcd(v, n) > 1$ : on a trouvé un **facteur non trivial** de $n$."
+      - "Sinon, recommencer avec une autre courbe et un autre point $P$."
+    exemple: |
+      Méthode particulièrement efficace pour trouver les **petits facteurs** de $n$
+      (Hendrik Lenstra, 1987).
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 7–8"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s05-003
+    type: definition
+    titre: "Le groupe diédral Dₙ"
+    importance: 3
+    corps: |
+      Pour $n \ge 3$, $D_n$ est le groupe des **symétries rigides d'un $n$-gone régulier** plat
+      (pour la composition) :
+      $$D_n = \{1, r, \dots, r^{n-1}, s_1, s_2, \dots, s_n\}, \qquad |D_n| = 2n.$$
+      Le sommet 1 a $n$ images possibles, puis le sommet 2 seulement 2 : $|D_n| \le 2n$, et on a déjà trouvé
+      $2n$ éléments.
+
+      Avec $s$ une réflexion par un sommet et $r$ la rotation anti-horaire d'angle $\frac{2\pi}{n}$ :
+      $$srs = r^{-1} \iff sr = r^{-1}s \iff (sr)^2 = 1.$$
+      En particulier, $D_n$ est **non abélien** (déjà $D_4$).
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 10–12"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s05-004
+    type: theoreme
+    titre: "Présentation de Dₙ par générateurs et relations"
+    importance: 3
+    hypotheses: |
+      $n \ge 3$ ; $s$ une réflexion par un sommet, $r$ la rotation anti-horaire d'angle $\frac{2\pi}{n}$.
+    corps: |
+      $$D_n = \langle s, r \mid s^2 = 1,\ r^n = 1,\ srs = r^{-1} \rangle.$$
+    remarques: |
+      Idée : avec $sr^j = r^{-j}s$ et $s^2 = 1$, tout produit s'écrit $r^j$ ou $r^j s$, $j = 0, \dots, n-1$ :
+      on obtient exactement $2n$ éléments. Toute relation supplémentaire réduirait le nombre d'éléments.
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 13"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s05-005
+    type: theoreme
+    titre: "Sous-groupes normaux : groupes abéliens et Dₙ"
+    importance: 2
+    hypotheses: |
+      $G$ un groupe et $H \subset G$ un sous-groupe ; pour les exemples, $D_n = \langle s, r \mid s^2 = 1, r^n = 1, srs = r^{-1}\rangle$, $n \ge 3$.
+    corps: |
+      - Si $G$ est **abélien**, **tout** sous-groupe $H \subset G$ est normal : $ghg^{-1} = gg^{-1}h = h \in H$.
+      - Le sous-groupe des rotations $R = \langle r \rangle = \{1, r, \dots, r^{n-1}\}$ est **normal** dans $D_n$ :
+        $sr^js^{-1} = r^{-j} \in R$.
+      - $K = \langle s \rangle = \{1, s\}$ n'est **pas** normal dans $D_n$ : $rsr^{-1} = sr^{-2} \notin K$.
+    remarques: |
+      Sondage du cours dans $D_{12}$ : $\{1, r^3, r^6, r^9\}$, $\{1, r^6\}$ et $\{1, r^2, r^4, r^6, r^8, r^{10}\}$
+      sont normaux ; $\{1, sr^6\}$ et $\{1, sr^4\}$ ne le sont pas (réponse B).
+      Astuce : $sr^ks = r^{-k}$ reste une rotation, tandis que $r\,(sr^k)\,r^{-1} = sr^{k-2}$ change de réflexion.
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 13–15"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s05-006
+    type: theoreme
+    titre: "Groupe quotient G/H"
+    importance: 3
+    hypotheses: |
+      $H \trianglelefteq G$ un sous-groupe **normal**.
+    corps: |
+      L'ensemble $G/H$ des left $H$-cosets de $G$ forme naturellement un groupe, avec
+      $$(xH) \cdot (yH) = (xyH), \qquad \text{neutre } 1H, \qquad (xH)^{-1} = x^{-1}H.$$
+      Cette loi est **bien définie** : elle ne dépend pas du choix des représentants des cosets.
+
+      Par Lagrange : $|G| = |G/H| \cdot |H| = [G : H] \cdot |H|$.
+    remarques: |
+      Bonne définition : si $x' = xh_1$ et $y' = yh_2$, alors $x'y' = xy\,(y^{-1}h_1y)\,h_2 \in xyH$ car
+      $y^{-1}h_1y \in H$ (c'est là que la **normalité** sert).
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 16 et 18"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s05-007
+    type: formule
+    titre: "Le quotient Dₙ/R ≃ C₂"
+    importance: 2
+    corps: |
+      Les cosets de $R = \{1, r, \dots, r^{n-1}\}$ dans $D_n$ sont
+      $$1R = \{1, r, \dots, r^{n-1}\}, \qquad sR = \{s, sr, \dots, sr^{n-1}\},$$
+      avec $(1R)(1R) = 1R$, $(1R)(sR) = (sR)(1R) = sR$, $(sR)(sR) = 1R$. Donc
+      $$D_n / R \simeq C_2 = \langle t \mid t^2 = 1 \rangle = \{1, t\}, \qquad |D_n| = [D_n : R] \cdot |R| = 2 \cdot n = 2n.$$
+      Le quotient $D_n/R$ est **abélien**, alors que $D_n$ ne l'est pas.
+    conditions: |
+      $n \ge 3$ ; $R \trianglelefteq D_n$ (sous-groupe des rotations, normal).
+    source:
+      fichier: "algebra/semaine-05/alg4.pdf"
+      emplacement: "p. 17–18"
+    verifie: false
+    incertain: null
+quiz: []

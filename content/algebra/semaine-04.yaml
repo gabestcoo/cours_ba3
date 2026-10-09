@@ -1,0 +1,220 @@
+cours: algebra
+semaine: 4
+titre: "Groups 2 : homomorphismes, générateurs et relations, noyau et image"
+fiches:
+  - id: algebra-s04-001
+    type: definition
+    titre: "Le groupe des racines de l'unité Cₙ"
+    importance: 2
+    corps: |
+      Pour $n \in \mathbb{N}$, $n \ge 2$ :
+      $$C_n = \{1, q, q^2, \dots, q^{n-1}\} \qquad \text{où} \qquad q = e^{\frac{2\pi i}{n}}.$$
+      C'est un groupe **abélien d'ordre $n$** pour la **multiplication**.
+
+      Intuition : $(\mathbb{Z}/n\mathbb{Z}, +, 0)$ et $C_n$ sont « le même » groupe, via $[k] \mapsto q^k$,
+      qui respecte l'opération de groupe.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 6–7"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-002
+    type: definition
+    titre: "Homomorphisme de groupes"
+    importance: 3
+    corps: |
+      Une application $\phi : G \to H$ entre deux groupes est un **homomorphisme de groupes** si
+      $$\phi(x \cdot y) = \phi(x) \cdot \phi(y) \qquad \forall x, y \in G$$
+      (le produit de gauche est celui de $G$, celui de droite celui de $H$).
+      C'est une application qui **respecte la multiplication**.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 9 et 12"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-003
+    type: theoreme
+    titre: "Un homomorphisme envoie le neutre sur le neutre et l'inverse sur l'inverse"
+    importance: 2
+    hypotheses: |
+      $\phi : G \to H$ un homomorphisme de groupes.
+    corps: |
+      $$\phi(1_G) = 1_H \qquad \text{et} \qquad \phi(x^{-1}) = (\phi(x))^{-1} \quad \forall x \in G.$$
+    remarques: |
+      Preuve : $\phi(x y^{-1} \cdot y) = \phi(x y^{-1})\phi(y) = \phi(x)$, donc $\phi(xy^{-1}) = \phi(x)(\phi(y))^{-1}$.
+      Avec $y = x$ : $\phi(1_G) = 1_H$, puis $\phi(x)\phi(x^{-1}) = 1_H$.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 9"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-004
+    type: definition
+    titre: "Isomorphisme et automorphisme"
+    importance: 3
+    corps: |
+      Un homomorphisme de groupes **inversible** est un **isomorphisme** : $\phi : G \to H$ tel qu'il existe
+      $\psi : H \to G$ avec $\phi \circ \psi = \mathrm{Id}_H$ et $\psi \circ \phi = \mathrm{Id}_G$.
+      Alors $G \simeq H$ sont des groupes **isomorphes**.
+
+      Un **automorphisme** est un isomorphisme d'un groupe dans lui-même, $\phi : G \to G$.
+
+      Deux groupes isomorphes peuvent avoir des descriptions différentes, mais il existe une bijection qui
+      respecte l'opération (elle envoie produit sur produit et inverse sur inverse).
+
+      **Attention :** $|G_1| = |G_2|$ **n'implique pas** que les groupes ont la même structure. Le groupe de Klein
+      $G_1 = \{1, a, b, ab = ba \mid a^2 = b^2 = 1\}$ et $G_2 = \{1, q, q^2, q^3 \mid q^4 = 1\}$ ont 4 éléments,
+      mais $G_2$ a un élément d'ordre 4 ($q$) alors que dans $G_1$, $a^2 = b^2 = (ab)^2 = 1$.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 8, 10, 12"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-005
+    type: formule
+    titre: "Isomorphisme (ℤ/nℤ, +, 0) ≃ Cₙ"
+    importance: 2
+    corps: |
+      $$\phi : C_n \to \mathbb{Z}/n\mathbb{Z}, \qquad q^i \mapsto [i]$$
+      est une bijection et un homomorphisme : $\phi(q^i q^j) = \phi(q^{i+j}) = [i + j] = [i] + [j] = \phi(q^i) + \phi(q^j)$
+      (indices modulo $n$). Donc $C_n \simeq \mathbb{Z}/n\mathbb{Z}$.
+    conditions: |
+      $n \ge 2$ ; $C_n$ est un groupe pour la multiplication, $\mathbb{Z}/n\mathbb{Z}$ pour l'addition.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 11"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-006
+    type: definition
+    titre: "Générateurs, relations et présentation d'un groupe"
+    importance: 3
+    corps: |
+      Les **générateurs** d'un groupe sont un ensemble **minimal** d'éléments de $G$ tel que tout élément de $G$
+      s'écrit comme un produit des générateurs et de leurs inverses.
+
+      Une **relation** est toute équation satisfaite par des produits de générateurs.
+      Générateurs et relations ne sont **pas uniques** en général.
+
+      Une **présentation** de $G$ est une expression $\langle S \mid R \rangle$, où $S$ est un ensemble de
+      générateurs et $R$ un ensemble **minimal** de relations dont découle toute autre relation de $G$.
+
+      Exemples :
+      - $C_n = \langle q \mid q^n = 1 \rangle$, le **groupe cyclique** d'ordre $n$ ($q^{n+3} = q^3$ est une autre relation) ;
+      - le groupe de Klein $K = \langle a, b \mid a^2 = 1,\ b^2 = 1,\ ab = ba \rangle$ ;
+      - $\mathbb{Q}^*_+$ (rationnels positifs, pour la multiplication) est engendré par **tous les nombres premiers impairs et $\frac12$**
+        (réponse C du sondage).
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 13–16"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-007
+    type: formule
+    titre: "Générateurs du groupe cyclique Cₙ"
+    importance: 2
+    corps: |
+      $q^k$ engendre $C_n$ **si et seulement si** $\gcd(k, n) = 1$.
+
+      En effet, $\gcd(k, n) = 1 \iff \exists\, a, b \in \mathbb{Z} : ak + bn = 1 \iff (q^k)^a = q$,
+      donc $q^k$ engendre $C_n$. Par exemple, $q^{n-1}$ est toujours un générateur.
+    conditions: |
+      $C_n = \langle q \mid q^n = 1 \rangle$, $n \ge 2$, $1 \le k \le n - 1$.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 13"
+    verifie: false
+    incertain: |
+      Le cours écrit l'équivalence de façon manuscrite (« any $q^k$ with $\gcd(k, n) = 1$ can be a generator ») ;
+      le sens « seulement si » est formulé ici explicitement et a été vérifié pour $n = 6, 8, 12$.
+
+  - id: algebra-s04-008
+    type: theoreme
+    titre: "Définir un homomorphisme par les générateurs"
+    importance: 3
+    hypotheses: |
+      $G = \langle S \mid R_1, R_2, \dots, R_k \rangle$ un groupe défini par générateurs et relations, $H$ un autre groupe.
+    corps: |
+      On définit $\phi : G \to H$ ainsi :
+      1. on choisit $\phi(s_i)$ pour chaque générateur $s_i \in S$, et $\phi(1_G) = 1_H$ ;
+      2. on pose $\phi(x_1 \cdot x_2) = \phi(x_1) \cdot \phi(x_2)$ et $\phi(x_1^{-1}) = (\phi(x_1))^{-1}$ pour tous $x_1, x_2 \in G$.
+
+      Alors $\phi$ est un homomorphisme de groupes **si et seulement si** les relations de définition
+      $R_1, \dots, R_k$ de $G$ sont satisfaites par les images $\phi(s_i)$ des générateurs dans $H$.
+    remarques: |
+      Idée : si une relation $s_1 \cdots s_r = 1$ n'est pas satisfaite par les $\phi(s_i)$, alors
+      $\phi(1_G) = \phi(s_1) \cdots \phi(s_r) \neq 1_H$, donc $\phi$ n'est pas un homomorphisme.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 17"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-009
+    type: methode
+    titre: "Trouver tous les homomorphismes entre groupes cycliques"
+    importance: 2
+    etapes:
+      - "Un homomorphisme est déterminé par l'image du générateur : poser $\\phi(q) = t^k$."
+      - "Imposer la relation de définition : si $q^m = 1$, il faut $(\\phi(q))^m = 1$ dans le groupe d'arrivée."
+      - "Lister les $k$ qui conviennent : chacun donne un homomorphisme."
+    exemple: |
+      $C_8 = \langle q \mid q^8 = 1 \rangle$, $C_4 = \langle t \mid t^4 = 1 \rangle$.
+
+      - $\phi : C_8 \to C_4$, $\phi(q) = t^k$ : il faut $t^{8k} = (t^4)^{2k} = 1$, vrai pour tout $k$, donc
+        $k = 0, 1, 2, 3$ : **4 homomorphismes**.
+      - $f : C_4 \to C_8$, $f(t) = q^k$ : il faut $q^{4k} = 1$, donc $k$ **pair** : $k = 0, 2, 4, 6$ : **4 homomorphismes**.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 18–19"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-010
+    type: theoreme
+    titre: "Noyau et image d'un homomorphisme"
+    importance: 3
+    hypotheses: |
+      $\phi : G \to H$ un homomorphisme de groupes.
+    corps: |
+      Le **noyau** (*kernel*) est $\ker\phi = \{g \in G : \phi(g) = 1 \in H\}$.
+      L'**image** est $\operatorname{Im}\phi = \phi(G) \subset H$.
+
+      **Proposition.** $\ker\phi \subset G$ est un sous-groupe de $G$, et $\operatorname{Im}\phi \subset H$
+      est un sous-groupe de $H$.
+    remarques: |
+      Exemples (avec les homomorphismes de la fiche précédente) :
+      - $\phi_1 : C_8 \to C_4$, $q \mapsto t$ : $\ker\phi_1 = \{1, q^4\} \subset C_8$ et $\operatorname{Im}\phi_1 = \{1, t, t^2, t^3\} = C_4$ ;
+      - $f_4 : C_4 \to C_8$, $t \mapsto q^4$ : $\ker f_4 = \{1, t^2\} \subset C_4$ et $\operatorname{Im} f_4 = \{1, q^4\} \subset C_8$.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 20–21"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s04-011
+    type: theoreme
+    titre: "Sous-groupe normal ; le noyau est normal"
+    importance: 3
+    hypotheses: |
+      $G$ un groupe, $H \subset G$ un sous-groupe ; pour la proposition, $\phi : G \to H$ un homomorphisme de groupes.
+    corps: |
+      **Définition.** $H \subset G$ est un **sous-groupe normal** si pour tous $h \in H$, $g \in G$ :
+      $$g h g^{-1} \in H.$$
+      Notation : $H \trianglelefteq G$.
+
+      **Proposition.** $\ker\phi \trianglelefteq G$ est un sous-groupe normal de $G$.
+    remarques: |
+      Preuve : si $h \in \ker\phi$, $\phi(ghg^{-1}) = \phi(g)\,\phi(h)\,\phi(g^{-1}) = \phi(g) \cdot 1 \cdot \phi(g)^{-1} = 1$.
+    source:
+      fichier: "algebra/semaine-04/alg3 (1).pdf"
+      emplacement: "p. 22"
+    verifie: false
+    incertain: null
+quiz: []
