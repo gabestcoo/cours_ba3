@@ -1,0 +1,151 @@
+cours: probastat
+semaine: 2
+titre: "Mesures continues, variables aléatoires, fonction de répartition"
+fiches:
+  - id: probastat-s02-001
+    type: definition
+    titre: "Densité de probabilité et mesure continue"
+    importance: 3
+    corps: |
+      Quand il y a plus que dénombrablement de réalisations (ex. une taille, un réel), on ne peut pas sommer
+      des probabilités ponctuelles : on donne la probabilité de tomber dans un **petit voisinage**.
+      Intuitivement, $f(x)\,dx$ est la probabilité que $x$ se produise.
+
+      **Définition 2.1.3.** Soit $d \ge 1$. Une **densité de probabilité** (*probability density function*) sur
+      $\mathbb{R}^d$ est une fonction **Riemann-intégrable** $f : \mathbb{R}^d \to [0, +\infty)$ telle que
+      $$\int_{-\infty}^{+\infty} dx_1 \cdots \int_{-\infty}^{+\infty} dx_d\, f(x_1, \dots, x_d) = 1.$$
+      La mesure de probabilité associée est
+      $$P_f(A) = \int_{-\infty}^{+\infty} dx_1 \cdots \int_{-\infty}^{+\infty} dx_d\, f(x_1, \dots, x_d)\,\mathbf{1}_A(x_1, \dots, x_d).$$
+
+      Dans tout le cours, on n'utilise que des mesures **induites par une fonction de masse ou une densité**
+      (bien plus faciles à manipuler que $P(A)$ pour tout $A$).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.1.3 (déf. 2.1.3, rem. 2.1.1), p. 29"
+    verifie: false
+    incertain: |
+      Le polycop précise que cette définition est légèrement non rigoureuse (structure du domaine de $P_f$) ;
+      la version rigoureuse est dans la section étoilée 2.1.4, hors programme.
+
+  - id: probastat-s02-002
+    type: definition
+    titre: "Exemples de mesures continues"
+    importance: 2
+    corps: |
+      - Point **uniforme** sur $[-1, 1]$ : $\Omega = \mathbb{R}$, $f(x) = \frac12 \mathbf{1}_{[-1,1]}(x)$.
+      - Première goutte de pluie de l'année sur Lausanne (sans autre information) : $\Omega = \mathbb{R}^2$,
+        $f(x) = \frac{1}{\text{Area(Lausanne)}} \mathbf{1}_{\text{Lausanne}}(x)$.
+      - Temps avant la première panne de 5 ordinateurs : $\Omega = \mathbb{R}^5$ et, en supposant que
+        les durées sont $\ge 0$, que les ordinateurs tombent en panne indépendamment, et qu'à chaque instant la panne
+        a une probabilité positive,
+        $$f(t_1, \dots, t_5) = \prod_{i=1}^5 \lambda e^{-\lambda t_i} \mathbf{1}_{t_i \ge 0}.$$
+        Le facteur $\lambda > 0$ normalise ($\int_{\mathbb{R}^5} f = 1$) ; la **structure produit** reflète l'indépendance,
+        et $e^{-\lambda t_i}$ la décroissance exponentielle de la probabilité de survivre longtemps.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.1.3 (ex. 2.1.2), p. 30"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s02-003
+    type: definition
+    titre: "Variable aléatoire"
+    importance: 3
+    corps: |
+      Les espaces de probabilité modélisent les expériences ; les **variables aléatoires** correspondent aux
+      **mesures** qu'on peut faire sur ces expériences.
+
+      **Définition 2.2.1.** Une variable aléatoire (réelle) est une **fonction** $X : \Omega \to \mathbb{R}$.
+      La probabilité qu'elle tombe dans un ensemble $A$ est
+      $$P(X \in A) := P\big(X^{-1}(A)\big),$$
+      c'est-à-dire la probabilité que la réalisation de l'expérience soit telle que la mesure $X$ prenne une valeur dans $A$.
+
+      Notations : $P(X = x) \equiv P(X \in \{x\})$, $P(X \le x) \equiv P(X \in (-\infty, x])$,
+      $P(X > x) \equiv P(X \in (x, +\infty))$. On a toujours $P(X \in \mathrm{Image}(X)) = P(\Omega) = 1$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.1 (déf. 2.2.1, rem. 2.2.1–2.2.2), p. 34–35"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s02-004
+    type: definition
+    titre: "Variable aléatoire discrète et sa loi"
+    importance: 3
+    corps: |
+      **Définition 2.2.2.** Soit $P$ une mesure de probabilité sur $\Omega$ et $X : \Omega \to \mathbb{R}$.
+      $X$ est **discrète** s'il existe $D_X \subset \mathbb{R}$ **fini ou dénombrable** tel que $P(X \in D_X) = 1$
+      ($X$ est **supportée** sur $D_X$). La **loi** de $X$ est la mesure de probabilité sur $\mathbb{R}$
+      $$P_X(A) = \sum_{x \in A \cap D_X} P(X = x).$$
+      En mots : $X$ ne prend qu'un nombre fini ou dénombrable de valeurs avec probabilité non nulle.
+
+      $D_X$ n'est **pas unique** (on peut lui ajouter tout $x$ avec $P(X = x) = 0$). Souvent on prend
+      $D_X = \mathrm{Image}(X)$ : $X$ est discrète dès que son image est finie ou dénombrable.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.1 (déf. 2.2.2, rem. 2.2.3), p. 36"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s02-005
+    type: definition
+    titre: "Variable aléatoire continue et loi en général"
+    importance: 3
+    corps: |
+      **Définition 2.2.3.** $X : \Omega \to \mathbb{R}$ est une variable aléatoire **continue** s'il existe une
+      densité $f_X : \mathbb{R} \to [0, +\infty)$ telle que
+      $$P(X \in A) = \int_{\mathbb{R}} \mathbf{1}_A(x) f_X(x)\,dx.$$
+      Sa loi est alors la mesure $P_{f_X}$.
+
+      **Définition 2.2.4 (cas général).** La **loi** de $X$ est la mesure de probabilité $P_X$ sur $\mathbb{R}$
+      donnée par $P_X(A) = P(X \in A)$. Les cas discret et continu en sont des cas particuliers.
+
+      On note $X \overset{\text{Law}}{=} Y$ lorsque $X$ et $Y$ ont **la même loi**.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.1 (déf. 2.2.3–2.2.4), p. 37"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s02-006
+    type: definition
+    titre: "Fonction de répartition (CDF)"
+    importance: 3
+    corps: |
+      **Définition 2.2.5.** La **fonction de répartition** (*cumulative distribution function*) de $X : \Omega \to \mathbb{R}$ est
+      $$F_X(t) = P(X \le t).$$
+      - Deux variables aléatoires ont **la même loi si et seulement si** elles ont la même fonction de répartition.
+      - Si $X$ est continue de densité $f_X$, alors $F_X$ est une **primitive** de $f_X$ : $F_X'(t) = f_X(t)$ pour tout $t \in \mathbb{R}$.
+      - Toute CDF est **continue à droite**, **croissante** (au sens large), avec $\lim_{t \to -\infty} F(t) = 0$ et $\lim_{t \to +\infty} F(t) = 1$.
+
+      Morale : la CDF encode toute l'information sur la loi (pour chaque $t$, la probabilité de tomber à gauche ou à droite de $t$) ;
+      on peut ensuite procéder par inclusion-exclusion pour trouver la probabilité de tomber dans tout ensemble raisonnable
+      (à des subtilités près entre intervalles ouverts et fermés, mais c'est une bonne intuition).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.1 (déf. 2.2.5), p. 37"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s02-007
+    type: definition
+    titre: "Espérance : définition (cas discret et continu)"
+    importance: 3
+    corps: |
+      **Définition 2.2.8.**
+
+      **Cas discret.** Si $\Omega$ est fini ou dénombrable, $p$ une fonction de masse, et $X : \Omega \to \mathbb{R}$ telle que
+      $\sum_{\omega \in \Omega} |X(\omega)|\,p(\omega) < \infty$ ($X$ est **$P_p$-intégrable**), l'**espérance** de $X$ est
+      $$E_p(X) := \sum_{\omega \in \Omega} X(\omega)\,p(\omega).$$
+
+      **Cas continu.** Si $f$ est une densité sur $\mathbb{R}^d$ et $X : \mathbb{R}^d \to \mathbb{R}$ telle que
+      $\int_{\mathbb{R}^d} |X(x)|\,f(x)\,dx < \infty$ ($X$ est **$P_f$-intégrable**),
+      $$E_f(X) := \int_{\mathbb{R}^d} X(x)\,f(x)\,dx.$$
+
+      **Cas général** : on note $E_P(X)$ l'espérance de $X$ sous $P$.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.3 (déf. 2.2.8), p. 40"
+    verifie: false
+    incertain: null
+quiz: []

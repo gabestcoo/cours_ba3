@@ -34,3 +34,138 @@ semaines:
         sections_polycop: ["1.1", "1.2", "1.3", "1.4", "1.5", "2.1.1", "2.1.2"]
         incertain: null
     statut: valide
+
+  - semaine: 2
+    screenshot: "proba_stat/semaine-02/img.png"
+    # Exercice facultatif 2.8 : étoilé dans le polycop (*Exercise 2.8), ignoré.
+    exercices:
+      - numero: "2.1"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 27 (section 2.1.1)"
+        sections_polycop: ["2.1.1"]
+        incertain: null
+      - numero: "2.2"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 28 (section 2.1.2)"
+        sections_polycop: ["2.1.2"]
+        incertain: null
+      - numero: "2.3"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 28 (section 2.1.2)"
+        sections_polycop: ["2.1.1", "2.1.2"]
+        incertain: null
+      - numero: "2.4"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 28 (section 2.1.2)"
+        sections_polycop: ["2.1.2"]
+        incertain: null
+      - numero: "2.5"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 29 (section 2.1.2)"
+        sections_polycop: ["1.5.2", "2.1.2"]
+        incertain: null
+      - numero: "2.6"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 30 (section 2.1.3)"
+        sections_polycop: ["2.1.3"]
+        incertain: null
+      - numero: "2.7"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 31 (section 2.1.3)"
+        sections_polycop: ["2.1.3"]
+        incertain: null
+      - numero: "cours"
+        localisation: "screenshot : « Cours : sections 1.2.3, 2.2.1, 2.2.3 (start) »"
+        sections_polycop: ["2.1.3", "2.2.1", "2.2.3"]
+        incertain: null
+        # « 1.2.3 » sur le screenshot = faute de frappe pour 2.1.3 (confirmé). 2.2.3 seulement commencée ; 2.2.2* exclue.
+    statut: valide
+
+  - semaine: 3
+    screenshot: "proba_stat/semaine-03/img.png"
+    # Exercice facultatif 2.14 : étoilé dans le polycop (*Exercise 2.14), ignoré. Pas de section de cours indiquée.
+    exercices:
+      - numero: "2.9"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 36 (section 2.2.1)"
+        sections_polycop: ["2.2.1"]
+        incertain: null
+      - numero: "2.10"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 36 (section 2.2.1)"
+        sections_polycop: ["2.2.1"]
+        incertain: null
+      - numero: "2.11"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 37 (section 2.2.1)"
+        sections_polycop: ["2.2.1"]
+        incertain: null
+      - numero: "2.12"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 38 (section 2.2.1)"
+        sections_polycop: ["2.2.1"]
+        incertain: null
+      - numero: "2.13"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 38 (section 2.2.1)"
+        sections_polycop: ["2.2.1"]
+        incertain: null
+      - numero: "2.15"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 39 (section 2.2.1)"
+        sections_polycop: ["2.1.1", "2.2.1"]
+        incertain: null
+      - numero: "2.16"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 42 (section 2.2.3)"
+        sections_polycop: ["2.2.3"]
+        incertain: null
+    statut: valide
+
+  - semaine: 4
+    screenshot: "proba_stat/semaine-04/img.png"
+    # Pas d'exercice facultatif ni de section de cours indiquée.
+    exercices:
+      - numero: "2.17"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 42 (section 2.2.3)"
+        sections_polycop: ["2.2.3"]
+        incertain: null
+      - numero: "2.18"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 42 (section 2.2.3)"
+        sections_polycop: ["2.2.3"]
+        incertain: null
+      - numero: "2.19"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 45 (section 2.2.5)"
+        sections_polycop: ["2.2.4", "2.2.5"]
+        incertain: null
+      - numero: "2.20"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 45 (section 2.2.5)"
+        sections_polycop: ["2.2.4", "2.2.5"]
+        incertain: |
+          Erreur signalée sur le screenshot, dans l'énoncé et la correction : le point 1 doit être
+          $P(X_1 \ge X_2)$ et non $P(X_1 \le X_2)$.
+      - numero: "2.21"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 47 (section 2.2.6)"
+        sections_polycop: ["2.2.5", "2.2.6"]
+        incertain: null
+      - numero: "2.22"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 48 (section 2.2.6)"
+        sections_polycop: ["2.2.6"]
+        incertain: null
+    statut: valide
+
+  - semaine: 5
+    screenshot: "proba_stat/semaine-05/img.png"
+    # Exercice facultatif 2.27 : étoilé dans le polycop (*Exercise 2.27, two envelopes), ignoré.
+    exercices:
+      - numero: "2.23"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 49 (section 2.2.7)"
+        sections_polycop: ["2.2.7"]
+        incertain: null
+      - numero: "2.24"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 49 (section 2.2.7)"
+        sections_polycop: ["2.2.7"]
+        incertain: null
+      - numero: "2.25"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 54 (section 2.4.1)"
+        sections_polycop: ["2.4.1"]
+        incertain: null
+      - numero: "2.26"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 55 (section 2.4.1)"
+        sections_polycop: ["2.4.1"]
+        incertain: null
+      - numero: "2.28"
+        localisation: "Proba_Stats_IC_20260824 (1).pdf, p. 60 (section 2.4.2)"
+        sections_polycop: ["2.4.2"]
+        incertain: null
+      - numero: "cours"
+        localisation: "ajout demandé : section 2.3, p. 50–51 (entre les exercices 2.24 et 2.25)"
+        sections_polycop: ["2.3"]
+        incertain: null
+    statut: valide

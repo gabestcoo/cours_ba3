@@ -1,0 +1,108 @@
+cours: probastat
+semaine: 3
+titre: "Lois de variables aléatoires et propriétés de l'espérance"
+fiches:
+  - id: probastat-s03-001
+    type: definition
+    titre: "Modéliser : espaces de probabilité et variables aléatoires"
+    importance: 2
+    corps: |
+      Une expérience dont l'issue est aléatoire se modélise par :
+      - $\Omega$, l'ensemble des réalisations possibles de l'expérience ;
+      - $\mathcal{F} \subset \mathcal{P}(\Omega)$, l'ensemble des événements (ce qu'on peut observer) ;
+      - une mesure de probabilité $P$, qui attribue à chaque événement $A$ sa probabilité $P(A) \in [0, 1]$.
+
+      Les **espaces de probabilité** modélisent les situations/expériences impliquant de l'incertitude ;
+      les **variables aléatoires** correspondent aux **mesures** qu'on peut faire dans ces situations :
+      ce sont des fonctions de l'ensemble des réalisations vers les réels.
+
+      Exemple : si l'expérience est d'observer toutes les personnes nées en 2000, on peut mesurer la taille
+      du premier individu né cette année-là.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "sections 2.1.1 et 2.2.1, p. 25 et 34"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s03-002
+    type: formule
+    titre: "Même loi sur des espaces différents"
+    importance: 2
+    corps: |
+      Le comportement d'une variable aléatoire ne dépend pas de tout l'espace de probabilité, seulement de sa **loi**.
+      Exemple 2.2.1 :
+      - $\Omega_1 = \{0, 1\}$, $p_1(0) = p_1(1) = \frac12$, $X_1(0) = 0$, $X_1(1) = 1$ ;
+      - $\Omega_2 = \mathbb{R}$, $f_2 = \frac12 \mathbf{1}_{[0,2]}$, $X_2(x) = \mathbf{1}_{(-\infty, 1]}(x)$ ;
+      - $\Omega_3 = \{a, b, c, d, e\}$, $p_3(a) = p_3(b) = p_3(c) = \frac14$, $p_3(d) = p_3(e) = \frac18$, $X_3 = \mathbf{1}_{\{a, b\}}$.
+
+      Dans les trois cas, $\mathrm{Image}(X_i) = \{0, 1\}$ et $P(X_i = 1) = P(X_i = 0) = \frac12$ :
+      $$X_1 \overset{\text{Law}}{=} X_2 \overset{\text{Law}}{=} X_3.$$
+    conditions: |
+      Même loi ne veut **pas** dire même fonction, ni même espace. Pour le vérifier, comparer les lois
+      (ou, de façon équivalente, les fonctions de répartition).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.1 (ex. 2.2.1–2.2.2, déf. 2.2.4–2.2.5), p. 35–37"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s03-003
+    type: formule
+    titre: "L'espérance comme moyenne pondérée"
+    importance: 3
+    corps: |
+      Si $\mathrm{Image}(X)$ est finie ou dénombrable :
+      $$E_p(X) = \sum_{x \in \mathrm{Image}(X)} x\,P_p(X = x) \qquad (2.1) \qquad\qquad E_f(X) = \sum_{x \in \mathrm{Image}(X)} x\,P_f(X = x) \qquad (2.2)$$
+      L'espérance est une **moyenne pondérée** des valeurs de $X$, avec pour poids la fréquence à laquelle $X$ prend chaque valeur.
+
+      **Remarque 2.2.4.** L'espérance d'une variable aléatoire **ne dépend que de sa loi**.
+    conditions: |
+      Formules (2.1)/(2.2) : $\mathrm{Image}(X)$ finie ou dénombrable, et $X$ intégrable (voir la définition de l'espérance, semaine 2).
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.3 (éq. 2.1–2.2, rem. 2.2.4), p. 40–41"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s03-004
+    type: methode
+    titre: "Calculer une espérance"
+    importance: 3
+    etapes:
+      - "**Discret** : sommer $X(\\omega)\\,p(\\omega)$ sur les réalisations, ou regrouper par valeur avec $\\sum_x x\\,P(X = x)$ (souvent plus rapide)."
+      - "**Continu** : intégrer $X(x)\\,f(x)$ sur $\\mathbb{R}^d$."
+      - "Vérifier l'intégrabilité ($\\sum |X|\\,p < \\infty$ ou $\\int |X|\\,f < \\infty$)."
+    exemple: |
+      - Pièce équilibrée, $X(\text{Head}) = 10$, $X(\text{Tail}) = -2$ : $E_p(X) = \frac12 \cdot 10 + \frac12 \cdot (-2) = 4$.
+      - Dé équilibré, $X = -1$ sur les faces impaires et $2$ sur les paires :
+        $P_p(X = -1) = P_p(X = 2) = \frac12$, donc $E_p(X) = 2 \cdot \frac12 - 1 \cdot \frac12 = \frac12$.
+      - $\Omega = \mathbb{R}$, $f = \frac14 \mathbf{1}_{[0,4]}$, $X(x) = x^2$ :
+        $$E_f(X) = \int_{-\infty}^{+\infty} x^2\,\tfrac14 \mathbf{1}_{[0,4]}(x)\,dx = \frac14 \int_0^4 x^2\,dx = \frac{16}{3}.$$
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.3 (ex. 2.2.3), p. 41"
+    verifie: false
+    incertain: null
+
+  - id: probastat-s03-005
+    type: theoreme
+    titre: "Propriétés de l'espérance"
+    importance: 3
+    hypotheses: |
+      $\Omega$ un ensemble de réalisations, $P$ une mesure de probabilité sur $\Omega$, et $X, Y : \Omega \to \mathbb{R}$
+      deux variables aléatoires **intégrables** ($E_P(|X|), E_P(|Y|) < \infty$).
+    corps: |
+      1. **Linéarité** : pour tous $a, b \in \mathbb{R}$, $E_P(aX + bY) = a\,E_P(X) + b\,E_P(Y)$ ;
+      2. **Ordre** : si $P(X \ge Y) = 1$, alors $E_P(X) \ge E_P(Y)$. En particulier :
+         - si $P(X \ge 0) = 1$, alors $E_P(X) \ge 0$ ;
+         - si $P(a \le X \le b) = 1$, alors $a \le E_P(X) \le b$ ;
+         - $|E_P(X)| \le E_P(|X|)$.
+    remarques: |
+      Les espérances se comportent exactement comme des intégrales (impropres) ou des sommes (infinies).
+      Dans le cours, les échanges de limites, sommes et intégrales seront toujours justifiés.
+    source:
+      fichier: "proba_stat/Proba_Stats_IC_20260824 (1).pdf"
+      emplacement: "section 2.2.3 (thm 2.2.1), p. 41–42"
+    verifie: false
+    incertain: null
+quiz: []
