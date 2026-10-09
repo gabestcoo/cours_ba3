@@ -3,14 +3,14 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { parse } from 'yaml'
-import { rendreSemaine } from './app/src/content/render.ts'
+import { rendreSemaine, rendreTheme } from './app/src/content/render.ts'
 
 const racine = fileURLToPath(new URL('.', import.meta.url))
 
 // Transforme les fichiers YAML de content/ en modules JSON au build.
-// Les fichiers de semaine sont validés puis pré-rendus en HTML (Markdown, KaTeX, Shiki) :
-// un contenu invalide fait échouer le build. Avec `?meta`, seul un résumé de la semaine
-// est exporté (pour les listes), le contenu complet étant chargé à la demande.
+// Les fichiers de semaine et de thème sont validés puis pré-rendus en HTML (Markdown, KaTeX, Shiki) :
+// un contenu invalide fait échouer le build. Avec `?meta`, seul un résumé est exporté
+// (pour les listes), le contenu complet étant chargé à la demande.
 function yamlContenu(): Plugin {
   return {
     name: 'yaml-contenu',
@@ -18,19 +18,23 @@ function yamlContenu(): Plugin {
       const [fichier, requete] = id.replace(/\\/g, '/').split('?')
       if (!fichier.endsWith('.yaml')) return null
       let donnees: unknown = parse(code)
-      if (/\/content\/[^/]+\/semaine-\d{2}\.yaml$/.test(fichier)) {
-        const s = await rendreSemaine(donnees, fichier.slice(fichier.lastIndexOf('/content/') + 1))
+      const nom = fichier.slice(fichier.lastIndexOf('/content/') + 1)
+      const rendre = /\/content\/[^/]+\/semaine-\d{2}\.yaml$/.test(fichier)
+        ? rendreSemaine
+        : /\/content\/[^/]+\/theme-[a-z0-9]+\.yaml$/.test(fichier)
+          ? rendreTheme
+          : null
+      if (rendre) {
+        const { fiches, quiz, ...u } = await rendre(donnees, nom)
         donnees =
           requete === 'meta'
             ? {
-                cours: s.cours,
-                semaine: s.semaine,
-                titre: s.titre,
-                nbFiches: s.fiches.length,
-                nbNonVerifiees: s.fiches.filter((f) => !f.verifie).length,
-                nbQuiz: s.quiz.length,
+                ...u,
+                nbFiches: fiches.length,
+                nbNonVerifiees: fiches.filter((f) => !f.verifie).length,
+                nbQuiz: quiz.length,
               }
-            : s
+            : { ...u, fiches, quiz }
       }
       return { code: `export default ${JSON.stringify(donnees)}`, map: null }
     },

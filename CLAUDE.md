@@ -47,6 +47,7 @@ content/              # contenu généré, un fichier par cours et par semaine
   analyse3/semaine-01.yaml
   comparch/semaine-01.yaml
   probastat/mapping.yaml
+  softcons/theme-recursion.yaml   # thème d'entraînement (plusieurs semaines)
   ...
 scripts/validate.ts   # validation du contenu selon le schéma
 ```
@@ -219,7 +220,16 @@ Contraintes de forme : phrases courtes ; blocs de code de **8 lignes maximum** ;
 avec les termes techniques en anglais quand c'est le terme du cours.
 **Tout exemple de code est compilé avec `scala-cli` avant d'être écrit.**
 Si le PDF contient une erreur, la signaler (champ `incertain`, affiché comme encadré ⚠️) au lieu de la recopier.
-Pas de quiz pour l'instant (un format spécifique sera proposé plus tard).
+Pas de quiz par semaine. Les quiz d'entraînement sont des **thèmes** (voir ci-dessous).
+
+#### Thèmes d'entraînement (`content/<cours>/theme-<nom>.yaml`)
+Un thème regroupe des fiches et un quiz qui portent sur plusieurs semaines (ex. `softcons/theme-recursion.yaml`,
+affiché dans la page du cours sous « Entraînement », route `#/softcons/theme/recursion`).
+Même format qu'une semaine, avec `theme: <nom>` à la place de `semaine` ; ids `<cours>-<nom>-NNN` et `<cours>-<nom>-qNNN`.
+Les questions peuvent avoir un `titre` et un `niveau` (1 à 3, affiché en ★).
+**Exception à la règle 2** : les problèmes d'un thème sont nouveaux, mais calqués sur les exemples du cours ;
+chacun cite le slide du schéma qu'il reprend, et **toute réponse est vérifiée en exécutant le code** (`scala-cli`).
+Jamais la solution d'un labo noté ni une solution complète d'un devoir classique (ex. `countChange`).
 
 ### Computer Architecture (cours prioritaire, le plus difficile)
 - Des fiches `resume` structurées : une par notion importante, avec `points_cles`.

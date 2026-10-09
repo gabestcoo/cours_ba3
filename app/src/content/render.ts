@@ -5,7 +5,8 @@ import MarkdownIt from 'markdown-it'
 import katexPluginModule from '@vscode/markdown-it-katex'
 import katex from 'katex'
 import { bundledLanguages, createHighlighter, type BundledLanguage, type Highlighter } from 'shiki'
-import { semaine, type Fiche, type Question, type Semaine } from './schema.ts'
+import type { z } from 'zod'
+import { semaine, theme, type Fiche, type Question, type Semaine, type Theme, type Unite } from './schema.ts'
 
 type Md = InstanceType<typeof MarkdownIt>
 
@@ -49,7 +50,7 @@ function blocCode(md: Md, h: Highlighter, code: string, langage: string): string
 }
 
 // Langages utilisés par une semaine : on les charge avant le rendu, qui est synchrone.
-function langagesUtilises(s: Semaine): BundledLanguage[] {
+function langagesUtilises(s: Unite): BundledLanguage[] {
   const noms = new Set<string>()
   const json = JSON.stringify(s)
   for (const m of json.matchAll(/```([^\s`\\]+)/g)) noms.add(m[1])
@@ -59,8 +60,11 @@ function langagesUtilises(s: Semaine): BundledLanguage[] {
 
 export class ErreurContenu extends Error {}
 
-export async function rendreSemaine(donnees: unknown, fichier: string): Promise<Semaine> {
-  const r = semaine.safeParse(donnees)
+export const rendreSemaine = (donnees: unknown, fichier: string) => rendreUnite<Semaine>(semaine, donnees, fichier)
+export const rendreTheme = (donnees: unknown, fichier: string) => rendreUnite<Theme>(theme, donnees, fichier)
+
+async function rendreUnite<T extends Unite>(schema: z.ZodType<T>, donnees: unknown, fichier: string): Promise<T> {
+  const r = schema.safeParse(donnees)
   if (!r.success) {
     const details = r.error.issues.map((i) => `  - ${i.path.join('.')} : ${i.message}`).join('\n')
     throw new ErreurContenu(`Contenu invalide dans ${fichier} :\n${details}`)
@@ -105,7 +109,12 @@ export async function rendreSemaine(donnees: unknown, fichier: string): Promise<
   }
 
   const question = (q: Question): Question => {
-    const commun = { enonce: bloc(q.enonce), explication: bloc(q.explication), incertain: incertain(q.incertain) }
+    const commun = {
+      titre: q.titre === undefined ? undefined : ligne(q.titre),
+      enonce: bloc(q.enonce),
+      explication: bloc(q.explication),
+      incertain: incertain(q.incertain),
+    }
     return q.type === 'qcm' ? { ...q, ...commun, choix: q.choix.map(ligne) } : { ...q, ...commun }
   }
 

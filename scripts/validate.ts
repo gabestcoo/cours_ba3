@@ -5,7 +5,7 @@ import { join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseDocument } from 'yaml'
 import type { z } from 'zod'
-import { COURS, mappingProbastat, semaine } from '../app/src/content/schema.ts'
+import { COURS, mappingProbastat, semaine, theme, type Unite } from '../app/src/content/schema.ts'
 
 const racine = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const dossierContenu = join(racine, 'content')
@@ -57,9 +57,22 @@ function validerSemaine(fichier: string, slug: string, numero: number) {
   if (!r.success) return signalerZod(fichier, r.error)
 
   const s = r.data
-  if (s.cours !== slug) erreur(fichier, 'cours', `vaut « ${s.cours} » mais le fichier est dans content/${slug}/`)
   if (s.semaine !== numero) erreur(fichier, 'semaine', `vaut ${s.semaine} mais le fichier s'appelle semaine-${String(numero).padStart(2, '0')}.yaml`)
+  verifierUnite(fichier, slug, s)
+}
 
+function validerTheme(fichier: string, slug: string, nom: string) {
+  const donnees = lireYaml(fichier)
+  if (donnees === undefined) return
+  const r = theme.safeParse(donnees)
+  if (!r.success) return signalerZod(fichier, r.error)
+  if (r.data.theme !== nom) erreur(fichier, 'theme', `vaut « ${r.data.theme} » mais le fichier s'appelle theme-${nom}.yaml`)
+  verifierUnite(fichier, slug, r.data)
+}
+
+// Vérifications communes aux semaines et aux thèmes : dossier du cours, ids uniques, sources.
+function verifierUnite(fichier: string, slug: string, s: Unite) {
+  if (s.cours !== slug) erreur(fichier, 'cours', `vaut « ${s.cours} » mais le fichier est dans content/${slug}/`)
   const dossierCours = COURS.find((c) => c.slug === slug)?.dossier
   s.fiches.forEach((f, i) => {
     enregistrerId(fichier, `fiches[${i}].id`, f.id)
@@ -88,17 +101,21 @@ for (const entree of readdirSync(dossierContenu, { recursive: true, withFileType
   const slug = m?.[1] ?? ''
   const nom = m?.[2] ?? ''
   const semaineMatch = nom.match(/^semaine-(\d{2})\.yaml$/)
+  const themeMatch = nom.match(/^theme-([a-z0-9]+)\.yaml$/)
 
   if (!slugs.has(slug)) {
     erreur(fichier, '', `dossier de cours inconnu (attendu : ${[...slugs].join(', ')})`)
   } else if (semaineMatch) {
     nbFichiers++
     validerSemaine(fichier, slug, Number(semaineMatch[1]))
+  } else if (themeMatch) {
+    nbFichiers++
+    validerTheme(fichier, slug, themeMatch[1])
   } else if (slug === 'probastat' && nom === 'mapping.yaml') {
     nbFichiers++
     validerMapping(fichier)
   } else {
-    erreur(fichier, '', 'fichier inattendu (attendu : semaine-XX.yaml, ou probastat/mapping.yaml)')
+    erreur(fichier, '', 'fichier inattendu (attendu : semaine-XX.yaml, theme-<nom>.yaml, ou probastat/mapping.yaml)')
   }
 }
 

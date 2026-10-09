@@ -1,4 +1,4 @@
-import { semainesDuCours, trouverCours } from '../content/load'
+import { semainesDuCours, themesDuCours, trouverCours } from '../content/load'
 import { Html } from '../components/Html'
 import { lien } from '../router'
 import { Introuvable } from './Introuvable'
@@ -7,6 +7,7 @@ export function CoursPage({ slug }: { slug: string }) {
   const cours = trouverCours(slug)
   if (!cours) return <Introuvable />
   const semaines = semainesDuCours(cours.slug)
+  const themes = themesDuCours(cours.slug)
 
   return (
     <>
@@ -38,6 +39,23 @@ export function CoursPage({ slug }: { slug: string }) {
               </li>
             )
           })}
+        </ul>
+      )}
+      {themes.length > 0 && (
+        <ul className="liste-liens">
+          {themes.map((t) => (
+            <li key={t.theme}>
+              <a className="ligne-lien" href={lien({ page: 'theme', cours: cours.slug, theme: t.theme, onglet: 'quiz' })}>
+                <span>
+                  <span className="ligne-sous-titre">Entraînement</span>
+                  <span className="ligne-titre">
+                    <Html html={t.titre} inline />
+                  </span>
+                </span>
+                <span className="ligne-compte">{t.nbQuiz} questions</span>
+              </a>
+            </li>
+          ))}
         </ul>
       )}
     </>

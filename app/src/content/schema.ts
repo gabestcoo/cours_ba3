@@ -44,7 +44,7 @@ export const schemaSvg = z.strictObject({
 })
 
 const communFiche = {
-  id: z.string().regex(/^[a-z0-9]+-s\d{2}-\d{3}$/, 'format attendu : <cours>-sXX-NNN'),
+  id: z.string().regex(/^[a-z0-9]+-[a-z0-9]+-\d{3}$/, 'format attendu : <cours>-sXX-NNN ou <cours>-<thème>-NNN'),
   titre: texte,
   importance: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   source,
@@ -92,7 +92,9 @@ export const fiche = z.discriminatedUnion('type', [
 ])
 
 const communQuestion = {
-  id: z.string().regex(/^[a-z0-9]+-s\d{2}-q\d{3}$/, 'format attendu : <cours>-sXX-qNNN'),
+  id: z.string().regex(/^[a-z0-9]+-[a-z0-9]+-q\d{3}$/, 'format attendu : <cours>-sXX-qNNN ou <cours>-<thème>-qNNN'),
+  titre: texte.optional(), // affiché au-dessus de l'énoncé
+  niveau: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(), // difficulté, affichée en ★
   enonce: markdown,
   explication: markdown,
   source,
@@ -131,27 +133,39 @@ export const question = z.discriminatedUnion('type', [
   }),
 ])
 
+// Les fiches et le quiz d'une semaine ou d'un thème.
+const contenu = {
+  cours: slugCours,
+  titre: texte,
+  fiches: z.array(fiche),
+  quiz: z.array(question).default([]),
+}
+
+function verifierIds(
+  u: { fiches: Fiche[]; quiz: Question[] },
+  prefixe: string,
+  ctx: z.RefinementCtx,
+) {
+  u.fiches.forEach((f, i) => {
+    if (!f.id.startsWith(prefixe))
+      ctx.addIssue({ code: 'custom', path: ['fiches', i, 'id'], message: `doit commencer par « ${prefixe} »` })
+  })
+  u.quiz.forEach((q, i) => {
+    if (!q.id.startsWith(prefixe))
+      ctx.addIssue({ code: 'custom', path: ['quiz', i, 'id'], message: `doit commencer par « ${prefixe} »` })
+    if (q.type === 'qcm' && q.reponse >= q.choix.length)
+      ctx.addIssue({ code: 'custom', path: ['quiz', i, 'reponse'], message: 'index hors des choix' })
+  })
+}
+
 export const semaine = z
-  .strictObject({
-    cours: slugCours,
-    semaine: z.number().int().min(1).max(14),
-    titre: texte,
-    fiches: z.array(fiche),
-    quiz: z.array(question).default([]),
-  })
-  .superRefine((s, ctx) => {
-    const prefixe = `${s.cours}-s${String(s.semaine).padStart(2, '0')}-`
-    s.fiches.forEach((f, i) => {
-      if (!f.id.startsWith(prefixe))
-        ctx.addIssue({ code: 'custom', path: ['fiches', i, 'id'], message: `doit commencer par « ${prefixe} »` })
-    })
-    s.quiz.forEach((q, i) => {
-      if (!q.id.startsWith(prefixe))
-        ctx.addIssue({ code: 'custom', path: ['quiz', i, 'id'], message: `doit commencer par « ${prefixe} »` })
-      if (q.type === 'qcm' && q.reponse >= q.choix.length)
-        ctx.addIssue({ code: 'custom', path: ['quiz', i, 'reponse'], message: 'index hors des choix' })
-    })
-  })
+  .strictObject({ ...contenu, semaine: z.number().int().min(1).max(14) })
+  .superRefine((s, ctx) => verifierIds(s, `${s.cours}-s${String(s.semaine).padStart(2, '0')}-`, ctx))
+
+// Un thème regroupe des fiches et un quiz qui portent sur plusieurs semaines (ex. la récursion).
+export const theme = z
+  .strictObject({ ...contenu, theme: z.string().regex(/^[a-z0-9]+$/, 'lettres minuscules et chiffres seulement') })
+  .superRefine((t, ctx) => verifierIds(t, `${t.cours}-${t.theme}-`, ctx))
 
 export const mappingProbastat = z.strictObject({
   semaines: z.array(
@@ -174,4 +188,6 @@ export const mappingProbastat = z.strictObject({
 export type Fiche = z.infer<typeof fiche>
 export type Question = z.infer<typeof question>
 export type Semaine = z.infer<typeof semaine>
+export type Theme = z.infer<typeof theme>
+export type Unite = Semaine | Theme
 export type MappingProbastat = z.infer<typeof mappingProbastat>

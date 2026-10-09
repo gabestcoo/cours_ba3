@@ -42,6 +42,12 @@ function QuestionCarte({ q, onRepondue }: { q: Question; onRepondue: (correcte: 
           <strong>⚠ Contenu incertain.</strong> <Html html={q.incertain} inline />
         </div>
       )}
+      {q.titre && (
+        <h3 className="question-titre">
+          <Html html={q.titre} inline />
+          {q.niveau && <span className="question-niveau"> {'★'.repeat(q.niveau)}</span>}
+        </h3>
+      )}
       <Html html={q.enonce} />
 
       {q.type === 'qcm' && (
@@ -141,7 +147,7 @@ export function Quiz({ questions, cleScore }: { questions: Question[]; cleScore:
   const [resultats, setResultats] = useState<Record<string, boolean>>({})
   const [dernier, setDernier] = useState<Score | null>(() => lire<Score | null>(cleScore, null))
 
-  if (questions.length === 0) return <p className="vide">Pas encore de quiz pour cette semaine.</p>
+  if (questions.length === 0) return <p className="vide">Pas encore de quiz.</p>
 
   const termine = index >= serie.length
   const q = serie[index]

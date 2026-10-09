@@ -1,33 +1,33 @@
-import { semainesDuCours, trouverCours, useSemaine } from '../content/load'
+import { themesDuCours, trouverCours, useTheme } from '../content/load'
 import { VueUnite } from '../components/VueUnite'
 import { lien, type Onglet } from '../router'
 import { Introuvable } from './Introuvable'
 
 interface Props {
   slug: string
-  numero: number
+  theme: string
   onglet: Onglet
 }
 
-export function SemainePage({ slug, numero, onglet }: Props) {
+export function ThemePage({ slug, theme, onglet }: Props) {
   const cours = trouverCours(slug)
-  const meta = cours && semainesDuCours(cours.slug).find((s) => s.semaine === numero)
-  const contenu = useSemaine(slug, numero)
+  const meta = cours && themesDuCours(cours.slug).find((t) => t.theme === theme)
+  const contenu = useTheme(slug, theme)
   if (!cours || !meta || contenu.etat === 'absente') return <Introuvable />
 
-  const route = { page: 'semaine', cours: cours.slug, semaine: numero } as const
+  const route = { page: 'theme', cours: cours.slug, theme } as const
 
   return (
     <VueUnite
       retour={{ href: lien({ page: 'cours', cours: cours.slug }), texte: cours.nom }}
-      surtitre={`Semaine ${numero}`}
+      surtitre="Entraînement"
       titre={meta.titre}
       nbFiches={meta.nbFiches}
       nbQuiz={meta.nbQuiz}
       onglet={onglet}
       liens={{ fiches: lien({ ...route, onglet: 'fiches' }), quiz: lien({ ...route, onglet: 'quiz' }) }}
       contenu={contenu}
-      cleScore={`score:${cours.slug}:${numero}`}
+      cleScore={`score:${cours.slug}:theme:${theme}`}
     />
   )
 }

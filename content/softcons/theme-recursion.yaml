@@ -1,0 +1,751 @@
+cours: softcons
+theme: recursion
+titre: "Récursion : 20 problèmes"
+fiches:
+  - id: softcons-recursion-001
+    type: resume
+    titre: "Schémas à reconnaître"
+    importance: 3
+    corps: |
+      Les six schémas de récursion du quiz. Pour chaque problème, se demander : **quel est le cas de base,
+      et que dois-je faire du résultat de l'appel récursif, en supposant qu'il est correct ?**
+    points_cles:
+      - "**Récursion structurelle** : `Nil` → résultat trivial ; `y :: ys` → combiner `y` avec le résultat sur `ys` (problèmes 1–4)."
+      - "**Accumulateur** : le résultat se construit dans un paramètre et sort tel quel au cas de base ; l'appel récursif est la dernière action (problèmes 5–7)."
+      - "**Arbres** : `Leaf` → cas de base ; `Node(l, e, r)` → un appel par sous-arbre, puis combiner avec `e` (problèmes 8–10)."
+      - "**Deux appels, on additionne** : prendre ou sauter un élément, avancer d'un pas ou de deux ; le cas de base « réussi » vaut `1`, l'échec `0`, et l'ordre des tests compte (problèmes 11–14)."
+      - "**Énumérer toutes les solutions** : cas de base `List(Nil)` (une solution, vide), puis combiner **chaque** choix avec **chaque** solution du reste (`map`, `flatMap`, `for`) (problèmes 15–18)."
+      - "**Backtracking** : un générateur de choix, un filtre `if` pour la contrainte, puis la récursion sur le reste du problème (problèmes 19–20)."
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 64–72, 78–80 ; voir aussi swc4 slides 16, 29, 79"
+    verifie: false
+    incertain: null
+
+quiz:
+  # ---------- 1–4 : récursion structurelle sur les listes ----------
+  - id: softcons-recursion-q001
+    titre: "Garder les pairs"
+    niveau: 1
+    type: qcm
+    enonce: |
+      `f` parcourt la liste et garde certains éléments.
+      ```scala
+      def f(xs: List[Int]): List[Int] = xs match
+        case Nil     => Nil
+        case y :: ys => if y % 2 == 0 then y :: f(ys) else f(ys)
+      ```
+      Que vaut `f(List(3, 4, 7, 8, 10))` ?
+    choix:
+      - "`List(3, 7)`"
+      - "`List(4, 8, 10)`"
+      - "`List(10, 8, 4)`"
+      - "`List(4)`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      ```text
+      f(3 :: …)  = f(List(4, 7, 8, 10))        3 impair : sauté
+      f(4 :: …)  = 4 :: f(List(7, 8, 10))
+      f(7 :: …)  = f(List(8, 10))              7 impair : sauté
+      f(8 :: …)  = 8 :: f(List(10))
+      f(10 :: …) = 10 :: f(Nil) = 10 :: Nil
+      ```
+      Résultat : `List(4, 8, 10)`. L'ordre est conservé, car chaque tête gardée est remise **devant** le résultat
+      du reste. `List(3, 7)` garde les impairs ; `List(4)` s'arrête au premier pair.
+
+      **Schéma** : un seul appel sur la queue ; la tête est ajoutée ou non devant le résultat (c'est `filter`).
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 58–59 (posElems, filter)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q002
+    titre: "Le maximum, par confiance"
+    niveau: 1
+    type: qcm
+    enonce: |
+      `maxi` renvoie le plus grand élément d'une liste **non vide**.
+      ```scala
+      def maxi(xs: List[Int]): Int = xs match
+        case x :: Nil  => x
+        case x :: rest => ???
+      ```
+      On suppose que `maxi(rest)` renvoie bien le maximum de `rest`. Que mettre à la place de `???` ?
+    choix:
+      - "`maxi(rest)`"
+      - "`x`"
+      - "`math.max(x, maxi(rest))`"
+      - "`x :: maxi(rest)`"
+    reponse: 2
+    tolerance: null
+    explication: |
+      Si `maxi(rest)` est le maximum de `rest`, le maximum de `x :: rest` est le plus grand des deux :
+      `math.max(x, maxi(rest))`. Exemple : `maxi(List(3, 9, 2)) = max(3, max(9, 2)) = 9`.
+
+      `maxi(rest)` oublie `x` (faux si `x` est le plus grand) ; `x` ignore le reste ;
+      `x :: maxi(rest)` ne type-checke pas (`Int` attendu, pas une liste).
+
+      **Schéma** : faire confiance à l'appel sur la queue (hypothèse d'induction), puis se demander seulement
+      comment y intégrer la tête.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 16–17 (induction structurelle)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q003
+    titre: "Une concaténation qui perd des éléments"
+    niveau: 2
+    type: qcm
+    enonce: |
+      Cette version de `++` est presque correcte.
+      ```scala
+      def concat(xs: List[Int], ys: List[Int]): List[Int] = xs match
+        case Nil    => Nil
+        case h :: t => h :: concat(t, ys)
+      ```
+      Que vaut `concat(List(1, 2), List(3))`, et où est le bug ?
+    choix:
+      - "`List(1, 2, 3)` : il n'y a pas de bug"
+      - "`List(1, 2)` : le cas de base devrait renvoyer `ys`"
+      - "`List(3)` : il faudrait appeler `concat(ys, t)`"
+      - "`List(2, 1)` : il faudrait `concat(t, ys) :: h`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      ```text
+      concat(1 :: 2 :: Nil, ys) = 1 :: concat(2 :: Nil, ys)
+                                = 1 :: 2 :: concat(Nil, ys)
+                                = 1 :: 2 :: Nil              ← ys est perdu ici
+      ```
+      Le cas de base doit renvoyer `ys`, comme l'équation du cours `Nil ++ ys = ys`.
+
+      **Schéma** : le cas de base n'est pas toujours « vide » ; il vaut ce que doit donner la fonction
+      quand la liste parcourue est vide.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 11, 14 (définition et équations de ++)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q004
+    titre: "Insérer dans une liste triée"
+    niveau: 2
+    type: qcm
+    enonce: |
+      `insert` place `x` au bon endroit dans une liste **triée**.
+      ```scala
+      def insert(x: Int, xs: List[Int]): List[Int] = xs match
+        case List()  => List(x)
+        case y :: ys => if x < y then ??? else y :: insert(x, ys)
+      ```
+      Que mettre à la place de `???` ?
+    choix:
+      - "`x :: ys`"
+      - "`x :: xs`"
+      - "`y :: x :: ys`"
+      - "`insert(x, ys)`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      Si `x < y`, `x` est plus petit que tous les éléments de `xs` (triée) : on le met devant **toute** la liste.
+      Avec `insert(5, List(1, 4, 8))` :
+      ```text
+      insert(5, 1 :: …) = 1 :: insert(5, List(4, 8))
+      insert(5, 4 :: …) = 4 :: insert(5, List(8))
+      insert(5, 8 :: …) = 5 :: List(8)        car 5 < 8
+      ```
+      Résultat : `List(1, 4, 5, 8)`. Avec `x :: ys`, on perd `y` : `List(1, 4, 5)` (vérifié en exécutant).
+      `y :: x :: ys` place `x` après `y`, alors que `x < y`.
+
+      **Schéma** : on s'arrête dès que la bonne position est trouvée ; le reste de la liste est repris tel quel.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 79–80 (tri par insertion)"
+    verifie: false
+    incertain: null
+
+  # ---------- 5–7 : accumulateurs et récursion terminale ----------
+  - id: softcons-recursion-q005
+    titre: "Des chiffres vers un nombre"
+    niveau: 1
+    type: numerique
+    enonce: |
+      `go` lit une liste de chiffres avec un accumulateur.
+      ```scala
+      def go(acc: Int, xs: List[Int]): Int = xs match
+        case Nil     => acc
+        case y :: ys => go(acc * 10 + y, ys)
+      ```
+      Que vaut `go(0, List(4, 0, 2))` ?
+    reponse: 402
+    tolerance: null
+    explication: |
+      | appel | `acc` |
+      |---|---|
+      | `go(0, List(4, 0, 2))` | 0 |
+      | `go(4, List(0, 2))` | 0 × 10 + 4 = 4 |
+      | `go(40, List(2))` | 4 × 10 + 0 = 40 |
+      | `go(402, Nil)` | 40 × 10 + 2 = 402 |
+
+      Au cas de base, on renvoie `acc` tel quel : **402**.
+
+      **Schéma** : l'accumulateur contient le résultat partiel ; l'appel récursif est la dernière action,
+      donc la fonction est récursive terminale (taille constante, comme `gcd`).
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 125–127 (récursion terminale)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q006
+    titre: "Laquelle est terminale ?"
+    niveau: 2
+    type: qcm
+    enonce: |
+      On veut une longueur de liste **récursive terminale**, annotée `@tailrec`.
+      ```scala
+      @tailrec def len(xs: List[Int], acc: Int): Int = xs match
+        case Nil    => acc
+        case _ :: t => ???
+      ```
+      Quel cas récursif compile avec `@tailrec` **et** donne `len(xs, 0) == xs.length` ?
+    choix:
+      - "`len(t, acc) + 1`"
+      - "`1 + len(t, acc)`"
+      - "`len(t, acc + 1)`"
+      - "`acc + len(t, 1)`"
+    reponse: 2
+    tolerance: null
+    explication: |
+      Seul `len(t, acc + 1)` fait de l'appel récursif la **dernière action** : il n'y a plus rien à calculer
+      après le retour. Les trois autres font une addition **après** l'appel : le compilateur refuse `@tailrec`
+      (vérifié en compilant). `len(t, acc) + 1` et `1 + len(t, acc)` donnent quand même la bonne longueur, tout comme
+      `acc + len(t, 1)`, mais aucun n'est terminal.
+      ```text
+      len(List(7, 8, 9), 0) → len(List(8, 9), 1) → len(List(9), 2) → len(Nil, 3) → 3
+      ```
+
+      **Schéma** : pour rendre une fonction terminale, on déplace le calcul « en attente » dans l'accumulateur.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 125–127 (@tailrec, gcd vs factorial)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q007
+    titre: "Inverser avec un accumulateur"
+    niveau: 2
+    type: qcm
+    enonce: |
+      `rev` inverse une liste en temps linéaire.
+      ```scala
+      def rev(xs: List[Int], acc: List[Int]): List[Int] = xs match
+        case Nil     => ???
+        case y :: ys => rev(ys, y :: acc)
+      ```
+      Quel cas de base donne `rev(List(1, 2, 3), Nil) == List(3, 2, 1)` ?
+    choix:
+      - "`Nil`"
+      - "`acc`"
+      - "`acc.reverse`"
+      - "`xs`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      | appel | `acc` |
+      |---|---|
+      | `rev(List(1, 2, 3), Nil)` | `List()` |
+      | `rev(List(2, 3), …)` | `List(1)` |
+      | `rev(List(3), …)` | `List(2, 1)` |
+      | `rev(Nil, …)` | `List(3, 2, 1)` |
+
+      Tout le travail est dans `acc` : il faut le renvoyer. `Nil` (ou `xs`, qui vaut `Nil` ici) jette le résultat :
+      `List()` (vérifié en exécutant). `acc.reverse` ré-inverse et redonne `List(1, 2, 3)`.
+
+      **Schéma** : avec un accumulateur, le cas de base renvoie l'accumulateur ; en mettant chaque tête devant `acc`,
+      l'ordre s'inverse.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 125–127 (récursion terminale)"
+    verifie: false
+    incertain: null
+
+  # ---------- 8–10 : arbres binaires ----------
+  - id: softcons-recursion-q008
+    titre: "Taille d'un arbre"
+    niveau: 1
+    type: qcm
+    enonce: |
+      On reprend les arbres d'entiers du cours : `case object Leaf` et `case class Node(left: IntSet, elem: Int, right: IntSet)`.
+      ```scala
+      def size(t: IntSet): Int = t match
+        case Leaf          => 0
+        case Node(l, e, r) => ???
+      ```
+      Que mettre à la place de `???` pour compter les éléments ?
+    choix:
+      - "`size(l) + size(r)`"
+      - "`size(l) + 1 + size(r)`"
+      - "`1 + math.max(size(l), size(r))`"
+      - "`1 + size(r)`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      Un nœud compte pour **1**, plus les éléments de ses deux sous-arbres. Sans le `+ 1`, tout vaut 0 ;
+      `1 + math.max(…)` calcule la **hauteur** ; `1 + size(r)` oublie le sous-arbre gauche.
+      Pour l'arbre `Node(Node(Leaf, 1, Leaf), 2, Node(Leaf, 3, Node(Leaf, 4, Leaf)))`, la taille vaut 4.
+
+      **Schéma** : sur un arbre, un appel récursif **par sous-arbre**, puis on combine avec l'élément du nœud.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 29–30 (induction sur les arbres, IntSet)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q009
+    titre: "Hauteur après des insertions"
+    niveau: 2
+    type: numerique
+    enonce: |
+      Avec `incl` du cours (plus petit à gauche, plus grand à droite) :
+      ```scala
+      def height(t: IntSet): Int = t match
+        case Leaf          => 0
+        case Node(l, _, r) => 1 + math.max(height(l), height(r))
+      val t = Leaf.incl(2).incl(1).incl(3).incl(4)
+      ```
+      Que vaut `height(t)` ?
+    reponse: 3
+    tolerance: null
+    explication: |
+      Les insertions donnent :
+      ```text
+          2
+         / \
+        1   3
+             \
+              4
+      ```
+      `height` : feuille `1` → 1 ; `4` → 1 ; `3` → 1 + max(0, 1) = 2 ; racine `2` → 1 + max(1, 2) = **3**
+      (vérifié en exécutant).
+
+      **Schéma** : la valeur d'un nœud dépend des valeurs de ses sous-arbres, calculées d'abord (de bas en haut).
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 30–31 (contains, incl)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q010
+    titre: "Parcourir un arbre"
+    niveau: 2
+    type: qcm
+    enonce: |
+      Même arbre `t` qu'au problème précédent (racine 2, puis 1 à gauche, 3 à droite, 4 à droite de 3).
+      ```scala
+      def toList(t: IntSet): List[Int] = t match
+        case Leaf          => Nil
+        case Node(l, e, r) => toList(l) ++ (e :: toList(r))
+      ```
+      Que vaut `toList(t)` ?
+    choix:
+      - "`List(2, 1, 3, 4)`"
+      - "`List(1, 3, 4, 2)`"
+      - "`List(1, 2, 3, 4)`"
+      - "`List(4, 3, 2, 1)`"
+    reponse: 2
+    tolerance: null
+    explication: |
+      ```text
+      toList(nœud 2) = toList(nœud 1) ++ (2 :: toList(nœud 3))
+                     = List(1)        ++ (2 :: List(3, 4))
+                     = List(1, 2, 3, 4)
+      ```
+      Gauche, puis le nœud, puis droite : comme `incl` met les plus petits à gauche, on obtient la liste **triée**.
+      `List(2, 1, 3, 4)` mettrait le nœud avant ses sous-arbres ; `List(1, 3, 4, 2)` après.
+
+      **Schéma** : l'ordre dans lequel on combine les résultats des sous-arbres fixe l'ordre du résultat.
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 30–32 (IntSet, lois de contains et incl)"
+    verifie: false
+    incertain: null
+
+  # ---------- 11–14 : deux appels récursifs ----------
+  - id: softcons-recursion-q011
+    titre: "Monter un escalier"
+    niveau: 2
+    type: numerique
+    enonce: |
+      On monte un escalier de `n` marches, **1 ou 2 marches** à la fois.
+      ```scala
+      def ways(n: Int): Int =
+        if n == 0 then 1
+        else if n < 0 then 0
+        else ways(n - 1) + ways(n - 2)
+      ```
+      Que vaut `ways(4)` ?
+    reponse: 5
+    tolerance: null
+    explication: |
+      | `n` | `ways(n)` |
+      |---|---|
+      | 0 | 1 (arrivé : une façon) |
+      | 1 | ways(0) + ways(−1) = 1 + 0 = 1 |
+      | 2 | 1 + 1 = 2 |
+      | 3 | 2 + 1 = 3 |
+      | 4 | 3 + 2 = **5** |
+
+      Les 5 façons : 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2.
+
+      **Schéma** : deux choix (1 pas ou 2 pas) → deux appels, et on **additionne** les nombres de façons.
+      Le succès (`n == 0`) compte 1, le dépassement (`n < 0`) compte 0.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 105–125 (récursion et modèle de substitution)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q012
+    titre: "Compter les appels"
+    niveau: 2
+    type: numerique
+    enonce: |
+      Avec le même `ways` qu'au problème précédent, **combien d'appels** à `ways` sont exécutés au total
+      pour calculer `ways(3)`, en comptant l'appel initial ?
+    reponse: 9
+    tolerance: null
+    explication: |
+      ```text
+      ways(3)
+        ways(2)
+          ways(1)
+            ways(0)
+            ways(-1)
+          ways(0)
+        ways(1)
+          ways(0)
+          ways(-1)
+      ```
+      **9 appels** (vérifié en exécutant avec un compteur). `ways(1)` est calculé **deux fois** : avec deux appels
+      récursifs, le même sous-problème revient plusieurs fois, et le nombre d'appels grandit vite (15 pour `ways(4)`).
+
+      **Schéma** : l'arbre des appels d'une récursion double est un arbre binaire ; ses feuilles sont les cas de base.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 105–125 (récursion et modèle de substitution)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q013
+    titre: "Prendre ou sauter : l'ordre des cas de base"
+    niveau: 3
+    type: qcm
+    enonce: |
+      `count` compte les sous-listes de `xs` (chaque élément utilisé au plus une fois) dont la somme vaut `target`.
+      ```scala
+      def count(target: Int, xs: List[Int]): Int =
+        if target < 0 || xs.isEmpty then 0
+        else if target == 0 then 1
+        else count(target - xs.head, xs.tail) + count(target, xs.tail)
+      ```
+      Que vaut `count(3, List(1, 2))` ?
+    choix:
+      - "0"
+      - "1"
+      - "2"
+      - "3"
+    reponse: 0
+    tolerance: null
+    explication: |
+      On s'attend à 1 (la sous-liste `1 + 2`), mais :
+      ```text
+      count(3, List(1, 2))
+        count(2, List(2))        prendre 1
+          count(0, Nil)          prendre 2 : xs vide → 0 (!)
+          count(2, Nil)          sauter 2 → 0
+        count(3, List(2))        sauter 1
+          count(1, Nil) → 0
+          count(3, Nil) → 0
+      ```
+      Résultat : **0** (vérifié en exécutant). Quand `target == 0` **et** `xs` est vide, les deux cas de base sont
+      vrais : il faut tester `target == 0` **d'abord** (on a trouvé une solution, peu importe ce qui reste).
+      Avec l'ordre corrigé, on obtient 1.
+
+      **Schéma** : prendre l'élément (`target - xs.head`) ou le sauter, et additionner. Quand deux cas de base
+      peuvent être vrais ensemble, le succès passe avant l'échec.
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 75–77, 105–125 (if-then-else, récursion)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q014
+    titre: "Chemins dans une grille"
+    niveau: 2
+    type: qcm
+    enonce: |
+      On va du coin `(r, c)` d'une grille au coin `(0, 0)`, en faisant un pas **vers le haut** (`r - 1`) ou
+      **vers la gauche** (`c - 1`). Sur un bord (`r == 0` ou `c == 0`), il ne reste qu'un chemin.
+      ```scala
+      def paths(r: Int, c: Int): Int =
+        if r == 0 || c == 0 then 1
+        else ???
+      ```
+      Que mettre à la place de `???` ?
+    choix:
+      - "`paths(r - 1, c - 1)`"
+      - "`1 + paths(r - 1, c) + paths(r, c - 1)`"
+      - "`paths(r - 1, c) * paths(r, c - 1)`"
+      - "`paths(r - 1, c) + paths(r, c - 1)`"
+    reponse: 3
+    tolerance: null
+    explication: |
+      Tout chemin commence soit par un pas vers le haut, soit par un pas vers la gauche : on **additionne** les
+      chemins des deux cas. Pour `paths(2, 2)` :
+
+      | appel | valeur |
+      |---|---|
+      | `paths(1, 1)` | 1 + 1 = 2 |
+      | `paths(1, 2)`, `paths(2, 1)` | 2 + 1 = 3 |
+      | `paths(2, 2)` | 3 + 3 = **6** |
+
+      `paths(r - 1, c - 1)` fait un pas en diagonale ; `1 + …` compte en trop ; `*` combinerait les chemins
+      comme s'il fallait faire les deux.
+
+      **Schéma** : les choix sont **exclusifs** → on additionne les comptes (on ne multiplie pas).
+    source:
+      fichier: "software_construction/semaine-01/swc-week1 (2).pdf"
+      emplacement: "slides 105–125 (récursion et modèle de substitution)"
+    verifie: false
+    incertain: null
+
+  # ---------- 15–18 : énumérer toutes les solutions ----------
+  - id: softcons-recursion-q015
+    titre: "Sous-ensembles : Nil ou List(Nil) ?"
+    niveau: 2
+    type: qcm
+    enonce: |
+      `subsets` énumère toutes les sous-listes d'une liste.
+      ```scala
+      def subsets(xs: List[Int]): List[List[Int]] = xs match
+        case Nil => ???
+        case y :: ys =>
+          val rest = subsets(ys)
+          rest ++ rest.map(s => y :: s)
+      ```
+      Quel cas de base donne `subsets(List(1, 2)) == List(List(), List(2), List(1), List(1, 2))` ?
+    choix:
+      - "`Nil`"
+      - "`List(Nil)`"
+      - "`List(List(0))`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      La liste vide a **une** sous-liste : la liste vide. Le résultat est donc `List(Nil)` (une solution, vide),
+      et non `Nil` (aucune solution).
+      ```text
+      subsets(Nil)        = List(List())
+      subsets(List(2))    = List(List()) ++ List(List(2))
+      subsets(List(1, 2)) = List(List(), List(2)) ++ List(List(1), List(1, 2))
+      ```
+      Avec `Nil`, `rest` est vide à chaque étape, `rest.map(…)` aussi, et tout vaut `List()` (vérifié en exécutant).
+
+      **Schéma** : pour énumérer, le cas de base est `List(Nil)` ; chaque solution du reste donne deux solutions
+      (sans `y`, avec `y`).
+    source:
+      fichier: "software_construction/semaine-04/swc4 (2).pdf"
+      emplacement: "slides 54, 75–78 (map, constructeurs et motifs de listes)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q016
+    titre: "Combinaisons de k éléments"
+    niveau: 3
+    type: qcm
+    enonce: |
+      `combs(k, xs)` énumère les sous-listes de `xs` de longueur `k`.
+      ```scala
+      def combs(k: Int, xs: List[Int]): List[List[Int]] =
+        if k == 0 then List(Nil)
+        else xs match
+          case Nil     => Nil
+          case y :: ys => combs(k - 1, ys).map(c => y :: c) ++ combs(k, ys)
+      ```
+      Que vaut `combs(2, List(1, 2, 3))` ?
+    choix:
+      - "`List(List(1, 2), List(2, 3))`"
+      - "`List(List(1, 2), List(1, 3), List(2, 3))`"
+      - "`List(List(1), List(2), List(3))`"
+      - "`List(List(1, 2), List(1, 3), List(2, 1), List(2, 3), List(3, 1), List(3, 2))`"
+    reponse: 1
+    tolerance: null
+    explication: |
+      Deux cas pour la tête `y` : la **prendre** (il reste `k - 1` éléments à choisir dans `ys`, et on met `y`
+      devant **chaque** combinaison obtenue) ou la **sauter** (choisir `k` éléments dans `ys`).
+      ```text
+      combs(2, [1,2,3]) = (combs(1, [2,3]) avec 1 devant) ++ combs(2, [2,3])
+      combs(1, [2,3])   = List(List(2), List(3))
+      combs(2, [2,3])   = List(List(2, 3))
+      ```
+      Résultat : `List(List(1, 2), List(1, 3), List(2, 3))` (vérifié en exécutant). Les combinaisons ne tiennent pas
+      compte de l'ordre : pas de `List(2, 1)`. Deux cas de base différents : `k == 0` → une solution (`List(Nil)`),
+      plus d'éléments mais `k > 0` → aucune (`Nil`).
+
+      **Schéma** : prendre ou sauter, mais en **énumérant** : on combine `y` avec chaque solution (`map`) et on
+      **concatène** les solutions des deux choix (`++`).
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 64–67 (séquences imbriquées, flatMap)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q017
+    titre: "Partitions d'un entier"
+    niveau: 3
+    type: numerique
+    enonce: |
+      `parts(n, max)` énumère les façons d'écrire `n` comme somme de parts **décroissantes**, chacune ≤ `max`.
+      ```scala
+      def parts(n: Int, max: Int): List[List[Int]] =
+        if n == 0 then List(Nil)
+        else for
+          k    <- (1 to math.min(n, max)).toList
+          rest <- parts(n - k, k)
+        yield k :: rest
+      ```
+      Combien d'éléments contient `parts(4, 4)` ?
+    reponse: 5
+    tolerance: null
+    explication: |
+      Pour chaque première part `k`, on complète avec **chaque** partition de `n - k` en parts ≤ `k` :
+
+      | `k` | complétions de `4 - k` | solutions |
+      |---|---|---|
+      | 1 | `parts(3, 1)` | `1+1+1+1` |
+      | 2 | `parts(2, 2)` | `2+1+1`, `2+2` |
+      | 3 | `parts(1, 3)` | `3+1` |
+      | 4 | `parts(0, 4) = List(Nil)` | `4` |
+
+      **5** partitions (vérifié en exécutant). Le cas de base `List(Nil)` rend possible la solution `4` seule ;
+      la borne `max` décroissante évite de compter `1+3` et `3+1` deux fois.
+
+      **Schéma** : un générateur pour le choix courant, un générateur pour les solutions du reste, et
+      `yield choix :: solution`.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 54, 70–72 (Range, for-expressions)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q018
+    titre: "Sous-ensembles d'un multiset"
+    niveau: 3
+    type: numerique
+    enonce: |
+      Un multiset est donné par des paires `(valeur, multiplicité)` : `List((1, 2), (2, 1))` représente `{1, 1, 2}`.
+      ```scala
+      def sub(xs: List[(Int, Int)]): List[List[Int]] = xs match
+        case Nil => List(Nil)
+        case (v, m) :: rest =>
+          for
+            k <- (0 to m).toList
+            s <- sub(rest)
+          yield (1 to k).map(_ => v).toList ++ s
+      ```
+      Combien d'éléments contient `sub(List((1, 2), (2, 1)))` ?
+    reponse: 6
+    tolerance: null
+    explication: |
+      Pour la valeur `1` (multiplicité 2), on choisit d'en prendre `k = 0`, `1` ou `2` ; pour la valeur `2`
+      (multiplicité 1), `0` ou `1`. Chaque choix se combine avec **chaque** solution du reste : 3 × 2 = **6**.
+      ```text
+      List(), List(2), List(1), List(1, 2), List(1, 1), List(1, 1, 2)
+      ```
+      (vérifié en exécutant). Le piège : $2^3 = 8$ compterait `{1}` deux fois, comme si les deux `1` étaient différents.
+
+      **Schéma** : pour chaque valeur, énumérer **combien** on en prend (0 à m), puis combiner avec les solutions
+      du reste.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 54, 70–72 (Range, for-expressions)"
+    verifie: false
+    incertain: null
+
+  # ---------- 19–20 : backtracking ----------
+  - id: softcons-recursion-q019
+    titre: "Les n reines"
+    niveau: 3
+    type: numerique
+    enonce: |
+      La solution du cours aux n reines : une reine par ligne, `isSafe` vérifie qu'aucune reine déjà placée ne
+      menace la colonne `col` (même colonne ou même diagonale).
+      ```scala
+      def queens(n: Int) =
+        def placeQueens(k: Int): Set[List[Int]] =
+          if k == 0 then Set(List())
+          else for
+            queens <- placeQueens(k - 1)
+            col <- 0 until n
+            if isSafe(col, queens)
+          yield col :: queens
+        placeQueens(n)
+      ```
+      Combien de solutions contient `queens(4)` ?
+    reponse: 2
+    tolerance: null
+    explication: |
+      Les deux solutions (colonne de chaque reine, de la dernière ligne à la première) :
+      `List(2, 0, 3, 1)` et `List(1, 3, 0, 2)` (vérifié en exécutant). Les placements partiels qui violent la
+      contrainte sont éliminés par le filtre `if isSafe(…)` **avant** de continuer : c'est le backtracking.
+
+      Le cas de base `Set(List())` est essentiel : avec `Set()`, il n'y aurait aucune solution partielle
+      à prolonger, et `queens(4)` vaudrait `Set()`.
+
+      **Schéma** : solutions pour `k - 1` → pour chacune, chaque choix possible → filtre de la contrainte →
+      solution pour `k`.
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 78–80 (n reines)"
+    verifie: false
+    incertain: null
+
+  - id: softcons-recursion-q020
+    titre: "Découper un mot"
+    niveau: 3
+    type: numerique
+    enonce: |
+      `split` énumère les façons de découper `s` en mots du dictionnaire `dict` (même idée que `encode` dans
+      l'exemple des mnémoniques de téléphone).
+      ```scala
+      def split(s: String, dict: Set[String]): List[List[String]] =
+        if s.isEmpty then List(Nil)
+        else for
+          i    <- (1 to s.length).toList
+          if dict.contains(s.take(i))
+          rest <- split(s.drop(i), dict)
+        yield s.take(i) :: rest
+      ```
+      Avec `dict = Set("a", "ab", "b", "bc", "c")`, combien d'éléments contient `split("abc", dict)` ?
+    reponse: 3
+    tolerance: null
+    explication: |
+      | premier mot | reste | découpages du reste |
+      |---|---|---|
+      | `a` | `bc` | `b c`, `bc` |
+      | `ab` | `c` | `c` |
+      | `abc` | — | pas dans `dict` |
+
+      **3** découpages : `a b c`, `a bc`, `ab c` (vérifié en exécutant). Avec `Nil` comme cas de base au lieu de
+      `List(Nil)`, aucun découpage n'aboutit et le résultat est `List()`.
+
+      **Schéma** : choisir un préfixe, vérifier la contrainte (`if`), puis découper le reste récursivement ;
+      `List(Nil)` signale « le mot vide est découpé ».
+    source:
+      fichier: "software_construction/semaine-05/swc-week5 (2) (1).pdf"
+      emplacement: "slides 92–105 (mnémoniques de téléphone, encode)"
+    verifie: false
+    incertain: null

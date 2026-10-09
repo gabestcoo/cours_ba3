@@ -578,3 +578,12 @@ code {
   color: var(--texte);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
+
+.question-titre {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+.question-niveau {
+  color: var(--accent, currentColor);
+  white-space: nowrap;
+}
