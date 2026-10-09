@@ -1,0 +1,209 @@
+cours: algebra
+semaine: 2
+titre: "Groups 1 : sous-groupes, cosets, Lagrange, Euler, Fermat et RSA"
+fiches:
+  - id: algebra-s02-001
+    type: definition
+    titre: "Groupe, groupe fini, groupe abélien"
+    importance: 3
+    corps: |
+      Un **groupe** est un ensemble $G$ muni d'une opération binaire $\cdot : G \times G \to G$ satisfaisant :
+      1. **Associativité** : $(a \cdot b) \cdot c = a \cdot (b \cdot c)$ pour tous $a, b, c \in G$ ;
+      2. **Élément neutre** : $\exists\, 1 \in G$ tel que $1 \cdot a = a \cdot 1 = a$ pour tout $a \in G$ ;
+      3. **Inverse** : pour tout $a \in G$, $\exists\, a^{-1} \in G$ tel que $a \cdot a^{-1} = a^{-1} a = 1$.
+
+      $G$ est **fini** si $|G| < \infty$ ; $|G| \in \mathbb{N}$ est alors l'**ordre** du groupe.
+
+      $G$ est **abélien** si $a \cdot b = b \cdot a$ pour tous $a, b \in G$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 3"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-002
+    type: definition
+    titre: "Premiers exemples de groupes"
+    importance: 2
+    corps: |
+      1. $(\mathbb{R}, +, 0)$ et $(\mathbb{Z}, +, 0)$ : groupes **abéliens infinis** pour l'addition.
+      2. Pour $n \in \mathbb{N}$, $n \ge 2$, les classes modulo $n$, $\mathbb{Z}/n\mathbb{Z} = \{[0], [1], \dots, [n-1]\}$,
+         forment un groupe **abélien fini** pour l'addition, d'ordre $|\mathbb{Z}/n\mathbb{Z}| = n$.
+         Dans $\mathbb{Z}/6\mathbb{Z}$ : $[2] + [5] = [1]$, $[0]$ est neutre, et $[4]$ est l'inverse de $[2]$.
+      3. $GL(n, \mathbb{R})$, les matrices réelles $n \times n$ inversibles, est un groupe **non abélien infini**
+         pour la multiplication matricielle ($A \cdot B \neq B \cdot A$ en général ; neutre $\mathrm{Id}$).
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 4"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-003
+    type: definition
+    titre: "Groupe multiplicatif modulo n : (ℤ/nℤ, ·)*"
+    importance: 3
+    corps: |
+      Soit $n \in \mathbb{Z}_{\ge 2}$ et $K = \{x \in \mathbb{N} : 1 \le x \le n,\ \gcd(x, n) = 1\}$.
+      Alors $K$ est un groupe pour la **multiplication modulo $n$**, et $|K| = \varphi(n)$.
+      Notation : $(\mathbb{Z}/n\mathbb{Z}, \cdot)^*$.
+
+      Pourquoi : $\gcd(x, n) = 1 \iff \exists\, a, b \in \mathbb{Z} : ax + bn = 1 \iff ax \equiv 1 \pmod n
+      \iff [a] \cdot [x] = [1]$, donc $[x]$ est inversible.
+
+      Exemple $n = 5$ : $K = \{[1], [2], [3], [4]\}$, avec $[2]^{-1} = [3]$, $[3]^{-1} = [2]$, $[4]^{-1} = [4]$ ; $[1]$ est neutre.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 5–6"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-004
+    type: definition
+    titre: "Sous-groupe"
+    importance: 2
+    corps: |
+      Un **sous-groupe** $H \subset G$ est un sous-ensemble de $G$ tel que $1 \in H$ et $H$ est **stable**
+      par la multiplication et par le passage à l'inverse.
+
+      Exemple : $\{0, \pm 3, \pm 6, \pm 9, \dots\} \subset (\mathbb{Z}, +, 0)$ est un sous-groupe pour l'addition.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 7"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-005
+    type: definition
+    titre: "Sous-groupe engendré et ordre d'un élément"
+    importance: 3
+    corps: |
+      Pour $g \in G$, $\langle g \rangle = \{1, g^{\pm 1}, g^{\pm 2}, g^{\pm 3}, \dots\} \subset G$ est un sous-groupe
+      ($g^i \cdot g^k = g^{i+k}$, et l'inverse de $g^i$ est $g^{-i}$) : le **sous-groupe engendré par $g$**.
+      C'est le **plus petit sous-groupe de $G$ contenant $g$**.
+
+      S'il existe $n \in \mathbb{N}_+$ **minimal** tel que $g^n = 1$ dans $G$, $n$ est l'**ordre de l'élément $g$**.
+      Alors $\langle g \rangle = \{1, g, g^2, \dots, g^{n-1}\}$ et $|\langle g \rangle| = n$.
+
+      Exemple : dans $(\mathbb{Z}, +, 0)$, $\langle 4 \rangle = \{0, \pm 4, \pm 8, \pm 12, \dots\} = 4\mathbb{Z}$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 8"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-006
+    type: theoreme
+    titre: "Cosets (classes à gauche)"
+    importance: 2
+    hypotheses: |
+      $H \subset G$ un sous-groupe, $g \in G$.
+    corps: |
+      La **left coset** de $g$ est $gH = \{gh,\ h \in H\}$.
+
+      **Proposition.**
+      1. Deux cosets $xH$ et $yH$ sont **égales ou disjointes** : $xH = yH$ ou $xH \cap yH = \emptyset$.
+      2. Tout élément $g \in G$ appartient à une left $H$-coset (à savoir $gH$).
+      3. Si $H$ est **fini**, alors $|xH| = |H|$ pour tout $x \in G$ ($h \mapsto xh$ est une bijection $H \to xH$).
+    remarques: |
+      Exemple : $G = (\mathbb{Z}, +, 0)$, $H = 4\mathbb{Z}$. Les cosets sont $0 + 4\mathbb{Z}$, $1 + 4\mathbb{Z}$,
+      $2 + 4\mathbb{Z}$, $3 + 4\mathbb{Z}$, et $\mathbb{Z}$ est leur union disjointe ($5 + 4\mathbb{Z} = 1 + 4\mathbb{Z}$).
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 9–10"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-007
+    type: theoreme
+    titre: "Théorème de Lagrange"
+    importance: 3
+    hypotheses: |
+      $G$ un groupe **fini** et $H \subset G$ un sous-groupe.
+    corps: |
+      $|H|$ divise $|G|$.
+
+      Le nombre de left $H$-cosets dans $G$ est l'**index de $H$ dans $G$** :
+      $$[G : H] = \frac{|G|}{|H|} \in \mathbb{N}_+.$$
+    remarques: |
+      Preuve : $G$ est l'union disjointe d'un nombre fini $r$ de cosets $x_i H$, toutes de cardinal $|H|$,
+      donc $|G| = r \cdot |H|$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 11"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-008
+    type: theoreme
+    titre: "L'ordre d'un élément divise l'ordre du groupe"
+    importance: 3
+    hypotheses: |
+      $G$ un groupe **fini** et $g \in G$.
+    corps: |
+      1. L'ordre de $g$ divise $|G|$.
+      2. $g^{|G|} = 1$.
+    remarques: |
+      (1) : Lagrange appliqué à $H = \langle g \rangle$, d'ordre $k$ = ordre de $g$.
+      (2) : $|G| = kt$, donc $g^{|G|} = (g^k)^t = 1^t = 1$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 12"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-009
+    type: theoreme
+    titre: "Théorème d'Euler"
+    importance: 3
+    hypotheses: |
+      $a, n \in \mathbb{Z}_+$ tels que $\gcd(a, n) = 1$.
+    corps: |
+      $$a^{\varphi(n)} \equiv 1 \pmod n.$$
+    remarques: |
+      Preuve : $G = (\mathbb{Z}/n\mathbb{Z}, \cdot)^*$ a $|G| = \varphi(n)$ et $[a] \in G$ car $\gcd(a, n) = 1$ ;
+      par le corollaire de Lagrange, $[a]^{\varphi(n)} = [1]$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 13"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-010
+    type: theoreme
+    titre: "Petit théorème de Fermat"
+    importance: 3
+    hypotheses: |
+      $a \in \mathbb{Z}_+$ et $p$ un nombre premier qui **ne divise pas** $a$.
+    corps: |
+      $$a^{p-1} \equiv 1 \pmod p.$$
+    remarques: |
+      Cas particulier d'Euler : $\gcd(a, p) = 1$ et $\varphi(p) = p - 1$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 13"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s02-011
+    type: methode
+    titre: "Le chiffrement RSA"
+    importance: 2
+    etapes:
+      - "Choisir deux grands nombres premiers **distincts** $p, q$ ; poser $m = pq$, de sorte que $\\varphi(m) = (p-1)(q-1)$."
+      - "Choisir $1 < e < m$ tel que $\\gcd(e, \\varphi(m)) = 1$."
+      - "Par l'algorithme d'Euclide, trouver $d \\in \\mathbb{Z}$ tel que $ed - k\\varphi(m) = 1$ pour un $k \\in \\mathbb{Z}$."
+      - "Publier la clé de chiffrement $(m, e)$ ; garder secrète la clé de déchiffrement $(m, d)$."
+      - "Pour envoyer $x$, $0 < x < m$ : calculer $y \\equiv x^e \\pmod m$ et envoyer $y$. Le destinataire calcule $y^d = x^{ed} \\equiv x \\pmod m$."
+      - "**Pourquoi ça marche** (proposition) : avec ces hypothèses, $x^{ed} \\equiv x \\pmod m$ pour tout $0 < x < m$ (Fermat modulo $p$ et modulo $q$). La sécurité repose sur le fait que factoriser $m$ (donc calculer $\\varphi(m)$) est **difficile**."
+    exemple: |
+      $p = 5$, $q = 7$ : $m = 35$, $\varphi(m) = 24$. On prend $e = 5$ ($\gcd(5, 24) = 1$) ;
+      $5 \cdot 5 - 24 \cdot 1 = 1$ donc $d = 5$. Clés : $(35, 5)$ et $(35, 5)$.
+
+      Envoyer $x = 31$ : $y \equiv 31^5 \equiv (-4)^5 \equiv -9 \equiv 26 \pmod{35}$.
+      Déchiffrer : $26^5 \equiv (-9)^5 \equiv 31 \pmod{35}$, on retrouve $x = 31$.
+    source:
+      fichier: "algebra/semaine-02/alg2 (2).pdf"
+      emplacement: "p. 15–18"
+    verifie: false
+    incertain: null
+quiz: []

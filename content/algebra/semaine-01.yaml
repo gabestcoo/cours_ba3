@@ -1,0 +1,197 @@
+cours: algebra
+semaine: 1
+titre: "Integers : induction, factorisation, division euclidienne, Bézout, φ(n)"
+fiches:
+  - id: algebra-s01-001
+    type: theoreme
+    titre: "Principe d'induction et induction forte"
+    importance: 3
+    hypotheses: |
+      $S \subset \mathbb{N} = \{0, 1, 2, \dots\}$.
+    corps: |
+      **Induction principle.** Si
+      1. $0 \in S$ ;
+      2. si $n \in S$, alors $n + 1 \in S$,
+
+      alors $S = \mathbb{N}$.
+
+      **Strong induction principle.** Si
+      1. $0 \in S$ ;
+      2. si $\{0, 1, \dots, n\} \subset S$, alors $n + 1 \in S$,
+
+      alors $S = \mathbb{N}$.
+    remarques: |
+      La condition (2) de l'induction forte est plus faible (elle suppose plus), mais les deux principes
+      sont en fait **équivalents** (voir la fiche suivante).
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 6–7"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-002
+    type: theoreme
+    titre: "Well ordering principle et équivalence des principes"
+    importance: 3
+    hypotheses: |
+      Aucune (énoncés sur $\mathbb{N}$).
+    corps: |
+      **Well ordering principle (WOP).** Tout sous-ensemble **non vide** de $\mathbb{N}$ a un plus petit élément.
+
+      **Proposition.** Les principes d'induction, d'induction forte et de bon ordre sont **équivalents**.
+    remarques: |
+      Le WOP sert à prouver par l'absurde avec un « **minimal criminal** » : on suppose l'ensemble $S'$ des
+      contre-exemples non vide, on prend son plus petit élément et on aboutit à une contradiction.
+      Méthode utilisée pour l'existence d'un diviseur premier, la factorisation et la division euclidienne.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 8–10"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-003
+    type: definition
+    titre: "Divisibilité et nombres premiers"
+    importance: 2
+    corps: |
+      Soit $\mathbb{Z} = \{0, \pm 1, \pm 2, \dots\}$. Si $a, b \in \mathbb{Z}$ et $a \neq 0$, on dit que
+      **$a$ divise $b$** ($a \mid b$) s'il existe $c \in \mathbb{Z}$ tel que $b = ac$.
+
+      Un nombre $p \in \mathbb{Z}_+ = \{1, 2, \dots\}$ est **premier** si $p > 1$ et si ses seuls diviseurs
+      sont $1$ et $p$. Les autres entiers sont **composés**.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 11"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-004
+    type: theoreme
+    titre: "Factorisation en nombres premiers"
+    importance: 3
+    hypotheses: |
+      $n \in \mathbb{Z}$, $n > 1$.
+    corps: |
+      1. $n$ a un **diviseur premier** ;
+      2. $n$ est un **produit de nombres premiers** ;
+      3. cette factorisation est **unique**.
+    remarques: |
+      Preuves par WOP (« minimal criminal »). Pour (1) : si $k$, le plus petit contre-exemple, est composé,
+      $k = ab$ avec $a, b < k$, donc $a$ a un diviseur premier, qui divise aussi $k$ : contradiction.
+
+      Conclusion du cours : les naturels se construisent par induction depuis 0, et les naturels $> 1$
+      ont une factorisation première unique.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 11–14"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-005
+    type: theoreme
+    titre: "Division euclidienne"
+    importance: 3
+    hypotheses: |
+      $n \in \mathbb{Z}$ et $d \in \mathbb{Z}_+$.
+    corps: |
+      Il existe deux entiers $q, r \in \mathbb{Z}$ tels que
+      $$n = qd + r \qquad \text{et} \qquad 0 \le r < d.$$
+      Ces $q$ et $r$ sont **uniques**.
+    remarques: |
+      Existence par WOP : $r$ est le plus petit élément de $S = \{n - kd\}_{k \in \mathbb{Z}} \cap \mathbb{N}$.
+      Unicité : si $r_1 + q_1 d = r_2 + q_2 d$ avec $q_1 > q_2$, on obtient une contradiction avec $0 \le r_i < d$.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 15–16"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-006
+    type: definition
+    titre: "Le pgcd (gcd)"
+    importance: 2
+    corps: |
+      Si $a, b \in \mathbb{Z}$, alors $\gcd(a, b)$ est l'entier **positif** $c$ tel que $c \mid a$ et $c \mid b$,
+      et tel que si un autre entier positif $d$ a cette propriété, alors $d \mid c$.
+
+      Deux entiers $a, b$ sont **premiers entre eux** (*relatively prime*) si $\gcd(a, b) = 1$.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 16 et 20"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-007
+    type: methode
+    titre: "Algorithme d'Euclide pour le gcd"
+    importance: 3
+    etapes:
+      - "Principe : si $n = qd + r$ avec $0 \\le r < d$ ($n, q \\in \\mathbb{Z}$, $d \\in \\mathbb{Z}_+$), alors $\\gcd(n, d) = \\gcd(d, r)$ (mêmes diviseurs communs)."
+      - "Diviser $d_1 = q_1 d_2 + d_3$, puis $d_2 = q_2 d_3 + d_4$, etc. : chaque étape conserve le gcd."
+      - "S'arrêter au premier reste nul : si $d_k = q_k d_{k+1} + 0$, alors $d_{k+1} = \\gcd(d_1, d_2)$ (le dernier reste non nul)."
+    exemple: |
+      $\gcd(432, 315)$ :
+      $$432 = 1 \cdot 315 + 117, \quad 315 = 2 \cdot 117 + 81, \quad 117 = 1 \cdot 81 + 36,$$
+      $$81 = 2 \cdot 36 + 9, \quad 36 = 4 \cdot 9 + 0 \quad \Longrightarrow \quad \gcd(432, 315) = 9.$$
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 17–18"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-008
+    type: theoreme
+    titre: "Identité de Bézout et équation ax + by = c"
+    importance: 3
+    hypotheses: |
+      $a, b \in \mathbb{Z}_+$ et $d = \gcd(a, b)$.
+    corps: |
+      **Corollaire 1.** Il existe $x, y \in \mathbb{Z}$ tels que $\gcd(a, b) = ax + by$.
+
+      **Corollaire 2.** L'équation $ax + by = c$, $c \in \mathbb{Z}$, a une solution $x, y \in \mathbb{Z}$
+      **si et seulement si** $c$ est un multiple de $d$.
+
+      **Théorème de Bézout.** $a$ et $b$ sont premiers entre eux **si et seulement si** il existe
+      $x, y \in \mathbb{Z}$ tels que $ax + by = 1$ (cas particulier $d = 1$ du corollaire 2).
+    remarques: |
+      Pour trouver $x, y$ : **remonter l'algorithme d'Euclide**. Avec l'exemple $\gcd(432, 315) = 9$ :
+      $$9 = 81 - 2 \cdot 36 = 3 \cdot 81 - 2 \cdot 117 = 3 \cdot 315 - 8 \cdot 117 = 11 \cdot 315 - 8 \cdot 432.$$
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 19–21"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-009
+    type: definition
+    titre: "Indicatrice d'Euler φ(n)"
+    importance: 3
+    corps: |
+      Pour tout $n \in \mathbb{Z}_+$, l'**Euler's totient function** $\varphi(n)$ est le nombre d'entiers positifs
+      $k$ tels que $1 \le k \le n$ et $\gcd(n, k) = 1$.
+
+      Exemples du cours : $\varphi(2) = 1$, $\varphi(3) = 2$, $\varphi(37) = 36$, $\varphi(15) = 8$.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 22"
+    verifie: false
+    incertain: null
+
+  - id: algebra-s01-010
+    type: formule
+    titre: "Calcul de φ : premiers, produits, carrés"
+    importance: 3
+    corps: |
+      $$\varphi(p) = p - 1 \qquad \varphi(p \cdot q) = pq - q - p + 1 = (p-1)(q-1) \qquad \varphi(p^2) = p^2 - p$$
+      $$\varphi(n \cdot m) = \varphi(n) \cdot \varphi(m) \quad \text{si et seulement si} \quad \gcd(n, m) = 1.$$
+    conditions: |
+      $p$, $q$ premiers ; pour $\varphi(pq)$, $p \neq q$ (sinon c'est $\varphi(p^2)$). $n, m \in \mathbb{Z}_+$.
+      La preuve de la multiplicativité est une application de la théorie des anneaux, vue plus tard dans le cours.
+    source:
+      fichier: "algebra/semaine-01/alg1 (1).pdf"
+      emplacement: "p. 22–23"
+    verifie: false
+    incertain: |
+      Ces formules sont des annotations manuscrites du cours (slides 22–23). La condition $p \neq q$
+      pour $\varphi(pq)$ n'y est pas écrite : elle est nécessaire pour que la formule soit juste.
+quiz: []
