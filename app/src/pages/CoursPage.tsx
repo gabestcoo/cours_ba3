@@ -53,7 +53,7 @@ export function CoursPage({ slug }: { slug: string }) {
           <li key={s.semaine}>
             <a
               className="ligne-semaine cliquable"
-              href={lien({ page: 'semaine', cours: cours.slug, semaine: s.semaine, onglet: 'fiches' })}
+              href={lien({ page: 'semaine', cours: cours.slug, semaine: s.semaine, vue: { type: 'fiches' } })}
             >
               <span className="numero-semaine">S{deuxChiffres(s.semaine)}</span>
               <span className="ligne-corps">
@@ -72,7 +72,7 @@ export function CoursPage({ slug }: { slug: string }) {
         ))}
         {themes.map((t) => (
           <li key={t.theme}>
-            <a className="ligne-semaine cliquable" href={lien({ page: 'theme', cours: cours.slug, theme: t.theme, onglet: 'quiz' })}>
+            <a className="ligne-semaine cliquable" href={lien({ page: 'theme', cours: cours.slug, theme: t.theme, vue: { type: 'quiz' } })}>
               <span className="numero-semaine numero-theme">{t.nbQuiz}</span>
               <span className="ligne-corps">
                 <span className="kicker kicker-ligne">Entraînement</span>

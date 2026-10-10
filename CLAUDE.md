@@ -245,7 +245,11 @@ Jamais la solution d'un labo noté ni une solution complète d'un devoir classiq
 
 - Mobile-first : conçue pour une largeur d'environ 375 px, puis adaptée au desktop.
 - Navigation : accueil (liste des cours) → cours (liste des semaines) → semaine (fiches en cartes) + onglet quiz.
-- Mode sombre qui suit le réglage du système.
+- Design « 2a » (handoff Claude Design) : polices Barlow / Barlow Condensed auto-hébergées, aucun arrondi,
+  cartes en filet fin avec repères « + » aux coins (composant `Coins`, classe `.plan`).
+- Semaine : onglets « Résumés » (liste → **lecteur glissable**, `#/slug/n/fiches/i`) et « Quiz »
+  (quiz `#/slug/n/quiz/jouer` et **cartes mémo** `#/slug/n/memo`, générées à partir des fiches, sans contenu nouveau).
+- Mode sombre qui suit le réglage du système, avec un bouton pour le forcer (`rev:v1:theme`).
 - Une fiche avec `verifie: false` affiche un petit badge discret « non vérifié ».
 - Une fiche avec `incertain` non nul affiche un avertissement visible.
 - Zones tactiles d'au moins 44 px, texte lisible sans zoom.
