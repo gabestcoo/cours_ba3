@@ -23,10 +23,8 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 3–6"
-    verifie: false
-    incertain: |
-      Les annotations manuscrites du slide 3 précisent $\mathbb{K} = \mathbb{R}$ et la condition
-      $4a^3 + 27b^2 \neq 0$, qui ne figurent pas dans le texte tapé de la définition.
+    verifie: true
+    incertain: null
 
   - id: algebra-s05-002
     type: methode
@@ -44,7 +42,7 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 7–8"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s05-003
@@ -64,7 +62,7 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 10–12"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s05-004
@@ -81,7 +79,7 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 13"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s05-005
@@ -102,7 +100,7 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 13–15"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s05-006
@@ -123,7 +121,7 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 16 et 18"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s05-007
@@ -141,6 +139,6 @@ fiches:
     source:
       fichier: "algebra/semaine-05/alg4.pdf"
       emplacement: "p. 17–18"
-    verifie: false
+    verifie: true
     incertain: null
 quiz: []

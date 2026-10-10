@@ -3,3 +3,8 @@ dist/
 .idea/
 *.local
 *.tsbuildinfo
+algebra/
+analyse_III/
+computer_architecture/
+software_construction/
+proba_stat/

@@ -16,7 +16,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 6–7"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-002
@@ -31,7 +31,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 9 et 12"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-003
@@ -48,7 +48,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 9"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-004
@@ -71,7 +71,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 8, 10, 12"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-005
@@ -87,7 +87,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 11"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-006
@@ -112,7 +112,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 13–16"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-007
@@ -129,10 +129,8 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 13"
-    verifie: false
-    incertain: |
-      Le cours écrit l'équivalence de façon manuscrite (« any $q^k$ with $\gcd(k, n) = 1$ can be a generator ») ;
-      le sens « seulement si » est formulé ici explicitement et a été vérifié pour $n = 6, 8, 12$.
+    verifie: true
+    incertain: null
 
   - id: algebra-s04-008
     type: theoreme
@@ -153,7 +151,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 17"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-009
@@ -173,7 +171,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 18–19"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-010
@@ -195,7 +193,7 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 20–21"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s04-011
@@ -215,6 +213,6 @@ fiches:
     source:
       fichier: "algebra/semaine-04/alg3 (1).pdf"
       emplacement: "p. 22"
-    verifie: false
+    verifie: true
     incertain: null
 quiz: []

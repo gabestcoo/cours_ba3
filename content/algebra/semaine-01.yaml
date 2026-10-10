@@ -26,7 +26,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 6–7"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-002
@@ -46,7 +46,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 8–10"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-003
@@ -62,7 +62,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 11"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-004
@@ -84,7 +84,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 11–14"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-005
@@ -103,7 +103,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 15–16"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-006
@@ -118,7 +118,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 16 et 20"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-007
@@ -136,7 +136,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 17–18"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-008
@@ -159,7 +159,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 19–21"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-009
@@ -174,7 +174,7 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 22"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s01-010
@@ -190,8 +190,6 @@ fiches:
     source:
       fichier: "algebra/semaine-01/alg1 (1).pdf"
       emplacement: "p. 22–23"
-    verifie: false
-    incertain: |
-      Ces formules sont des annotations manuscrites du cours (slides 22–23). La condition $p \neq q$
-      pour $\varphi(pq)$ n'y est pas écrite : elle est nécessaire pour que la formule soit juste.
-quiz: []
+    verifie: true
+    incertain: null
+    quiz: []

@@ -18,7 +18,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 3"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-002
@@ -35,7 +35,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 4"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-003
@@ -54,7 +54,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 5–6"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-004
@@ -69,7 +69,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 7"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-005
@@ -88,7 +88,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 8"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-006
@@ -110,7 +110,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 9–10"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-007
@@ -130,7 +130,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 11"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-008
@@ -148,7 +148,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 12"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-009
@@ -165,7 +165,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 13"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-010
@@ -181,7 +181,7 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 13"
-    verifie: false
+    verifie: true
     incertain: null
 
   - id: algebra-s02-011
@@ -204,6 +204,6 @@ fiches:
     source:
       fichier: "algebra/semaine-02/alg2 (2).pdf"
       emplacement: "p. 15–18"
-    verifie: false
+    verifie: true
     incertain: null
 quiz: []
