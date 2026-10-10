@@ -852,3 +852,72 @@ button {
 .branche-vide {
   opacity: 0.5;
 }
+
+/* ---------- Page d'un cours ---------- */
+.entete-page {
+  padding: 4px 0 20px;
+}
+
+.titre-branche {
+  margin: 2px 0 6px;
+  font: 600 36px/1 var(--police-titre);
+}
+
+.sous-titre {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+
+.liste-semaines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ligne-semaine {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 16px;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 1px solid var(--bordure);
+  color: var(--texte);
+  text-decoration: none;
+}
+
+.numero-semaine {
+  font: 500 34px/1 var(--police-titre);
+  color: var(--accent);
+}
+
+.ligne-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ligne-semaine .ligne-titre {
+  font: 600 18px/1.15 var(--police-titre);
+  text-wrap: pretty;
+}
+
+.ligne-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kicker-ligne {
+  font-size: 10.5px;
+  margin-bottom: -4px;
+}
+
+.note-fin {
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--bordure);
+  font-size: 12.5px;
+  color: var(--texte-doux);
+}
